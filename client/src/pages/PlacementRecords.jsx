@@ -1,18 +1,19 @@
 import React, { useContext, useState } from 'react'
 import { AppContext } from '../context/AppContext'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FileCheck, Search, Filter, Download, Plus, X, Trash2, Eye } from 'lucide-react'
+import { FileCheck, Search, Filter, Download, Plus, X, Trash2, Eye, Briefcase } from 'lucide-react'
 import moment from 'moment'
 import axios from 'axios'
 import { toast } from 'react-toastify'
 
 const PlacementRecords = () => {
-    const { offerLetters, noDuesRequests, backendUrl, fetchBackendData } = useContext(AppContext)
+    const { offerLetters, noDuesRequests, studentRecords, backendUrl, fetchBackendData } = useContext(AppContext)
     const [activeTab, setActiveTab] = useState('Archive')
     const [search, setSearch] = useState('')
     const [branchFilter, setBranchFilter] = useState('All')
     const [companyFilter, setCompanyFilter] = useState('All')
     const [yearFilter, setYearFilter] = useState('All')
+    const [placementStatusFilter, setPlacementStatusFilter] = useState('All')
 
     const [showAddModal, setShowAddModal] = useState(false)
     const [viewLetterUrl, setViewLetterUrl] = useState(null)
@@ -76,10 +77,40 @@ const PlacementRecords = () => {
         } catch (error) { toast.error(error.message) }
     }
 
+    // Placement Matcher Data Processing (from StudentDatabase.jsx)
+    const placementData = (studentRecords || []).map(record => {
+        let offer = offerLetters.find(o => o.rollNumber === record.rollNumber) || null
+        if (offer) {
+            offer = { ...offer }
+            if (!offer.type) offer.type = 'Job'; // legacy fallback
+        }
+        return { ...record, offer }
+    })
+
+    const filteredPlacementData = placementData.filter(s => {
+        const matchesSearch = (s.name || '').toLowerCase().includes(search.toLowerCase()) || (s.rollNumber || '').includes(search)
+        const matchesBranch = branchFilter === 'All' || s.branch === branchFilter
+        const matchesYear = yearFilter === 'All' || s.year === yearFilter
+        const matchesStatus = placementStatusFilter === 'All' ||
+            (placementStatusFilter === 'Job' && s.offer?.type === 'Job') ||
+            (placementStatusFilter === 'Higher Studies' && s.offer?.type === 'Higher Studies') ||
+            (placementStatusFilter === 'Pending' && !s.offer)
+
+        return matchesSearch && matchesBranch && matchesYear && matchesStatus
+    })
+
+    const totalStudents = filteredPlacementData.length;
+    const uploadedCount = filteredPlacementData.filter(s => s.offer).length;
+    const pendingCount = totalStudents - uploadedCount;
+
     // unique lists for dropdowns
-    const branches = ['All', ...new Set(offerLetters.map(r => r.branch))]
+    const branches = activeTab === 'Matcher' 
+        ? ['All', ...new Set((studentRecords || []).map(r => r.branch))] 
+        : ['All', ...new Set(offerLetters.map(r => r.branch))]
     const companiesList = ['All', ...new Set(offerLetters.map(r => r.company))]
-    const years = ['All', ...new Set(offerLetters.map(r => r.year))]
+    const years = activeTab === 'Matcher'
+        ? ['All', ...new Set((studentRecords || []).filter(s => s.year).map(s => s.year))]
+        : ['All', ...new Set(offerLetters.map(r => r.year))]
 
     return (
         <motion.div 
@@ -87,25 +118,50 @@ const PlacementRecords = () => {
             animate={{ opacity: 1, y: 0 }}
             className='container mx-auto p-2 sm:p-4'
         >
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-                <div className="glass-panel p-5 rounded-2xl border border-gray-100 flex items-center gap-4 bg-white/60">
-                    <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-lg">{offerLetters.length}</div>
-                    <div><p className="text-sm font-semibold text-gray-500">Total Records</p><p className="text-xl font-bold text-gray-800">Outcomes</p></div>
+            {activeTab === 'Matcher' ? (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+                    <div className="glass-panel p-5 rounded-2xl border border-gray-100 flex items-center gap-4 bg-white/60">
+                        <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-lg">{totalStudents}</div>
+                        <div><p className="text-sm font-semibold text-gray-500">Total in Scope</p><p className="text-xl font-bold text-gray-800">Master List</p></div>
+                    </div>
+                    <div className="glass-panel p-5 rounded-2xl border border-green-100 flex items-center gap-4 bg-green-50/30">
+                        <div className="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold text-lg">{uploadedCount}</div>
+                        <div><p className="text-sm font-semibold text-green-600">Verified</p><p className="text-xl font-bold text-green-800">Uploaded</p></div>
+                    </div>
+                    <div className="glass-panel p-5 rounded-2xl border border-red-100 flex items-center gap-4 bg-red-50/30">
+                        <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-bold text-lg">{pendingCount}</div>
+                        <div><p className="text-sm font-semibold text-red-600">Defaulters</p><p className="text-xl font-bold text-red-800">Pending</p></div>
+                    </div>
                 </div>
-                <div className="glass-panel p-5 rounded-2xl border border-indigo-100 flex items-center gap-4 bg-indigo-50/30">
-                    <div className="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-lg">{offerLetters.filter(r => r.type === 'Job' || !r.type).length}</div>
-                    <div><p className="text-sm font-semibold text-indigo-600">Placed</p><p className="text-xl font-bold text-indigo-800">Job Offers</p></div>
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+                    <div className="glass-panel p-5 rounded-2xl border border-gray-100 flex items-center gap-4 bg-white/60">
+                        <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-lg">{offerLetters.length}</div>
+                        <div><p className="text-sm font-semibold text-gray-500">Total Records</p><p className="text-xl font-bold text-gray-800">Outcomes</p></div>
+                    </div>
+                    <div className="glass-panel p-5 rounded-2xl border border-indigo-100 flex items-center gap-4 bg-indigo-50/30">
+                        <div className="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-lg">{offerLetters.filter(r => r.type === 'Job' || !r.type).length}</div>
+                        <div><p className="text-sm font-semibold text-indigo-600">Placed</p><p className="text-xl font-bold text-indigo-800">Job Offers</p></div>
+                    </div>
+                    <div className="glass-panel p-5 rounded-2xl border border-purple-100 flex items-center gap-4 bg-purple-50/30">
+                        <div className="w-12 h-12 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-lg">{offerLetters.filter(r => r.type === 'Higher Studies').length}</div>
+                        <div><p className="text-sm font-semibold text-purple-600">Pursuing</p><p className="text-xl font-bold text-purple-800">Higher Studies</p></div>
+                    </div>
                 </div>
-                <div className="glass-panel p-5 rounded-2xl border border-purple-100 flex items-center gap-4 bg-purple-50/30">
-                    <div className="w-12 h-12 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-lg">{offerLetters.filter(r => r.type === 'Higher Studies').length}</div>
-                    <div><p className="text-sm font-semibold text-purple-600">Pursuing</p><p className="text-xl font-bold text-purple-800">Higher Studies</p></div>
-                </div>
-            </div>
+            )}
 
             <div className='glass-panel p-6 rounded-3xl mb-8 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 shadow-sm border border-gray-100'>
                 <div>
-                    <h2 className='text-2xl font-bold text-gray-800 tracking-tight'>Placement Records</h2>
-                    <p className='text-gray-500 text-sm mt-1'>Archive of student job offers and higher education outcomes.</p>
+                    <h2 className='text-2xl font-bold text-gray-800 tracking-tight'>
+                        {activeTab === 'Archive' && 'Placement Records'}
+                        {activeTab === 'Queue' && 'No Dues Clearances'}
+                        {activeTab === 'Matcher' && 'Offer Letter Matcher'}
+                    </h2>
+                    <p className='text-gray-500 text-sm mt-1'>
+                        {activeTab === 'Archive' && 'Archive of student job offers and higher education outcomes.'}
+                        {activeTab === 'Queue' && 'Review and approve/reject pending No Dues clearances.'}
+                        {activeTab === 'Matcher' && 'Cross-reference master ledger to track students pending offer letter uploads.'}
+                    </p>
                     
                     <div className="flex gap-2 mt-4 bg-gray-100 p-1 rounded-xl w-max">
                         <button onClick={() => setActiveTab('Archive')} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'Archive' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500'}`}>
@@ -114,56 +170,82 @@ const PlacementRecords = () => {
                         <button onClick={() => setActiveTab('Queue')} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'Queue' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'}`}>
                             No Dues Approvals {pendingNoDues.length > 0 && <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full">{pendingNoDues.length}</span>}
                         </button>
+                        <button onClick={() => setActiveTab('Matcher')} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'Matcher' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500'}`}>
+                            <Briefcase size={16} /> Placement Matcher
+                        </button>
                     </div>
                 </div>
                 
                 <div className='flex flex-wrap items-center gap-3 w-full xl:w-auto'>
-                    <div className="relative flex-grow sm:flex-grow-0 sm:w-48">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Search size={16} className="text-gray-400" />
+                    {(activeTab === 'Archive' || activeTab === 'Matcher') && (
+                        <div className="relative flex-grow sm:flex-grow-0 sm:w-48">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <Search size={16} className="text-gray-400" />
+                            </div>
+                            <input 
+                                placeholder="Search Student/Roll..."
+                                className="glass-input pl-9 pr-4 py-2.5 text-sm w-full font-medium"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
                         </div>
-                        <input 
-                            placeholder="Search Student/Roll..."
-                            className="glass-input pl-9 pr-4 py-2.5 text-sm w-full font-medium"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                        />
-                    </div>
+                    )}
                     
-                    <select 
-                        value={branchFilter}
-                        onChange={(e) => setBranchFilter(e.target.value)}
-                        className="glass-input px-4 py-2.5 text-sm font-medium min-w-[120px]"
-                    >
-                        {branches.map(b => <option key={`branch-${b}`} value={b}>{b === 'All' ? 'All Branches' : b}</option>)}
-                    </select>
+                    {(activeTab === 'Archive' || activeTab === 'Matcher') && (
+                        <select 
+                            value={branchFilter}
+                            onChange={(e) => setBranchFilter(e.target.value)}
+                            className="glass-input px-4 py-2.5 text-sm font-medium min-w-[120px]"
+                        >
+                            {branches.map(b => <option key={`branch-${b}`} value={b}>{b === 'All' ? 'All Branches' : b}</option>)}
+                        </select>
+                    )}
 
-                    <select 
-                        value={companyFilter}
-                        onChange={(e) => setCompanyFilter(e.target.value)}
-                        className="glass-input px-4 py-2.5 text-sm font-medium min-w-[120px]"
-                    >
-                        {companiesList.map(c => <option key={`company-${c}`} value={c}>{c === 'All' ? 'All Companies' : c}</option>)}
-                    </select>
+                    {activeTab === 'Archive' && (
+                        <select 
+                            value={companyFilter}
+                            onChange={(e) => setCompanyFilter(e.target.value)}
+                            className="glass-input px-4 py-2.5 text-sm font-medium min-w-[120px]"
+                        >
+                            {companiesList.map(c => <option key={`company-${c}`} value={c}>{c === 'All' ? 'All Companies' : c}</option>)}
+                        </select>
+                    )}
 
-                    <select 
-                        value={yearFilter}
-                        onChange={(e) => setYearFilter(e.target.value)}
-                        className="glass-input px-4 py-2.5 text-sm font-medium min-w-[120px]"
-                    >
-                        {years.map(y => <option key={`year-${y}`} value={y}>{y === 'All' ? 'All Years' : y}</option>)}
-                    </select>
+                    {(activeTab === 'Archive' || activeTab === 'Matcher') && (
+                        <select 
+                            value={yearFilter}
+                            onChange={(e) => setYearFilter(e.target.value)}
+                            className="glass-input px-4 py-2.5 text-sm font-medium min-w-[120px]"
+                        >
+                            {years.map(y => <option key={`year-${y}`} value={y}>{y === 'All' ? 'All Years' : y}</option>)}
+                        </select>
+                    )}
 
-                    <button 
-                        onClick={() => setShowAddModal(true)}
-                        className='btn-primary px-5 py-2.5 flex items-center justify-center gap-2 shadow-md hover:shadow-lg rounded-xl flex-shrink-0 text-sm'
-                    >
-                        <Plus size={16} /> Add Record
-                    </button>
+                    {activeTab === 'Matcher' && (
+                        <select
+                            value={placementStatusFilter}
+                            onChange={(e) => setPlacementStatusFilter(e.target.value)}
+                            className="glass-input px-4 py-2.5 text-sm font-medium min-w-[150px]"
+                        >
+                            <option value="All">All Statuses</option>
+                            <option value="Job">💼 Job Offers</option>
+                            <option value="Higher Studies">🎓 Higher Studies</option>
+                            <option value="Pending">⌛ Pending</option>
+                        </select>
+                    )}
+
+                    {activeTab === 'Archive' && (
+                        <button 
+                            onClick={() => setShowAddModal(true)}
+                            className='btn-primary px-5 py-2.5 flex items-center justify-center gap-2 shadow-md hover:shadow-lg rounded-xl flex-shrink-0 text-sm'
+                        >
+                            <Plus size={16} /> Add Record
+                        </button>
+                    )}
                 </div>
             </div>
 
-            {activeTab === 'Archive' ? (
+            {activeTab === 'Archive' && (
             <div className='glass-panel rounded-3xl overflow-hidden border border-gray-100 bg-white/50 shadow-sm'>
                 <div className='overflow-x-auto'>
                     <table className='w-full text-sm text-left whitespace-nowrap'>
@@ -243,7 +325,9 @@ const PlacementRecords = () => {
                     </table>
                 </div>
             </div>
-            ) : (
+            )}
+
+            {activeTab === 'Queue' && (
             <div className='glass-panel rounded-3xl overflow-hidden border border-gray-100 bg-white/50 shadow-sm'>
                 <div className='overflow-x-auto'>
                     <table className='w-full text-sm text-left whitespace-nowrap'>
@@ -293,6 +377,85 @@ const PlacementRecords = () => {
                                 <tr>
                                     <td colSpan="5" className="py-12 text-center text-gray-500 font-medium">
                                         No pending no dues requests.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            )}
+
+            {activeTab === 'Matcher' && (
+            <div className='glass-panel rounded-3xl overflow-hidden border border-gray-100 bg-white/50 shadow-sm'>
+                <div className='overflow-x-auto'>
+                    <table className='w-full text-sm text-left whitespace-nowrap'>
+                        <thead className='bg-gray-50/80 border-b border-gray-100 text-gray-600 font-medium uppercase tracking-wider text-xs'>
+                            <tr>
+                                <th className='py-4 px-6'>Roll Number</th>
+                                <th className='py-4 px-6'>Full Name</th>
+                                <th className='py-4 px-6'>Course Details</th>
+                                <th className='py-4 px-6 text-center'>Offer Letter Status</th>
+                            </tr>
+                        </thead>
+                        <tbody className='divide-y divide-gray-100'>
+                            {filteredPlacementData.map((record, index) => (
+                                <tr key={index} className='hover:bg-blue-50/20 transition-colors'>
+                                    <td className='py-3 px-6 font-semibold text-gray-600'>
+                                        {record.rollNumber}
+                                    </td>
+                                    <td className='py-3 px-6 font-bold text-gray-800 break-words'>
+                                        {record.name}
+                                    </td>
+                                    <td className='py-3 px-6'>
+                                        <div className='flex flex-col'>
+                                            <span className="text-gray-700 font-semibold text-xs">{record.degree || 'B.Tech'} - {record.branch}</span>
+                                            <span className="text-gray-400 text-xs text-left">Graduation Year {record.year}</span>
+                                        </div>
+                                    </td>
+                                    <td className='py-3 px-6 text-center'>
+                                        <div className="flex items-center justify-center gap-3">
+                                            {record.offer ? (
+                                                <div className="flex flex-col items-center gap-1">
+                                                    <span className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold border ${record.offer.type === 'Higher Studies' ? 'bg-purple-50 text-purple-700 border-purple-100' : 'bg-indigo-50 text-indigo-700 border-indigo-100'}`}>
+                                                        {record.offer.company}
+                                                    </span>
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        <span className={`text-[10px] uppercase font-bold tracking-wider ${record.offer.type === 'Higher Studies' ? 'text-purple-400' : 'text-indigo-400'}`}>
+                                                            {record.offer.type === 'Higher Studies' ? '🎓 University' : '💼 Job'}
+                                                        </span>
+                                                        <span className="text-gray-300">•</span>
+                                                        <span className={`text-[10px] font-extrabold ${record.offer.type === 'Higher Studies' ? 'text-purple-600' : 'text-green-600'}`}>
+                                                            {record.offer.package}
+                                                        </span>
+                                                        {record.offer.letterUrl && record.offer.letterUrl !== '#' && (
+                                                            <>
+                                                                <span className="text-gray-300">•</span>
+                                                                <a 
+                                                                    href={record.offer.letterUrl} 
+                                                                    target="_blank" 
+                                                                    rel="noopener noreferrer" 
+                                                                    className="text-blue-500 hover:underline text-[10px] font-bold"
+                                                                >
+                                                                    View Document
+                                                                </a>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <span className='inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-red-50 text-red-600 border border-red-100'>
+                                                    ⌛ Pending
+                                                </span>
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                            {filteredPlacementData.length === 0 && (
+                                <tr>
+                                    <td colSpan="4" className="py-12 text-center text-gray-500 font-medium">
+                                        No students found matching the selected filters.
                                     </td>
                                 </tr>
                             )}

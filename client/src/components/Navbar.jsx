@@ -1,119 +1,192 @@
-import { useContext, useState, useEffect } from 'react'
+import { useContext, useEffect, useRef, useState, useMemo } from 'react'
 import { assets } from '../assets/assets'
 import { useClerk, UserButton, useUser } from '@clerk/react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { AppContext } from '../context/AppContext'
-import { motion } from 'framer-motion'
-import { BriefcaseBusiness, UserRound, LogIn, HelpCircle } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { BriefcaseBusiness, UserRound, LogIn, HelpCircle, ChevronDown } from 'lucide-react'
 
 const Navbar = () => {
+  const { openSignIn } = useClerk()
+  const { user } = useUser()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { setShowRecruiterLogin } = useContext(AppContext)
 
-    const { openSignIn } = useClerk()
-    const { user } = useUser()
-    const navigate = useNavigate()
-    const { setShowRecruiterLogin } = useContext(AppContext)
+  const [scrolled, setScrolled] = useState(false)
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
+  const mobileMenuRef = useRef(null)
 
-    const isAlumni = user?.primaryEmailAddress?.emailAddress && !user.primaryEmailAddress.emailAddress.endsWith('@ietlucknow.ac.in');
+  const email = user?.primaryEmailAddress?.emailAddress?.toLowerCase() || ''
+  const isAlumni = useMemo(() => {
+    if (!user || !email) return false
+    return !email.endsWith('@ietlucknow.ac.in')
+  }, [user, email])
 
-    const [scrolled, setScrolled] = useState(false)
-    const [showMobileLogin, setShowMobileLogin] = useState(false)
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20)
+    window.addEventListener('scroll', handleScroll)
+    handleScroll()
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
-    useEffect(() => {
-        const handleScroll = () => {
-            setScrolled(window.scrollY > 20)
-        }
-        window.addEventListener('scroll', handleScroll)
-        return () => window.removeEventListener('scroll', handleScroll)
-    }, [])
+  useEffect(() => { setShowMobileMenu(false) }, [location.pathname])
 
-    return (
-        <motion.div
-            initial={{ y: -100 }}
-            animate={{ y: 0 }}
-            transition={{ duration: 0.5 }}
-            className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-100' : 'bg-transparent'}`}
-        >
-            <div className='container px-4 2xl:px-20 mx-auto flex justify-between items-center py-4'>
-                <div onClick={() => navigate('/')} className='flex items-center gap-3 cursor-pointer group'>
-                    <img className='w-10 sm:w-12 group-hover:scale-105 transition-transform mix-blend-multiply' src={assets.iet_logo} alt="IET Logo" />
-                    <h1 className='text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 tracking-tight'>
-                        IET Lucknow
-                        <span className="block text-xs font-semibold text-blue-600 uppercase tracking-widest mt-0.5">Placement Portal</span>
-                    </h1>
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target))
+        setShowMobileMenu(false)
+    }
+    const handleEscape = (e) => { if (e.key === 'Escape') setShowMobileMenu(false) }
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleEscape)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [])
+
+  return (
+    <motion.header
+      initial={{ y: -80, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      className="sticky top-0 z-50"
+    >
+      {/* Top accent bar */}
+      <div className="h-[3px] w-full bg-gradient-to-r from-[#003087] via-[#0055b3] to-[#003087]" />
+
+      <div
+        className={`w-full transition-all duration-300 ${
+          scrolled
+            ? 'bg-white/96 backdrop-blur-md shadow-[0_1px_0_0_#e5e7eb,0_4px_16px_rgba(0,48,135,0.06)]'
+            : 'bg-white border-b border-gray-200/80'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16 sm:h-18">
+
+            {/* Brand */}
+            <Link to="/" className="flex items-center gap-3 group shrink-0">
+              <img
+                src={assets.iet_logo}
+                alt="IET Lucknow"
+                className="h-9 sm:h-10 w-auto object-contain transition-transform duration-200 group-hover:scale-[1.03]"
+              />
+              <div className="border-l border-gray-200 pl-3 leading-snug hidden sm:block">
+                <p className="text-[13px] font-bold text-[#003087] tracking-tight">IET Lucknow</p>
+                <p className="text-[10px] font-medium text-gray-500 uppercase tracking-[0.15em]">Dept. of Computer Science</p>
+              </div>
+            </Link>
+
+            {/* Desktop Nav */}
+            {user ? (
+              <div className="hidden sm:flex items-center gap-1">
+                {!isAlumni && (
+                  <Link
+                    to="/doubts"
+                    className="flex items-center gap-1.5 px-3 py-2 text-[13px] font-medium text-gray-600 rounded-md hover:text-[#003087] hover:bg-blue-50/60 transition-all"
+                  >
+                    <HelpCircle size={14} />
+                    Doubts Forum
+                  </Link>
+                )}
+                <Link
+                  to="/no-dues"
+                  className="flex items-center gap-1.5 px-3 py-2 text-[13px] font-medium text-gray-600 rounded-md hover:text-[#003087] hover:bg-blue-50/60 transition-all"
+                >
+                  <BriefcaseBusiness size={14} />
+                  No Dues Form
+                </Link>
+                {!isAlumni && (
+                  <Link
+                    to="/profile"
+                    className="flex items-center gap-1.5 px-3 py-2 text-[13px] font-medium text-gray-600 rounded-md hover:text-[#003087] hover:bg-blue-50/60 transition-all"
+                  >
+                    <UserRound size={14} />
+                    Profile
+                  </Link>
+                )}
+                <div className="ml-3 pl-3 border-l border-gray-200 flex items-center gap-2.5">
+                  <span className="text-[13px] font-medium text-gray-700 hidden lg:block">
+                    {user.firstName || 'User'}
+                  </span>
+                  <UserButton afterSignOutUrl="/" />
                 </div>
+              </div>
+            ) : (
+              <div className="hidden sm:flex items-center gap-2">
+                <button
+                  onClick={() => setShowRecruiterLogin(true)}
+                  className="px-3 py-2 text-[13px] font-medium text-gray-600 rounded-md hover:text-[#003087] hover:bg-blue-50/60 transition-all"
+                >
+                  Coordinator Login
+                </button>
+                <button
+                  onClick={() => navigate('/no-dues')}
+                  className="px-4 py-2 text-[13px] font-medium text-gray-700 border border-gray-300 rounded-md hover:border-gray-400 hover:bg-gray-50 transition-all"
+                >
+                  Alumni Login
+                </button>
+                <button
+                  onClick={() => openSignIn()}
+                  className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold text-white bg-[#003087] rounded-md hover:bg-[#002266] transition-all shadow-sm"
+                >
+                  <LogIn size={13} />
+                  Student Login
+                </button>
+              </div>
+            )}
 
-                {
-                    user
-                        ? <div className='flex items-center gap-2 sm:gap-6'>
-                            {!isAlumni && (
-                                <>
-                                    <Link to={'/doubts'} className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors">
-                                        <HelpCircle size={16} /> <span className="hidden xl:inline">Doubts Forum</span>
-                                    </Link>
-                                    <div className="w-px h-4 bg-gray-300 hidden sm:block"></div>
-                                </>
-                            )}
-                            <Link to={'/no-dues'} className="flex items-center gap-2 text-sm font-medium text-purple-600 hover:text-purple-800 transition-colors">
-                                <BriefcaseBusiness size={16} /> <span className="hidden xl:inline">No Dues Form</span>
-                            </Link>
-                            <div className="w-px h-4 bg-gray-300 hidden sm:block"></div>
-                            {!isAlumni && (
-                                <>
-                                    <Link to={'/applications'} className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors">
-                                        <BriefcaseBusiness size={16} /> <span className="hidden sm:inline">Applied Jobs</span>
-                                    </Link>
-                                    <div className="w-px h-4 bg-gray-300"></div>
-                                    <Link to={'/profile'} className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors">
-                                        <UserRound size={16} /> <span className="hidden sm:inline">Profile</span>
-                                    </Link>
-                                    <div className="w-px h-4 bg-gray-300 absolute -left-[9999px] hidden"></div>
-                                </>
-                            )}
-                            <p className='max-sm:hidden text-sm font-medium text-gray-800 ml-2'>Hi, {user.firstName}</p>
-                            <UserButton afterSignOutUrl="/" />
-                        </div>
-                        :
-                        <div className='flex items-center shrink-0'>
-                            {/* Desktop View */}
-                            <div className='hidden sm:flex items-center gap-4'>
-                                <button onClick={e => setShowRecruiterLogin(true)} className='text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors'>
-                                    Coordinator Login
-                                </button>
-                                <button onClick={e => navigate('/no-dues')} className='btn-primary flex items-center justify-center py-2 px-4 text-sm rounded-full bg-slate-800 text-white shadow hover:bg-slate-700 transition-colors whitespace-nowrap'>
-                                    Alumni Login
-                                </button>
-                                <button onClick={e => openSignIn()} className='btn-primary flex items-center gap-2 py-2 px-7 text-sm rounded-full shadow-md hover:shadow-lg whitespace-nowrap'>
-                                    <LogIn size={16} /> Student Login
-                                </button>
-                            </div>
+            {/* Mobile Menu Toggle */}
+            <div className="sm:hidden relative" ref={mobileMenuRef}>
+              {user ? (
+                <div className="flex items-center gap-2">
+                  <UserButton afterSignOutUrl="/" />
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowMobileMenu((p) => !p)}
+                  aria-expanded={showMobileMenu}
+                  className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-[#003087] border border-[#003087]/30 rounded-md bg-blue-50/60"
+                >
+                  Login
+                  <ChevronDown size={12} className={`transition-transform ${showMobileMenu ? 'rotate-180' : ''}`} />
+                </button>
+              )}
 
-                            {/* Mobile View Dropdown */}
-                            <div className='sm:hidden relative'>
-                                <button
-                                    onClick={() => setShowMobileLogin(!showMobileLogin)}
-                                    className='btn-primary flex items-center gap-1.5 py-1.5 px-4 text-[12px] rounded-full shadow-md'
-                                >
-                                    <LogIn size={14} /> Options
-                                </button>
-                                {showMobileLogin && (
-                                    <div className='absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden flex flex-col z-50 text-left font-medium text-gray-700'>
-                                        <button onClick={() => { openSignIn(); setShowMobileLogin(false); }} className='flex items-center gap-2 px-4 py-3 hover:bg-indigo-50 hover:text-indigo-600 w-full text-left'>
-                                            Student Login
-                                        </button>
-                                        <button onClick={() => { navigate('/no-dues'); setShowMobileLogin(false); }} className='flex items-center gap-2 px-4 py-3 hover:bg-indigo-50 hover:text-indigo-600 border-t border-gray-50 w-full text-left'>
-                                            Alumni Login
-                                        </button>
-                                        <button onClick={() => { setShowRecruiterLogin(true); setShowMobileLogin(false); }} className='flex items-center gap-2 px-4 py-3 hover:bg-indigo-50 hover:text-indigo-600 border-t border-gray-50 w-full text-left'>
-                                            Coordinator Login
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                }
+              <AnimatePresence>
+                {showMobileMenu && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 4, scale: 0.97 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-full mt-2 w-52 bg-white border border-gray-200 rounded-lg shadow-xl overflow-hidden z-50"
+                  >
+                    {[
+                      { label: 'Student Login', action: () => { openSignIn(); setShowMobileMenu(false) } },
+                      { label: 'Alumni Login', action: () => { navigate('/no-dues'); setShowMobileMenu(false) } },
+                      { label: 'Coordinator Login', action: () => { setShowRecruiterLogin(true); setShowMobileMenu(false) } },
+                    ].map((item, i) => (
+                      <button
+                        key={i}
+                        onClick={item.action}
+                        className={`w-full text-left px-4 py-3 text-[13px] font-medium text-gray-700 hover:bg-blue-50 hover:text-[#003087] transition-colors ${i > 0 ? 'border-t border-gray-100' : ''}`}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-        </motion.div>
-    )
+
+          </div>
+        </div>
+      </div>
+    </motion.header>
+  )
 }
 
 export default Navbar

@@ -60,21 +60,6 @@ const Dashboard = () => {
                             <p className='max-sm:hidden'>Overview</p>
                         </NavLink>
 
-                        <NavLink className={({ isActive }) => ` flex items-center px-4 sm:px-6 py-4 gap-3 w-full transition-all border-l-4 overflow-hidden ${isActive ? 'bg-indigo-50/50 text-indigo-700 border-indigo-600 font-bold' : 'border-transparent hover:bg-gray-50 hover:text-gray-900'}`} to={'/dashboard/add-job'}>
-                            <img className='w-5 opacity-80 shrink-0' src={assets.add_icon} alt="" />
-                            <p className='max-sm:hidden'>Add Job</p>
-                        </NavLink>
-
-                        <NavLink className={({ isActive }) => ` flex items-center px-4 sm:px-6 py-4 gap-3 w-full transition-all border-l-4 overflow-hidden ${isActive ? 'bg-indigo-50/50 text-indigo-700 border-indigo-600 font-bold' : 'border-transparent hover:bg-gray-50 hover:text-gray-900'}`} to={'/dashboard/manage-jobs'}>
-                            <img className='w-5 opacity-80 shrink-0' src={assets.suitcase_icon} alt="" />
-                            <p className='max-sm:hidden'>Manage Jobs</p>
-                        </NavLink>
-
-                        <NavLink className={({ isActive }) => ` flex items-center px-4 sm:px-6 py-4 gap-3 w-full transition-all border-l-4 overflow-hidden ${isActive ? 'bg-indigo-50/50 text-indigo-700 border-indigo-600 font-bold' : 'border-transparent hover:bg-gray-50 hover:text-gray-900'}`} to={'/dashboard/view-applications'}>
-                            <img className='w-5 opacity-80 shrink-0' src={assets.person_tick_icon} alt="" />
-                            <p className='max-sm:hidden whitespace-nowrap'>View Applications</p>
-                        </NavLink>
-
                         <div className='w-full px-4 sm:px-6 py-2 mt-2'>
                             <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block border-b border-gray-100 pb-2 max-sm:hidden">Power Tools</span>
                             <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block border-b border-gray-100 pb-2 sm:hidden text-center">PT</span>
@@ -83,11 +68,6 @@ const Dashboard = () => {
                         <NavLink className={({ isActive }) => ` flex items-center px-4 sm:px-6 py-3.5 gap-3 w-full transition-all border-l-4 overflow-hidden ${isActive ? 'bg-indigo-50/50 text-indigo-700 border-indigo-600 font-bold' : 'border-transparent hover:bg-gray-50 hover:text-gray-900'}`} to={'/dashboard/manage-notices'}>
                             <Bell size={20} className='opacity-80 shrink-0' />
                             <p className='max-sm:hidden whitespace-nowrap'>Manage Notices</p>
-                        </NavLink>
-
-                        <NavLink className={({ isActive }) => ` flex items-center px-4 sm:px-6 py-3.5 gap-3 w-full transition-all border-l-4 overflow-hidden ${isActive ? 'bg-indigo-50/50 text-indigo-700 border-indigo-600 font-bold' : 'border-transparent hover:bg-gray-50 hover:text-gray-900'}`} to={'/dashboard/company-tracker'}>
-                            <Building2 size={20} className='opacity-80 shrink-0' />
-                            <p className='max-sm:hidden whitespace-nowrap'>Company Tracker</p>
                         </NavLink>
 
                         <NavLink className={({ isActive }) => ` flex items-center px-4 sm:px-6 py-3.5 gap-3 w-full transition-all border-l-4 overflow-hidden ${isActive ? 'bg-indigo-50/50 text-indigo-700 border-indigo-600 font-bold' : 'border-transparent hover:bg-gray-50 hover:text-gray-900'}`} to={'/dashboard/placement-records'}>

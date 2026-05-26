@@ -10,10 +10,7 @@ const StudentDatabase = () => {
     const [search, setSearch] = useState('')
     const [branchFilter, setBranchFilter] = useState('All')
     const [statusFilter, setStatusFilter] = useState('All')
-    const [yearFilter, setYearFilter] = useState('All')
-    const [placementStatusFilter, setPlacementStatusFilter] = useState('All')
-
-    const [activeTab, setActiveTab] = useState('registered') // 'registered' | 'ledger' | 'placement_status'
+    const [activeTab, setActiveTab] = useState('registered') // 'registered' | 'ledger'
     const fileInputRef = useRef(null)
 
     const handleToggleBlacklist = async (id) => {
@@ -59,33 +56,6 @@ const StudentDatabase = () => {
         ? ['All', ...new Set(students.map(s => s.branch))]
         : ['All', ...new Set(studentRecords.map(s => s.branch))]
 
-    const years = ['All', ...new Set(studentRecords.filter(s => s.year).map(s => s.year))]
-
-    // Placement Ledger Data Processing
-    const placementData = studentRecords.map(record => {
-        let offer = offerLetters.find(o => o.rollNumber === record.rollNumber) || null
-        if (offer) {
-            offer = { ...offer }
-            if (!offer.type) offer.type = 'Job'; // legacy fallback
-        }
-        return { ...record, offer }
-    })
-
-    const filteredPlacementData = placementData.filter(s => {
-        const matchesSearch = (s.name || '').toLowerCase().includes(search.toLowerCase()) || (s.rollNumber || '').includes(search)
-        const matchesBranch = branchFilter === 'All' || s.branch === branchFilter
-        const matchesYear = yearFilter === 'All' || s.year === yearFilter
-        const matchesStatus = placementStatusFilter === 'All' ||
-            (placementStatusFilter === 'Job' && s.offer?.type === 'Job') ||
-            (placementStatusFilter === 'Higher Studies' && s.offer?.type === 'Higher Studies') ||
-            (placementStatusFilter === 'Pending' && !s.offer)
-
-        return matchesSearch && matchesBranch && matchesYear && matchesStatus
-    })
-
-    const totalStudents = filteredPlacementData.length;
-    const uploadedCount = filteredPlacementData.filter(s => s.offer).length;
-    const pendingCount = totalStudents - uploadedCount;
 
     const handleFileUpload = async (e) => {
         const file = e.target.files[0]
@@ -186,12 +156,6 @@ const StudentDatabase = () => {
                 >
                     <FileSpreadsheet size={18} /> Master Ledger
                 </button>
-                <button
-                    onClick={() => setActiveTab('placement_status')}
-                    className={`flex items-center gap-2 pb-3 font-semibold transition-colors ${activeTab === 'placement_status' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}
-                >
-                    <Briefcase size={18} /> Placement Matcher
-                </button>
             </div>
 
             <div className='glass-panel p-6 rounded-3xl mb-8 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 shadow-sm border border-gray-100'>
@@ -199,7 +163,6 @@ const StudentDatabase = () => {
                     <h2 className='text-2xl font-bold text-gray-800 tracking-tight flex items-center gap-3'>
                         {activeTab === 'registered' && 'Student Directory'}
                         {activeTab === 'ledger' && 'Official Batch Ledger'}
-                        {activeTab === 'placement_status' && 'Offer Letter Matcher'}
                     </h2>
                     {activeTab === 'registered' && studentRecords.length > 0 && (
                         <div className="mt-3 flex items-center gap-2 bg-indigo-50 border border-indigo-100 px-3 py-1.5 rounded-lg text-sm font-bold text-indigo-700 w-fit shadow-sm">
@@ -210,7 +173,6 @@ const StudentDatabase = () => {
                     <p className='text-gray-500 text-sm mt-3'>
                         {activeTab === 'registered' && 'Manage registered candidates and enforce strict disciplinary actions.'}
                         {activeTab === 'ledger' && 'Upload official CSVs and track the entire enrolled branch.'}
-                        {activeTab === 'placement_status' && 'Cross-reference master ledger to track students pending offer letter uploads.'}
                     </p>
                 </div>
 
@@ -242,18 +204,6 @@ const StudentDatabase = () => {
                         </select>
                     </div>
 
-                    {activeTab === 'placement_status' && (
-                        <select
-                            value={yearFilter}
-                            onChange={(e) => setYearFilter(e.target.value)}
-                            className="glass-input px-4 py-2.5 text-sm font-medium min-w-[110px]"
-                        >
-                            {years.map(y => (
-                                <option key={`year-${y}`} value={y}>{y === 'All' ? 'All Years' : y}</option>
-                            ))}
-                        </select>
-                    )}
-
                     {activeTab === 'registered' && (
                         <div className="relative">
                             <select
@@ -264,21 +214,6 @@ const StudentDatabase = () => {
                                 <option value="All">All Statuses</option>
                                 <option value="Active">🟢 Active Only</option>
                                 <option value="Blacklisted">🔴 Blacklisted</option>
-                            </select>
-                        </div>
-                    )}
-
-                    {activeTab === 'placement_status' && (
-                        <div className="relative">
-                            <select
-                                value={placementStatusFilter}
-                                onChange={(e) => setPlacementStatusFilter(e.target.value)}
-                                className="glass-input px-4 py-2.5 text-sm font-medium min-w-[150px]"
-                            >
-                                <option value="All">All Statuses</option>
-                                <option value="Job">💼 Job Offers</option>
-                                <option value="Higher Studies">🎓 Higher Studies</option>
-                                <option value="Pending">⌛ Pending</option>
                             </select>
                         </div>
                     )}
@@ -304,23 +239,6 @@ const StudentDatabase = () => {
                 </div>
             </div>
 
-            {activeTab === 'placement_status' && (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-                    <div className="glass-panel p-5 rounded-2xl border border-gray-100 flex items-center gap-4 bg-white/60">
-                        <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-lg">{totalStudents}</div>
-                        <div><p className="text-sm font-semibold text-gray-500">Total in Scope</p><p className="text-xl font-bold text-gray-800">Master List</p></div>
-                    </div>
-                    <div className="glass-panel p-5 rounded-2xl border border-green-100 flex items-center gap-4 bg-green-50/30">
-                        <div className="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold text-lg">{uploadedCount}</div>
-                        <div><p className="text-sm font-semibold text-green-600">Verified</p><p className="text-xl font-bold text-green-800">Uploaded</p></div>
-                    </div>
-                    <div className="glass-panel p-5 rounded-2xl border border-red-100 flex items-center gap-4 bg-red-50/30">
-                        <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-bold text-lg">{pendingCount}</div>
-                        <div><p className="text-sm font-semibold text-red-600">Defaulters</p><p className="text-xl font-bold text-red-800">Pending</p></div>
-                    </div>
-                </div>
-            )}
-
             <div className='glass-panel rounded-3xl overflow-hidden border border-gray-100 bg-white/50 shadow-sm'>
                 <div className='overflow-x-auto'>
                     <table className='w-full text-sm text-left whitespace-nowrap'>
@@ -328,10 +246,9 @@ const StudentDatabase = () => {
                             <tr>
                                 <th className='py-4 px-6'>Roll Number</th>
                                 <th className='py-4 px-6'>Full Name</th>
-                                <th className='py-4 px-6'>{(activeTab === 'ledger' || activeTab === 'placement_status') ? 'Course Details' : 'Branch'}</th>
+                                <th className='py-4 px-6'>{activeTab === 'ledger' ? 'Course Details' : 'Branch'}</th>
                                 {activeTab === 'registered' && <th className='py-4 px-6 text-center'>Account Status</th>}
-                                {activeTab === 'placement_status' && <th className='py-4 px-6 text-center'>Offer Letter Status</th>}
-                                {activeTab !== 'placement_status' && <th className='py-4 px-6 text-center'>{activeTab === 'ledger' ? 'Verification & Actions' : 'Quick Action'}</th>}
+                                <th className='py-4 px-6 text-center'>{activeTab === 'ledger' ? 'Verification & Actions' : 'Quick Action'}</th>
                             </tr>
                         </thead>
                         <tbody className='divide-y divide-gray-100'>
@@ -412,30 +329,10 @@ const StudentDatabase = () => {
                                 )
                             })}
 
-                            {activeTab === 'placement_status' && filteredPlacementData.map((record, index) => (
-                                <tr key={index} className={`transition-colors ${record.offer ? 'hover:bg-green-50/10' : 'bg-red-50/10 hover:bg-red-50/30'}`}>
-                                    <td className='py-3 px-6 font-semibold text-gray-600'>{record.rollNumber}</td>
-                                    <td className='py-3 px-6 font-bold text-gray-800 break-words'>{record.name}</td>
-                                    <td className='py-3 px-6'>
-                                        <div className='flex flex-col'>
-                                            <span className="text-gray-700 font-semibold text-xs">{record.degree} - {record.branch}</span>
-                                            <span className="text-gray-400 text-xs text-left">Class of {record.year}</span>
-                                        </div>
-                                    </td>
-                                    <td className='py-3 px-6 text-center'>
-                                        {record.offer ?
-                                            (record.offer.type === 'Higher Studies' ?
-                                                <span className='inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-600 border border-purple-100'>🎓 Higher Ed</span> :
-                                                <span className='inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-green-50 text-green-700 border border-green-200'>✅ Placed</span>
-                                            )
-                                            :
-                                            <span className='inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-red-50 text-red-600 border border-red-200'>⌛ Pending</span>
-                                        }
-                                    </td>
-                                </tr>
-                            ))}
-
-                            {((activeTab === 'registered' && filteredStudents.length === 0) || (activeTab === 'ledger' && studentRecords.length === 0) || (activeTab === 'placement_status' && filteredPlacementData.length === 0)) && (
+                            {((activeTab === 'registered' && filteredStudents.length === 0) || (activeTab === 'ledger' && studentRecords.filter(s =>
+                                ((s.name || '').toLowerCase().includes(search.toLowerCase()) || (s.rollNumber || '').includes(search)) &&
+                                (branchFilter === 'All' || s.branch === branchFilter)
+                            ).length === 0)) && (
                                 <tr>
                                     <td colSpan="5" className="py-12 text-center text-gray-500 font-medium">
                                         No students perfectly matched your filters, or database is empty.

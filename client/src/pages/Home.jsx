@@ -5,14 +5,15 @@ import Hero from '../components/Hero'
 import JobListing from '../components/JobListing'
 import AppDownload from '../components/AppDownload'
 import Footer from '../components/Footer' 
+import AcademicObjectives from '../components/AcademicObjectives'
 
 const Home = () => {
   return (
     <div>
-      <NoticeBanner />
       <Navbar />
       <Hero/>
-      <JobListing/>
+      <NoticeBanner />
+      <AcademicObjectives />
       <AppDownload/>
       <Footer/>
     </div>
