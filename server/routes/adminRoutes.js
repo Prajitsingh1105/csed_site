@@ -1,6 +1,6 @@
 import express from 'express';
-import { 
-    getNotices, createNotice, deleteNotice, 
+import {
+    getNotices, createNotice, deleteNotice,
     getCompanies, updateCompanyTag, createCompany, deleteCompany,
     getStudents, toggleBlacklist, getStudentRecords, bulkUploadStudentRecords, deleteStudentRecord, clearStudentRecords,
     getQueries, resolveQuery, deleteQuery,
@@ -14,7 +14,6 @@ import upload from '../middlewares/upload.js';
 
 const router = express.Router();
 
-// Base middleware for all admin routes
 router.use(requireAdminAuth);
 
 // Notices
