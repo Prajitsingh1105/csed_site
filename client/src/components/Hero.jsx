@@ -1,8 +1,9 @@
 import { useContext, useRef } from 'react'
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import { assets } from '../assets/assets'
 import { AppContext } from '../context/AppContext'
-import { ArrowRight } from 'lucide-react'
+import { FileCheck, UserRound } from 'lucide-react'
 
 const STATS = [
   { value: '49+', label: 'Highest LPA', sub: 'Session 2024–25' },
@@ -24,13 +25,15 @@ const Hero = () => {
   const locationRef = useRef(null)
 
   const onSearch = () => {
-    setSearchFilter({ title: titleRef.current.value, location: locationRef.current.value })
+    setSearchFilter({
+      title: titleRef.current?.value || '',
+      location: locationRef.current?.value || '',
+    })
     setIsSearched(true)
   }
 
   return (
     <section className="relative overflow-hidden">
-
       {/* Hero Image Block */}
       <div className="relative h-[480px] sm:h-[540px] lg:h-[600px]">
         <motion.img
@@ -63,8 +66,10 @@ const Hero = () => {
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-[56px] font-extrabold text-white leading-[1.08] tracking-tight">
-              Department of<br />
-              <span className="text-blue-300">Computer Science</span><br />
+              Department of
+              <br />
+              <span className="text-blue-300">Computer Science</span>
+              <br />
               &amp; Engineering
             </h1>
 
@@ -74,19 +79,22 @@ const Hero = () => {
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
-              <button
+              <Link
+                to="/no-dues"
                 onClick={onSearch}
-                className="flex items-center gap-2 px-6 py-3 bg-white text-[#001845] text-sm font-bold rounded-md hover:bg-blue-50 transition-all shadow-lg"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-[#001845] text-sm font-bold rounded-md hover:bg-blue-50 transition-all shadow-lg"
               >
-                Browse Jobs
-                <ArrowRight size={15} />
-              </button>
-              <a
-                href="#placements"
-                className="flex items-center gap-2 px-6 py-3 bg-white/10 text-white text-sm font-semibold rounded-md border border-white/20 hover:bg-white/20 transition-all backdrop-blur-sm"
+                <FileCheck size={15} />
+                No Dues
+              </Link>
+
+              <Link
+                to="/profile"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 text-white text-sm font-semibold rounded-md border border-white/20 hover:bg-white/20 transition-all backdrop-blur-sm"
               >
-                View Placements
-              </a>
+                <UserRound size={15} />
+                View Profile
+              </Link>
             </div>
           </motion.div>
         </div>
@@ -103,11 +111,19 @@ const Hero = () => {
               {STATS.map((stat, i) => (
                 <div
                   key={i}
-                  className={`px-4 sm:px-8 py-5 sm:py-6 text-center ${i < STATS.length - 1 ? 'border-r border-gray-100' : ''}`}
+                  className={`px-4 sm:px-8 py-5 sm:py-6 text-center ${
+                    i < STATS.length - 1 ? 'border-r border-gray-100' : ''
+                  }`}
                 >
-                  <p className="text-2xl sm:text-3xl font-black text-[#003087] tracking-tight">{stat.value}</p>
-                  <p className="mt-1 text-[12px] sm:text-[13px] font-semibold text-gray-800">{stat.label}</p>
-                  <p className="text-[10px] sm:text-[11px] text-gray-400 mt-0.5">{stat.sub}</p>
+                  <p className="text-2xl sm:text-3xl font-black text-[#003087] tracking-tight">
+                    {stat.value}
+                  </p>
+                  <p className="mt-1 text-[12px] sm:text-[13px] font-semibold text-gray-800">
+                    {stat.label}
+                  </p>
+                  <p className="text-[10px] sm:text-[11px] text-gray-400 mt-0.5">
+                    {stat.sub}
+                  </p>
                 </div>
               ))}
             </motion.div>
@@ -122,7 +138,9 @@ const Hero = () => {
             <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-gray-400 whitespace-nowrap shrink-0">
               Top Recruiters
             </p>
+
             <div className="flex-1 h-px bg-gray-200 hidden sm:block" />
+
             <div className="flex items-center gap-8 sm:gap-12 flex-wrap justify-center">
               {RECRUITERS.map((r, i) => (
                 <div key={i} className="h-8 flex items-center justify-center">
@@ -137,7 +155,6 @@ const Hero = () => {
           </div>
         </div>
       </div>
-
     </section>
   )
 }

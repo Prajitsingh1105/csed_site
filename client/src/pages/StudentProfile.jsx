@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { motion } from 'framer-motion';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { User, BookOpen, GraduationCap, Calendar, Phone, Hash } from 'lucide-react';
+import { User, BookOpen, GraduationCap, Calendar, Phone, Hash, CheckCircle } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
@@ -10,216 +10,328 @@ import { AppContext } from '../context/AppContext';
 import { useAuth } from '@clerk/react';
 import { useNavigate } from 'react-router-dom';
 
+const THEME = {
+  navy:          '#001845',
+  navySoft:      '#0a234f',
+  brand:         '#003087',
+  brandHover:    '#00256b',
+  blueLight:     '#93c5fd',
+  blueLine:      '#60a5fa',
+  blueBg:        '#eff6ff',
+  blueBorder:    '#bfdbfe',
+  pageBg:        '#f8fafc',
+  cardBg:        '#ffffff',
+  border:        '#e5e7eb',
+  borderSoft:    '#eef2f7',
+  text:          '#1f2937',
+  textMuted:     '#6b7280',
+  textFaint:     '#9ca3af',
+  successTint:   '#dbeafe',
+  successText:   '#1d4ed8',
+  pendingTint:   '#eff6ff',
+  pendingText:   '#1e40af',
+  rejectedTint:  '#fef2f2',
+  rejectedText:  '#b91c1c',
+}
+
+const BRANCHES = [
+  'Computer Science and Engineering-Regular',
+  'Computer Science and Engineering-Self Finance',
+  'Computer Science and Engineering-AI',
+
+]
+
+const DEGREES      = ['B.Tech', 'MBA', 'MCA', 'M.Tech']
+const PASSING_YEARS = ['2024', '2025', '2026', '2027', '2028']
+
+/* ── tiny helpers ─────────────────────────────────────────── */
+const Label = ({ icon: Icon, children }) => (
+  <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, fontWeight: 600, color: THEME.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
+    <Icon size={13} color={THEME.blueLight} />
+    {children}
+  </label>
+)
+
+const inputStyle = (readOnly = false) => ({
+  width: '100%',
+  padding: '11px 14px',
+  fontSize: 14,
+  fontWeight: 500,
+  color: readOnly ? THEME.textFaint : THEME.text,
+  background: readOnly ? THEME.borderSoft : THEME.cardBg,
+  border: `1px solid ${THEME.blueBorder}`,
+  borderRadius: 9,
+  outline: 'none',
+  cursor: readOnly ? 'not-allowed' : 'text',
+  transition: 'border-color 0.15s, box-shadow 0.15s',
+  boxSizing: 'border-box',
+  fontFamily: 'inherit',
+})
+
+const selectStyle = () => ({
+  ...inputStyle(),
+  appearance: 'none',
+  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
+  backgroundRepeat: 'no-repeat',
+  backgroundPosition: 'right 12px center',
+  paddingRight: 36,
+  cursor: 'pointer',
+})
+
+/* ── main component ───────────────────────────────────────── */
 const StudentProfile = () => {
-  const { backendUrl } = useContext(AppContext);
-  const { getToken } = useAuth();
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  const { backendUrl } = useContext(AppContext)
+  const { getToken }   = useAuth()
+  const navigate       = useNavigate()
+  const [loading, setLoading]   = useState(false)
+  const [saved,   setSaved]     = useState(false)
+  const [focused, setFocused]   = useState(null)
 
   const [formData, setFormData] = useState({
-    name: '',
-    rollNumber: '',
-    degree: 'B.Tech',
-    branch: 'Computer Science and Engineering',
-    passingYear: '2026',
-    phone: '',
-  });
+    name: '', rollNumber: '', degree: 'B.Tech',
+    branch: 'Computer Science and Engineering-Regular',
+    passingYear: '2026', phone: '',
+  })
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = await getToken();
-        if (!token) return;
+        const token = await getToken()
+        if (!token) return
         const res = await axios.get(`${backendUrl}/api/student/profile`, {
           headers: { Authorization: `Bearer ${token}` }
-        });
+        })
         if (res.data.success && res.data.user) {
-          const user = res.data.user;
+          const u = res.data.user
           setFormData({
-            name: user.name || '',
-            rollNumber: user.rollNumber || '',
-            degree: user.degree || 'B.Tech',
-            branch: user.branch || 'Computer Science and Engineering',
-            passingYear: user.passingYear || '2026',
-            phone: user.phone || '',
-          });
+            name:        u.name        || '',
+            rollNumber:  u.rollNumber  || '',
+            degree:      u.degree      || 'B.Tech',
+            branch:      u.branch      || 'Computer Science and Engineering-Regular',
+            passingYear: u.passingYear || '2026',
+            phone:       u.phone       || '',
+          })
         }
-      } catch (error) {
-        console.error("Failed to load profile:", error);
-      }
-    };
-    fetchProfile();
-  }, [backendUrl, getToken]);
+      } catch (err) { console.error('Failed to load profile:', err) }
+    }
+    fetchProfile()
+  }, [backendUrl, getToken])
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const handleChange = e => setFormData({ ...formData, [e.target.name]: e.target.value })
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+    e.preventDefault()
+    setLoading(true)
     try {
-      const token = await getToken();
+      const token = await getToken()
       const res = await axios.put(`${backendUrl}/api/student/profile`, {
-        name: formData.name,
-        phone: formData.phone,
-        degree: formData.degree,
-        branch: formData.branch,
-        passingYear: formData.passingYear
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+        name: formData.name, phone: formData.phone,
+        degree: formData.degree, branch: formData.branch,
+        passingYear: formData.passingYear,
+      }, { headers: { Authorization: `Bearer ${token}` } })
+
       if (res.data.success) {
-        toast.success("Profile updated successfully!");
-        setTimeout(() => navigate('/'), 1500);
+        setSaved(true)
+        toast.success('Profile updated successfully!')
+        setTimeout(() => navigate('/'), 1600)
       } else {
-        toast.error(res.data.message);
+        toast.error(res.data.message)
       }
-    } catch (error) {
-      toast.error(error.response?.data?.message || error.message);
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
+
+  const focusStyle = (name) => focused === name
+    ? { borderColor: THEME.blueLine, boxShadow: `0 0 0 3px ${THEME.blueBg}` }
+    : {}
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: THEME.pageBg }}>
       <Navbar />
       <ToastContainer position="bottom-right" />
-      <div className="flex-grow flex items-center justify-center p-6 mt-16">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="glass-panel max-w-2xl w-full p-8 rounded-2xl relative overflow-hidden"
-        >
-          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
 
-          <div className="flex items-center gap-4 mb-8">
-            <div className="bg-indigo-100 p-3 rounded-full text-indigo-600">
-              <User size={28} />
+      <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 16px' }}>
+        <motion.div
+          initial={{ opacity: 0, y: 28 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, ease: 'easeOut' }}
+          style={{ width: '100%', maxWidth: 680 }}
+        >
+          {/* Card */}
+          <div style={{ background: THEME.cardBg, borderRadius: 18, border: `1px solid ${THEME.border}`, overflow: 'hidden', boxShadow: '0 4px 32px rgba(0,24,69,0.08)' }}>
+
+            {/* Header banner */}
+            <div style={{ background: `linear-gradient(120deg, ${THEME.navy} 0%, ${THEME.brand} 100%)`, padding: '32px 40px 30px', position: 'relative', overflow: 'hidden' }}>
+              {/* decorative rings */}
+              <div style={{ position: 'absolute', top: -40, right: -40, width: 180, height: 180, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.07)', pointerEvents: 'none' }} />
+              <div style={{ position: 'absolute', top: -20, right: -20, width: 120, height: 120, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.05)', pointerEvents: 'none' }} />
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 18, position: 'relative', zIndex: 1 }}>
+                <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <User size={24} color="white" />
+                </div>
+                <div>
+                  <p style={{ color: THEME.blueLight, fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>
+                    Student Profile
+                  </p>
+                  <h1 style={{ color: 'white', fontSize: 22, fontWeight: 700, lineHeight: 1.2, margin: 0 }}>
+                    Complete Your Profile
+                  </h1>
+                  <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginTop: 5, lineHeight: 1.5 }}>
+                    Keep your details accurate so coordinators can reach you.
+                  </p>
+                </div>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-800">Complete Profile</h1>
-              <p className="text-gray-500 mt-1">Provide your details to stand out to recruiters.</p>
-            </div>
+
+            {/* Form body */}
+            <form onSubmit={handleSubmit} style={{ padding: '36px 40px 40px' }}>
+
+              {/* Section: Personal */}
+              <SectionHeading>Personal Information</SectionHeading>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px 24px', marginBottom: 28 }}>
+
+                <div>
+                  <Label icon={User}>Full Name</Label>
+                  <input
+                    type="text" name="name" required
+                    value={formData.name} onChange={handleChange}
+                    placeholder="e.g. Abhinav Singh"
+                    onFocus={() => setFocused('name')} onBlur={() => setFocused(null)}
+                    style={{ ...inputStyle(), ...focusStyle('name') }}
+                  />
+                </div>
+
+                <div>
+                  <Label icon={Hash}>Roll Number</Label>
+                  <input
+                    type="text" name="rollNumber" readOnly
+                    value={formData.rollNumber}
+                    style={inputStyle(true)}
+                    title="Roll Number is linked to your registered email and cannot be changed."
+                  />
+                  <p style={{ fontSize: 11, color: THEME.textFaint, marginTop: 5 }}>Linked to your email — cannot be edited.</p>
+                </div>
+
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <Label icon={Phone}>Phone Number</Label>
+                  <input
+                    type="tel" name="phone" required
+                    value={formData.phone} onChange={handleChange}
+                    placeholder="+91 98765 43210"
+                    onFocus={() => setFocused('phone')} onBlur={() => setFocused(null)}
+                    style={{ ...inputStyle(), ...focusStyle('phone'), maxWidth: 320 }}
+                  />
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div style={{ height: 1, background: THEME.borderSoft, margin: '4px 0 28px' }} />
+
+              {/* Section: Academic */}
+              <SectionHeading>Academic Details</SectionHeading>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px 24px', marginBottom: 36 }}>
+
+                <div>
+                  <Label icon={GraduationCap}>Degree</Label>
+                  <select name="degree" value={formData.degree} onChange={handleChange}
+                    onFocus={() => setFocused('degree')} onBlur={() => setFocused(null)}
+                    style={{ ...selectStyle(), ...focusStyle('degree') }}>
+                    {DEGREES.map(d => <option key={d}>{d}</option>)}
+                  </select>
+                </div>
+
+                <div>
+                  <Label icon={Calendar}>Year of Passing</Label>
+                  <select name="passingYear" value={formData.passingYear} onChange={handleChange}
+                    onFocus={() => setFocused('passingYear')} onBlur={() => setFocused(null)}
+                    style={{ ...selectStyle(), ...focusStyle('passingYear') }}>
+                    {PASSING_YEARS.map(y => <option key={y}>{y}</option>)}
+                  </select>
+                </div>
+
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <Label icon={BookOpen}>Branch</Label>
+                  <select name="branch" value={formData.branch} onChange={handleChange}
+                    onFocus={() => setFocused('branch')} onBlur={() => setFocused(null)}
+                    style={{ ...selectStyle(), ...focusStyle('branch') }}>
+                    {BRANCHES.map(b => <option key={b}>{b}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              {/* Submit */}
+              <div style={{ borderTop: `1px solid ${THEME.borderSoft}`, paddingTop: 28, display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+                <button
+                  type="button"
+                  onClick={() => navigate('/')}
+                  style={{
+                    padding: '11px 22px', borderRadius: 9, border: `1px solid ${THEME.border}`,
+                    background: 'white', color: THEME.textMuted, fontSize: 13.5, fontWeight: 600,
+                    cursor: 'pointer', transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = THEME.pageBg}
+                  onMouseLeave={e => e.currentTarget.style.background = 'white'}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={loading || saved}
+                  style={{
+                    padding: '11px 32px', borderRadius: 9, border: 'none',
+                    background: saved ? THEME.successTint : (loading ? THEME.blueBorder : THEME.brand),
+                    color: saved ? THEME.successText : 'white',
+                    fontSize: 13.5, fontWeight: 700,
+                    cursor: loading || saved ? 'not-allowed' : 'pointer',
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    transition: 'background 0.15s',
+                    minWidth: 140, justifyContent: 'center',
+                  }}
+                  onMouseEnter={e => { if (!loading && !saved) e.currentTarget.style.background = THEME.brandHover }}
+                  onMouseLeave={e => { if (!loading && !saved) e.currentTarget.style.background = THEME.brand }}
+                >
+                  {saved ? (
+                    <><CheckCircle size={15} /> Saved!</>
+                  ) : loading ? (
+                    <><Spinner /> Saving…</>
+                  ) : (
+                    'Save Profile'
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Full Name */}
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                  <User size={16} className="text-gray-400" />
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  required
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="e.g. John Doe"
-                  className="glass-input"
-                />
-              </div>
-
-              {/* Roll Number */}
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                  <Hash size={16} className="text-gray-400" />
-                  Roll Number
-                </label>
-                <input
-                  type="text"
-                  name="rollNumber"
-                  required
-                  readOnly
-                  value={formData.rollNumber}
-                  onChange={handleChange}
-                  placeholder="e.g. 230052010001"
-                  className="glass-input bg-gray-100/50 cursor-not-allowed border-gray-200 text-gray-500"
-                  title="Roll Number is linked to your email address and cannot be changed."
-                />
-              </div>
-
-              {/* Phone */}
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                  <Phone size={16} className="text-gray-400" />
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  required
-                  value={formData.phone}
-                  onChange={handleChange}
-                  placeholder="+91 9876543210"
-                  className="glass-input"
-                />
-              </div>
-
-              {/* Degree */}
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                  <GraduationCap size={16} className="text-gray-400" />
-                  Degree
-                </label>
-                <select name="degree" value={formData.degree} onChange={handleChange} className="glass-input appearance-none bg-white/70">
-                  <option>B.Tech</option>
-                  <option>MBA</option>
-                  <option>MCA</option>
-                  <option>M.Tech</option>
-                </select>
-              </div>
-
-              {/* Branch */}
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                  <BookOpen size={16} className="text-gray-400" />
-                  Branch
-                </label>
-                <select name="branch" value={formData.branch} onChange={handleChange} className="glass-input appearance-none bg-white/70">
-                  <option>Computer Science and Engineering-Regular</option>
-                  <option>Computer Science and Engineering-Self Finance</option>
-                  <option>Computer Science and Engineering-AI</option>
-                  <option>Information Technology</option>
-                  <option>Electronics and Communication</option>
-                  <option>Electrical Engineering</option>
-                  <option>Mechanical Engineering</option>
-                  <option>Civil Engineering</option>
-                  <option>Chemical Engineering</option>
-                </select>
-              </div>
-
-              {/* Graduation Year */}
-              <div className="space-y-2 md:col-span-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                  <Calendar size={16} className="text-gray-400" />
-                  Year of Passing
-                </label>
-                <select name="passingYear" value={formData.passingYear} onChange={handleChange} className="glass-input appearance-none bg-white/70 w-1/2">
-                  <option>2024</option>
-                  <option>2025</option>
-                  <option>2026</option>
-                  <option>2027</option>
-                  <option>2028</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-gray-100 flex justify-end">
-              <button disabled={loading} type="submit" className={`btn-primary w-full md:w-auto flex items-center justify-center gap-2 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}>
-                {loading ? 'Saving...' : 'Save Profile'}
-              </button>
-            </div>
-          </form>
+          {/* Footnote */}
+          <p style={{ textAlign: 'center', fontSize: 12, color: THEME.textFaint, marginTop: 16 }}>
+            IET Lucknow — Department of Computer Science &amp; Engineering
+          </p>
         </motion.div>
       </div>
+
       <Footer />
     </div>
-  );
-};
+  )
+}
 
-export default StudentProfile;
+const SectionHeading = ({ children }) => (
+  <p style={{ fontSize: 11.5, fontWeight: 700, color: THEME.brand, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 16 }}>
+    {children}
+  </p>
+)
+
+const Spinner = () => (
+  <span style={{
+    width: 14, height: 14, borderRadius: '50%',
+    border: '2px solid rgba(255,255,255,0.3)',
+    borderTopColor: 'white', display: 'inline-block',
+    animation: 'profileSpin 0.7s linear infinite',
+  }} />
+)
+
+export default StudentProfile

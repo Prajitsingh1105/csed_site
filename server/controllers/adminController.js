@@ -97,7 +97,7 @@ export const getStudents = async (req, res) => {
 
 export const toggleBlacklist = async (req, res) => {
   try {
-    const student = await User.findById(req.params.id);
+    const student = await User.findById(req.params.id); 
 
     if (!student) {
       return res.status(404).json({ success: false, message: "Student not found" });

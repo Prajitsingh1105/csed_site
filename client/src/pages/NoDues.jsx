@@ -1,13 +1,37 @@
 import React, { useContext, useState, useEffect } from 'react'
 import { AppContext } from '../context/AppContext'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import axios from 'axios'
 import { toast } from 'react-toastify'
 import { useUser, RedirectToSignIn } from '@clerk/react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import { CheckCircle, Clock, XCircle, Download } from 'lucide-react'
-import { assets } from '../assets/assets'
+import { CheckCircle, Clock, XCircle, Printer, FileCheck, ArrowRight } from 'lucide-react'
+import NoDuesForm from '../components/NoDuesForm'
+
+const THEME = {
+    navy: '#001845',
+    navySoft: '#0a234f',
+    brand: '#003087',
+    brandHover: '#00256b',
+    blue50: '#eff6ff',
+    blue100: '#dbeafe',
+    blue200: '#bfdbfe',
+    blue300: '#93c5fd',
+    blue400: '#60a5fa',
+    pageBg: '#f8fafc',
+    cardBg: '#ffffff',
+    border: '#e5e7eb',
+    borderSoft: '#eef2f7',
+    text: '#1f2937',
+    textMuted: '#6b7280',
+    textFaint: '#9ca3af',
+    successBg: '#eff6ff',
+    successText: '#1d4ed8',
+    dangerBg: '#fef2f2',
+    dangerBorder: '#fecaca',
+    dangerText: '#b91c1c',
+}
 
 const NoDues = () => {
     const { backendUrl } = useContext(AppContext)
@@ -15,6 +39,7 @@ const NoDues = () => {
     const [existingRequest, setExistingRequest] = useState(null)
     const [loadingData, setLoadingData] = useState(true)
     const [loading, setLoading] = useState(false)
+    const [showForm, setShowForm] = useState(false)
 
     const [formData, setFormData] = useState({
         name: user?.fullName || '',
@@ -31,7 +56,7 @@ const NoDues = () => {
         const fetchStatus = async () => {
             if (!isSignedIn) {
                 setLoadingData(false)
-                return;
+                return
             }
             try {
                 const token = await window.Clerk.session.getToken()
@@ -42,7 +67,7 @@ const NoDues = () => {
                     setExistingRequest(response.data.request)
                 }
             } catch (error) {
-                console.error("Failed to fetch no dues status:", error)
+                console.error('Failed to fetch no dues status:', error)
             } finally {
                 setLoadingData(false)
             }
@@ -50,32 +75,31 @@ const NoDues = () => {
         if (isLoaded) fetchStatus()
     }, [isSignedIn, isLoaded, backendUrl])
 
-    if (!isSignedIn) {
-        return <RedirectToSignIn forceRedirectUrl="/no-dues" />
-    }
+    if (!isSignedIn) return <RedirectToSignIn forceRedirectUrl="/no-dues" />
 
     const handleSubmit = async (e) => {
         e.preventDefault()
         setLoading(true)
 
-        const uploadData = new FormData();
+        const uploadData = new FormData()
         Object.keys(formData).forEach(key => {
             if (formData[key] !== null && formData[key] !== undefined) {
-                uploadData.append(key, formData[key]);
+                uploadData.append(key, formData[key])
             }
-        });
+        })
 
         try {
             const token = await window.Clerk.session.getToken()
             const response = await axios.post(`${backendUrl}/api/student/no-dues`, uploadData, {
-                headers: { 
+                headers: {
                     Authorization: `Bearer ${token}`,
-                    'Content-Type': 'multipart/form-data' 
+                    'Content-Type': 'multipart/form-data'
                 }
             })
+
             if (response.data.success) {
                 toast.success(response.data.message)
-                setExistingRequest({ status: 'Pending' }) // Locally assume it's pending
+                setExistingRequest({ status: 'Pending' })
             } else {
                 toast.error(response.data.message)
             }
@@ -86,178 +110,870 @@ const NoDues = () => {
         }
     }
 
-    return (
-        <div className="min-h-screen flex flex-col bg-slate-50">
-            <Navbar />
-            
-            <div className="flex-grow flex items-center justify-center p-4 py-12">
-                <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="glass-panel w-full max-w-4xl bg-white shadow-xl rounded-3xl p-8 border border-gray-100 min-h-[400px] flex flex-col justify-center print:shadow-none print:border-none print:bg-transparent print:p-0"
-                >
-                    {loadingData ? (
-                        <div className="flex items-center justify-center h-full">
-                            <div className="w-8 h-8 rounded-full border-4 border-indigo-200 border-t-indigo-600 animate-spin"></div>
-                        </div>
-                    ) : existingRequest && (existingRequest.status === 'Pending' || existingRequest.status === 'Approved') ? (
-                        <div className="text-center py-6">
-                            {existingRequest.status === 'Pending' ? (
-                                <>
-                                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-20 h-20 bg-yellow-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                                        <Clock className="text-yellow-500 w-10 h-10" />
-                                    </motion.div>
-                                    <h2 className="text-3xl font-extrabold text-gray-800 tracking-tight mb-3">Approval Pending</h2>
-                                    <p className="text-gray-500 mb-8 max-w-md mx-auto">Your placement or higher studies outcome is currently under review by the placement coordinator. Keep an eye out for updates!</p>
-                                </>
-                            ) : (
-                                <div className="flex flex-col items-center justify-center">
-                                    {/* Screen view message */}
-                                    <div className="print:hidden text-center mb-10 w-full max-w-2xl mx-auto">
-                                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                                            <CheckCircle className="text-green-500 w-10 h-10" />
-                                        </motion.div>
-                                        <h2 className="text-3xl font-extrabold text-gray-800 tracking-tight mb-3">No Dues Cleared!</h2>
-                                        <p className="text-gray-500 mb-8 max-w-md mx-auto">
-                                            Your placement information has been successfully verified. Please download this receipt and submit it to the Head of Department to clear your No Dues.
-                                        </p>
-                                        <div className="flex gap-4 justify-center">
-                                            <button onClick={() => window.print()} className="btn-primary flex items-center gap-2 px-8 py-3 rounded-full font-semibold shadow-md hover:shadow-lg transition-all">
-                                                <Download size={20} /> Download Receipt
-                                            </button>
-                                            <button onClick={async () => {
-                                                const { signOut } = window.Clerk;
-                                                await signOut();
-                                                window.location.href = '/';
-                                            }} className="bg-white border border-gray-200 text-gray-700 px-8 py-3 rounded-full font-semibold shadow-sm hover:bg-gray-50 transition-all">
-                                                Return Home
-                                            </button>
-                                        </div>
+    const approvedFormData = existingRequest?.status === 'Approved'
+        ? {
+            name: existingRequest.formData?.name || existingRequest.name,
+            rollNumber: existingRequest.formData?.rollNumber || existingRequest.rollNumber,
+            branch: existingRequest.formData?.branch || existingRequest.branch,
+            year: existingRequest.formData?.year || existingRequest.year,
+            company: existingRequest.formData?.company || existingRequest.company,
+            package: existingRequest.formData?.package || existingRequest.package,
+            type: existingRequest.formData?.type || existingRequest.type,
+            approvedAt: existingRequest.formData?.approvedAt || existingRequest.approvedAt,
+            projectStatus: existingRequest.formData?.projectStatus || 'Yes',
+            placementRecordStatus: existingRequest.formData?.placementRecordStatus || 'Yes',
+            feedbackStatus: existingRequest.formData?.feedbackStatus || 'Yes',
+            signatureSvg: existingRequest.formData?.signatureSvg || null,
+        }
+        : null
+
+    const handlePrint = () => {
+        const paperEl = document.querySelector('.paper')
+        if (!paperEl) return
+
+        const printWindow = window.open('', '_blank', 'width=960,height=700')
+        printWindow.document.write(`<!DOCTYPE html>
+<html>
+<head>
+    <title>No Dues Certificate — ${approvedFormData?.name || ''}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: "Times New Roman", Times, serif; background: white; }
+        @page { margin: 10mm; size: A4; }
+        .paper { width: 100%; background: white; padding: 20px 30px; color: #111; }
+        .dept { text-align: center; font-size: 14px; margin-bottom: 2px; }
+        .college { text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 12px; }
+        .title { text-align: center; font-size: 20px; font-weight: bold; text-decoration: underline; margin-bottom: 8px; }
+        .subtitle { text-align: center; font-size: 14px; margin-bottom: 16px; }
+        .student-details { display: flex; justify-content: space-between; margin-bottom: 16px; padding: 0 20px; gap: 20px; }
+        .student-details ul { list-style: none; font-size: 13px; line-height: 2; width: 48%; }
+        .student-field { display: flex; align-items: center; gap: 8px; }
+        .student-field label { font-weight: bold; white-space: nowrap; min-width: 100px; }
+        .student-input, .student-value { flex: 1; border: none; border-bottom: 1px solid #111; font-family: "Times New Roman", Times, serif; font-size: 13px; padding: 1px 3px; display: inline-block; min-width: 60px; background: transparent; }
+        .info { font-size: 13px; margin-bottom: 6px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 6px; margin-bottom: 20px; }
+        th, td { border: 1px solid #999; padding: 6px 8px; vertical-align: middle; font-size: 12px; }
+        th { text-align: left; font-weight: bold; }
+        .sn { width: 7%; text-align: center; }
+        .activity { width: 30%; }
+        .status { width: 14%; text-align: center; }
+        .verify { width: 25%; }
+        .sign { width: 24%; text-align: center; }
+        .signature-box { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; }
+        .signature-svg, .signature-svg-wrapper svg { width: 70px; height: auto; display: block; margin: 0 auto 2px; }
+        .sign-name { font-size: 11px; font-weight: bold; margin-top: 2px; }
+        .sign-date { font-size: 10px; margin-top: 2px; }
+        .bottom { display: flex; justify-content: space-between; gap: 20px; margin-top: 6px; }
+        .box { width: 48%; }
+        .box-title { font-size: 13px; font-weight: bold; margin-bottom: 6px; }
+        .box ul { padding-left: 20px; font-size: 12px; line-height: 1.6; }
+    </style>
+</head>
+<body>${paperEl.outerHTML}</body>
+</html>`)
+        printWindow.document.close()
+        printWindow.focus()
+        setTimeout(() => {
+            printWindow.print()
+            printWindow.close()
+        }, 600)
+    }
+
+    if (!loadingData && existingRequest?.status === 'Approved') {
+        return (
+            <div className="min-h-screen flex flex-col" style={{ background: THEME.pageBg }}>
+                <Navbar />
+
+                <AnimatePresence mode="wait">
+                    {!showForm ? (
+                        <motion.div
+                            key="cert-card"
+                            initial={{ opacity: 0, y: 24 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -16 }}
+                            transition={{ duration: 0.4, ease: 'easeOut' }}
+                            className="flex-grow flex items-center justify-center p-6"
+                        >
+                            <div
+                                style={{
+                                    width: '100%',
+                                    maxWidth: '580px',
+                                    background: THEME.cardBg,
+                                    borderRadius: '20px',
+                                    border: `1px solid ${THEME.border}`,
+                                    overflow: 'hidden',
+                                    boxShadow: '0 10px 30px rgba(0, 24, 69, 0.08)'
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        background: `linear-gradient(135deg, ${THEME.navy} 0%, ${THEME.brand} 100%)`,
+                                        padding: '32px 40px 28px',
+                                        display: 'flex',
+                                        alignItems: 'flex-start',
+                                        gap: '18px'
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            width: 52,
+                                            height: 52,
+                                            borderRadius: '50%',
+                                            background: 'rgba(255,255,255,0.14)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            flexShrink: 0,
+                                            marginTop: 2
+                                        }}
+                                    >
+                                        <FileCheck size={26} color="white" />
                                     </div>
 
-                                    {/* Certificate Preview (Screen + Print) */}
-                                    <div className="relative w-full max-w-[800px] aspect-[1/1.414] shadow-2xl border border-gray-200 bg-white print:shadow-none print:border-none print:w-[100vw] print:max-w-none print:h-[100vh] print:-m-8 mx-auto overflow-hidden rounded-xl print:rounded-none">
-                                        {/* Background Image */}
-                                        <img src={assets.no_dues} alt="No Dues Certificate" className="absolute top-0 left-0 w-full h-full object-contain print:object-cover z-0" />
-                                        
-                                        {/* Overlaid Data - positioned to match the blank lines on the certificate */}
-                                        {/* We use inline styles for precise percentages */}
-                                        <div className="absolute z-10 w-full h-full top-0 left-0 text-[1.1rem] font-semibold text-gray-800 pointer-events-none uppercase tracking-wide print:text-[14px]">
-                                            {/* Batch / Year */}
-                                            <div className="absolute top-[14.5%] left-[54%]">{existingRequest.year}</div>
-                                            
-                                            {/* Name */}
-                                            <div className="absolute top-[18.2%] left-[26%]">{existingRequest.name}</div>
-                                            
-                                            {/* Roll No */}
-                                            <div className="absolute top-[18.2%] left-[64%]">{existingRequest.rollNumber}</div>
-                                            
-                                            {/* Branch */}
-                                            <div className="absolute top-[33.2%] left-[26%]">{existingRequest.branch}</div>
-                                            
-                                            {/* Company & Package (As extra info at the top right since it's a placement clearance) */}
-                                            <div className="absolute top-[2%] right-[5%] text-sm text-indigo-800 bg-white/80 px-3 py-1 rounded border border-indigo-100">
-                                                Placement: {existingRequest.company} ({existingRequest.package || existingRequest.type})
-                                            </div>
-                                        </div>
+                                    <div>
+                                        <p
+                                            style={{
+                                                color: 'rgba(255,255,255,0.72)',
+                                                fontSize: 12,
+                                                fontWeight: 700,
+                                                letterSpacing: '0.08em',
+                                                textTransform: 'uppercase',
+                                                marginBottom: 4
+                                            }}
+                                        >
+                                            Clearance Status
+                                        </p>
+                                        <h2
+                                            style={{
+                                                color: 'white',
+                                                fontSize: 24,
+                                                fontWeight: 700,
+                                                lineHeight: 1.2,
+                                                marginBottom: 6
+                                            }}
+                                        >
+                                            No Dues Certificate Ready
+                                        </h2>
+                                        <p
+                                            style={{
+                                                color: 'rgba(255,255,255,0.78)',
+                                                fontSize: 13.5,
+                                                lineHeight: 1.5
+                                            }}
+                                        >
+                                            Your placement record has been verified and approved by the Faculty Coordinator.
+                                        </p>
                                     </div>
                                 </div>
-                            )}
-                        </div>
+
+                                <div
+                                    style={{
+                                        padding: '20px 40px',
+                                        borderBottom: `1px solid ${THEME.borderSoft}`,
+                                        display: 'grid',
+                                        gridTemplateColumns: '1fr 1fr',
+                                        gap: '14px'
+                                    }}
+                                >
+                                    {[
+                                        { label: 'Student Name', value: approvedFormData.name },
+                                        { label: 'Roll Number', value: approvedFormData.rollNumber },
+                                        { label: 'Branch', value: approvedFormData.branch },
+                                        { label: 'Batch', value: approvedFormData.year },
+                                    ].map(({ label, value }) => (
+                                        <div key={label}>
+                                            <p
+                                                style={{
+                                                    fontSize: 11,
+                                                    fontWeight: 700,
+                                                    color: THEME.textFaint,
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: '0.06em',
+                                                    marginBottom: 2
+                                                }}
+                                            >
+                                                {label}
+                                            </p>
+                                            <p
+                                                style={{
+                                                    fontSize: 14,
+                                                    fontWeight: 600,
+                                                    color: THEME.text
+                                                }}
+                                            >
+                                                {value || '—'}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div
+                                    style={{
+                                        padding: '16px 40px',
+                                        borderBottom: `1px solid ${THEME.borderSoft}`,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 10,
+                                        flexWrap: 'wrap'
+                                    }}
+                                >
+                                    <span
+                                        style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: 6,
+                                            background: THEME.blue50,
+                                            color: THEME.successText,
+                                            border: `1px solid ${THEME.blue200}`,
+                                            borderRadius: 20,
+                                            padding: '5px 14px',
+                                            fontSize: 12.5,
+                                            fontWeight: 700
+                                        }}
+                                    >
+                                        {approvedFormData.type === 'Higher Studies' ? '🎓' : '💼'}
+                                        {approvedFormData.company}
+                                    </span>
+
+                                    <span
+                                        style={{
+                                            fontSize: 13,
+                                            color: THEME.textMuted,
+                                            fontWeight: 500
+                                        }}
+                                    >
+                                        {approvedFormData.package}
+                                    </span>
+                                </div>
+
+                                <div
+                                    style={{
+                                        padding: '24px 40px',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: 12
+                                    }}
+                                >
+                                    <button
+                                        onClick={() => setShowForm(true)}
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: 8,
+                                            width: '100%',
+                                            padding: '13px 24px',
+                                            background: THEME.brand,
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: 10,
+                                            fontSize: 14,
+                                            fontWeight: 700,
+                                            cursor: 'pointer',
+                                            letterSpacing: '0.01em',
+                                            transition: 'background 0.15s'
+                                        }}
+                                        onMouseEnter={e => (e.currentTarget.style.background = THEME.brandHover)}
+                                        onMouseLeave={e => (e.currentTarget.style.background = THEME.brand)}
+                                    >
+                                        View Certificate <ArrowRight size={16} />
+                                    </button>
+                                </div>
+
+                                <div style={{ padding: '0 40px 20px', textAlign: 'center' }}>
+                                    <p
+                                        style={{
+                                            fontSize: 12,
+                                            color: THEME.textFaint,
+                                            lineHeight: 1.5
+                                        }}
+                                    >
+                                        Submit the printed certificate to the Head of Department to complete your No Dues process.
+                                    </p>
+                                </div>
+                            </div>
+                        </motion.div>
                     ) : (
-                        <>
-                            <div className="text-center mb-10">
-                                <h1 className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-indigo-800 tracking-tight">No Dues Form</h1>
-                                <p className="text-gray-500 mt-2">Submit your placement or higher studies outcome to complete your graduation clearance process.</p>
-                                {existingRequest && existingRequest.status === 'Rejected' && (
-                                    <div className="mt-4 p-3 bg-red-50 text-red-600 rounded-xl font-medium flex items-center justify-center gap-2 border border-red-100">
-                                        <XCircle size={18} />
-                                        Your previous request was rejected. Please re-verify your details and submit again.
+                        <motion.div
+                            key="cert-full"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="flex-grow"
+                        >
+                            <div
+                                style={{
+                                    background: 'white',
+                                    borderBottom: `1px solid ${THEME.border}`,
+                                    padding: '12px 32px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    position: 'sticky',
+                                    top: 0,
+                                    zIndex: 40,
+                                    boxShadow: '0 1px 10px rgba(0, 24, 69, 0.08)'
+                                }}
+                            >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                    <div
+                                        style={{
+                                            width: 28,
+                                            height: 28,
+                                            borderRadius: '50%',
+                                            background: THEME.blue50,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                        }}
+                                    >
+                                        <CheckCircle size={15} color={THEME.brand} />
                                     </div>
-                                )}
+
+                                    <div>
+                                        <p
+                                            style={{
+                                                fontSize: 13,
+                                                fontWeight: 700,
+                                                color: THEME.text,
+                                                lineHeight: 1.2
+                                            }}
+                                        >
+                                            No Dues Certificate
+                                        </p>
+                                        <p
+                                            style={{
+                                                fontSize: 11.5,
+                                                color: THEME.textMuted
+                                            }}
+                                        >
+                                            {approvedFormData.name} · {approvedFormData.rollNumber}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                    <button
+                                        onClick={() => setShowForm(false)}
+                                        style={{
+                                            padding: '8px 18px',
+                                            borderRadius: 8,
+                                            border: `1px solid ${THEME.border}`,
+                                            background: 'white',
+                                            fontSize: 13,
+                                            fontWeight: 500,
+                                            color: THEME.textMuted,
+                                            cursor: 'pointer',
+                                            transition: 'background 0.15s'
+                                        }}
+                                        onMouseEnter={e => (e.currentTarget.style.background = '#f8fafc')}
+                                        onMouseLeave={e => (e.currentTarget.style.background = 'white')}
+                                    >
+                                        ← Back
+                                    </button>
+
+                                    <button
+                                        onClick={handlePrint}
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 7,
+                                            padding: '8px 20px',
+                                            borderRadius: 8,
+                                            border: 'none',
+                                            background: THEME.brand,
+                                            fontSize: 13,
+                                            fontWeight: 700,
+                                            color: 'white',
+                                            cursor: 'pointer',
+                                            transition: 'background 0.15s'
+                                        }}
+                                        onMouseEnter={e => (e.currentTarget.style.background = THEME.brandHover)}
+                                        onMouseLeave={e => (e.currentTarget.style.background = THEME.brand)}
+                                    >
+                                        <Printer size={14} /> Print / Download PDF
+                                    </button>
+                                </div>
                             </div>
 
-                            <form onSubmit={handleSubmit} className="space-y-6 text-sm">
-                                <div className="flex gap-2 p-1 bg-gray-100/80 rounded-xl mb-4 max-w-sm mx-auto">
-                                    <button 
-                                        type="button"
-                                        onClick={() => setFormData({...formData, type: 'Job'})}
-                                        className={`flex-1 py-2.5 rounded-lg font-bold text-xs transition-all ${formData.type === 'Job' ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700'}`}
-                                    >
-                                        💼 Job Offer
-                                    </button>
-                                    <button 
-                                        type="button"
-                                        onClick={() => setFormData({...formData, type: 'Higher Studies'})}
-                                        className={`flex-1 py-2.5 rounded-lg font-bold text-xs transition-all ${formData.type === 'Higher Studies' ? 'bg-white text-purple-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700'}`}
-                                    >
-                                        🎓 Higher Studies
-                                    </button>
-                                </div>
-
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                    <div>
-                                        <label className="block text-gray-700 font-semibold mb-2">Student Name</label>
-                                        <input required type="text" className="glass-input w-full p-3 bg-gray-50/50" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Full Name" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-gray-700 font-semibold mb-2">Roll Number</label>
-                                        <input required type="text" className="glass-input w-full p-3 bg-gray-50/50" value={formData.rollNumber} onChange={e => setFormData({...formData, rollNumber: e.target.value})} placeholder="University Roll No." />
-                                    </div>
-                                </div>
-                                
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                    <div>
-                                        <label className="block text-gray-700 font-semibold mb-2">Branch</label>
-                                        <select required className="glass-input w-full p-3 bg-white/50 appearance-none text-sm" value={formData.branch} onChange={e => setFormData({...formData, branch: e.target.value})}>
-                                            <option value="" disabled>Select your branch</option>
-                                            <option>Computer Science and Engineering-Regular</option>
-                                            <option>Computer Science and Engineering-Self Finance</option>
-                                            <option>Computer Science and Engineering-AI</option>
-                                            <option>Information Technology</option>
-                                            <option>Electronics and Communication</option>
-                                            <option>Electrical Engineering</option>
-                                            <option>Mechanical Engineering</option>
-                                            <option>Civil Engineering</option>
-                                            <option>Chemical Engineering</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-gray-700 font-semibold mb-2">Graduation Year</label>
-                                        <input required type="text" className="glass-input w-full p-3 bg-gray-50/50" value={formData.year} onChange={e => setFormData({...formData, year: e.target.value})} placeholder="e.g. 2024" />
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                    <div>
-                                        <label className="block text-gray-700 font-semibold mb-2">{formData.type === 'Higher Studies' ? 'University / Institute' : 'Company'}</label>
-                                        <input required type="text" className="glass-input w-full p-3 bg-gray-50/50" value={formData.company} onChange={e => setFormData({...formData, company: e.target.value})} placeholder={formData.type === 'Higher Studies' ? 'e.g. IIT Delhi' : 'Company Name'} />
-                                    </div>
-                                    <div>
-                                        <label className="block text-gray-700 font-semibold mb-2">{formData.type === 'Higher Studies' ? 'Program / Degree' : 'Package details'}</label>
-                                        <input required type="text" className="glass-input w-full p-3 bg-gray-50/50" value={formData.package} onChange={e => setFormData({...formData, package: e.target.value})} placeholder={formData.type === 'Higher Studies' ? 'e.g. M.Tech AI' : 'e.g. 12 LPA'} />
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="block text-gray-700 font-semibold mb-2 pb-1 border-t border-gray-100 pt-4 mt-2">Proof Document (Offer/Admission Letter PDF)</label>
-                                    <input required type="file" accept="application/pdf" className="glass-input w-full p-3 bg-gray-50/50 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" onChange={e => setFormData({...formData, letterPdf: e.target.files[0]})} />
-                                    <p className="text-xs text-gray-500 mt-2">* Please provide a PDF copy of your Offer Letter or Admission Letter.</p>
-                                </div>
-
-                                <div className="pt-4">
-                                    <button disabled={loading} type="submit" className={`btn-primary w-full py-3.5 text-base rounded-2xl shadow-lg hover:shadow-xl transition-all ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}>
-                                        {loading ? 'Submitting...' : 'Submit No Dues Form'}
-                                    </button>
-                                </div>
-                            </form>
-                        </>
+                            <div style={{ padding: '32px 16px', background: THEME.pageBg }}>
+                                <NoDuesForm prefillData={approvedFormData} />
+                            </div>
+                        </motion.div>
                     )}
+                </AnimatePresence>
+
+                <Footer />
+            </div>
+        )
+    }
+
+    if (loadingData) {
+        return (
+            <div className="min-h-screen flex flex-col" style={{ background: THEME.pageBg }}>
+                <Navbar />
+                <div className="flex-grow flex items-center justify-center">
+                    <div
+                        className="w-8 h-8 rounded-full border-4 animate-spin"
+                        style={{
+                            borderColor: THEME.blue200,
+                            borderTopColor: THEME.brand
+                        }}
+                    />
+                </div>
+                <Footer />
+            </div>
+        )
+    }
+
+    if (existingRequest?.status === 'Pending') {
+        return (
+            <div className="min-h-screen flex flex-col" style={{ background: THEME.pageBg }}>
+                <Navbar />
+                <div className="flex-grow flex items-center justify-center p-6">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        style={{
+                            width: '100%',
+                            maxWidth: 480,
+                            background: THEME.cardBg,
+                            borderRadius: 20,
+                            border: `1px solid ${THEME.border}`,
+                            overflow: 'hidden',
+                            boxShadow: '0 10px 30px rgba(0, 24, 69, 0.08)'
+                        }}
+                    >
+                        <div
+                            style={{
+                                background: `linear-gradient(135deg, ${THEME.navy} 0%, ${THEME.brand} 100%)`,
+                                padding: '32px 40px 28px',
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                gap: 18
+                            }}
+                        >
+                            <div
+                                style={{
+                                    width: 48,
+                                    height: 48,
+                                    borderRadius: '50%',
+                                    background: 'rgba(255,255,255,0.14)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    flexShrink: 0
+                                }}
+                            >
+                                <Clock size={24} color="white" />
+                            </div>
+
+                            <div>
+                                <p
+                                    style={{
+                                        color: 'rgba(255,255,255,0.72)',
+                                        fontSize: 11,
+                                        fontWeight: 700,
+                                        letterSpacing: '0.09em',
+                                        textTransform: 'uppercase',
+                                        marginBottom: 4
+                                    }}
+                                >
+                                    Under Review
+                                </p>
+                                <h2
+                                    style={{
+                                        color: 'white',
+                                        fontSize: 22,
+                                        fontWeight: 700,
+                                        lineHeight: 1.2,
+                                        marginBottom: 6
+                                    }}
+                                >
+                                    Approval Pending
+                                </h2>
+                                <p
+                                    style={{
+                                        color: 'rgba(255,255,255,0.78)',
+                                        fontSize: 13,
+                                        lineHeight: 1.6
+                                    }}
+                                >
+                                    Your submission is currently under review by the placement coordinator. You will be notified once it is processed.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div style={{ padding: '24px 40px' }}>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 10,
+                                    padding: '14px 18px',
+                                    background: THEME.blue50,
+                                    borderRadius: 10,
+                                    border: `1px solid ${THEME.blue200}`
+                                }}
+                            >
+                                <span style={{ fontSize: 20 }}>⏳</span>
+                                <p
+                                    style={{
+                                        fontSize: 13,
+                                        color: THEME.brand,
+                                        lineHeight: 1.5
+                                    }}
+                                >
+                                    Typically reviewed within <strong>1–2 working days</strong>. Check back here for updates.
+                                </p>
+                            </div>
+                        </div>
+                    </motion.div>
+                </div>
+                <Footer />
+            </div>
+        )
+    }
+
+    return (
+        <div className="min-h-screen flex flex-col" style={{ background: THEME.pageBg }}>
+            <Navbar />
+
+            <div className="flex-grow flex items-center justify-center p-6 py-12">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    style={{
+                        width: '100%',
+                        maxWidth: 680,
+                        background: THEME.cardBg,
+                        borderRadius: 20,
+                        border: `1px solid ${THEME.border}`,
+                        overflow: 'hidden',
+                        boxShadow: '0 10px 30px rgba(0, 24, 69, 0.08)'
+                    }}
+                >
+                    <div
+                        style={{
+                            background: `linear-gradient(135deg, ${THEME.navy} 0%, ${THEME.navySoft} 45%, ${THEME.brand} 100%)`,
+                            padding: '32px 40px 28px',
+                            borderBottom: `1px solid ${THEME.borderSoft}`
+                        }}
+                    >
+                        <p
+                            style={{
+                                fontSize: 11,
+                                fontWeight: 700,
+                                color: 'rgba(255,255,255,0.72)',
+                                letterSpacing: '0.09em',
+                                textTransform: 'uppercase',
+                                marginBottom: 6
+                            }}
+                        >
+                            Department of Computer Science &amp; Engineering
+                        </p>
+                        <h1
+                            style={{
+                                fontSize: 24,
+                                fontWeight: 700,
+                                color: 'white',
+                                marginBottom: 8
+                            }}
+                        >
+                            No Dues Clearance Form
+                        </h1>
+                        <p
+                            style={{
+                                fontSize: 14,
+                                color: 'rgba(255,255,255,0.82)',
+                                lineHeight: 1.6
+                            }}
+                        >
+                            Submit your placement or higher studies outcome to complete your graduation clearance process.
+                        </p>
+
+                        {existingRequest?.status === 'Rejected' && (
+                            <div
+                                style={{
+                                    marginTop: 16,
+                                    padding: '12px 16px',
+                                    background: 'rgba(255,255,255,0.96)',
+                                    borderRadius: 10,
+                                    border: `1px solid ${THEME.dangerBorder}`,
+                                    display: 'flex',
+                                    alignItems: 'flex-start',
+                                    gap: 10
+                                }}
+                            >
+                                <XCircle size={17} color={THEME.dangerText} style={{ flexShrink: 0, marginTop: 1 }} />
+                                <p
+                                    style={{
+                                        fontSize: 13,
+                                        color: THEME.dangerText,
+                                        lineHeight: 1.5
+                                    }}
+                                >
+                                    Your previous submission was rejected. Please verify your details and re-submit with the correct information.
+                                </p>
+                            </div>
+                        )}
+                    </div>
+
+                    <div style={{ padding: '28px 40px 36px' }}>
+                        <div
+                            style={{
+                                display: 'flex',
+                                gap: 8,
+                                padding: 6,
+                                background: '#f3f7fd',
+                                borderRadius: 12,
+                                marginBottom: 28,
+                                maxWidth: 320,
+                                border: `1px solid ${THEME.border}`
+                            }}
+                        >
+                            {['Job', 'Higher Studies'].map(type => (
+                                <button
+                                    key={type}
+                                    type="button"
+                                    onClick={() => setFormData({ ...formData, type })}
+                                    style={{
+                                        flex: 1,
+                                        padding: '9px 16px',
+                                        borderRadius: 8,
+                                        border: 'none',
+                                        fontSize: 13,
+                                        fontWeight: 700,
+                                        cursor: 'pointer',
+                                        transition: 'all 0.15s',
+                                        background: formData.type === type ? 'white' : 'transparent',
+                                        color: formData.type === type ? THEME.brand : THEME.textMuted,
+                                        boxShadow: formData.type === type ? '0 1px 6px rgba(0, 24, 69, 0.08)' : 'none'
+                                    }}
+                                >
+                                    {type === 'Job' ? 'Job Offer' : 'Higher Studies'}
+                                </button>
+                            ))}
+                        </div>
+
+                        <form onSubmit={handleSubmit}>
+                            <div
+                                style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: '1fr 1fr',
+                                    gap: '20px 24px',
+                                    marginBottom: 20
+                                }}
+                            >
+                                <Field label="Student Name">
+                                    <input
+                                        required
+                                        type="text"
+                                        className="glass-input w-full p-3"
+                                        value={formData.name}
+                                        onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                        placeholder="Full name"
+                                    />
+                                </Field>
+
+                                <Field label="Roll Number">
+                                    <input
+                                        required
+                                        type="text"
+                                        className="glass-input w-full p-3"
+                                        value={formData.rollNumber}
+                                        onChange={e => setFormData({ ...formData, rollNumber: e.target.value })}
+                                        placeholder="University roll no."
+                                    />
+                                </Field>
+
+                                <Field label="Branch">
+                                    <select
+                                        required
+                                        className="glass-input w-full p-3 appearance-none text-sm bg-white"
+                                        value={formData.branch}
+                                        onChange={e => setFormData({ ...formData, branch: e.target.value })}
+                                    >
+                                        <option value="" disabled>Select branch</option>
+                                        <option>Computer Science and Engineering-Regular</option>
+                                        <option>Computer Science and Engineering-Self Finance</option>
+                                        <option>Computer Science and Engineering-AI</option>
+                                    </select>
+                                </Field>
+
+                                <Field label="Graduation Year">
+                                    <input
+                                        required
+                                        type="text"
+                                        className="glass-input w-full p-3"
+                                        value={formData.year}
+                                        onChange={e => setFormData({ ...formData, year: e.target.value })}
+                                        placeholder="e.g. 2025"
+                                    />
+                                </Field>
+
+                                <Field label={formData.type === 'Higher Studies' ? 'University / Institute' : 'Company'}>
+                                    <input
+                                        required
+                                        type="text"
+                                        className="glass-input w-full p-3"
+                                        value={formData.company}
+                                        onChange={e => setFormData({ ...formData, company: e.target.value })}
+                                        placeholder={formData.type === 'Higher Studies' ? 'e.g. IIT Delhi' : 'Company name'}
+                                    />
+                                </Field>
+
+                                <Field label={formData.type === 'Higher Studies' ? 'Program / Degree' : 'Package'}>
+                                    <input
+                                        required
+                                        type="text"
+                                        className="glass-input w-full p-3"
+                                        value={formData.package}
+                                        onChange={e => setFormData({ ...formData, package: e.target.value })}
+                                        placeholder={formData.type === 'Higher Studies' ? 'e.g. M.Tech AI' : 'e.g. 12 LPA'}
+                                    />
+                                </Field>
+                            </div>
+
+                            <div style={{ marginBottom: 28 }}>
+                                <label
+                                    style={{
+                                        display: 'block',
+                                        fontSize: 13,
+                                        fontWeight: 600,
+                                        color: THEME.text,
+                                        marginBottom: 8
+                                    }}
+                                >
+                                    Proof Document{' '}
+                                    <span style={{ color: THEME.textFaint, fontWeight: 400 }}>
+                                        (Offer / Admission Letter — PDF)
+                                    </span>
+                                </label>
+
+                                <input
+                                    required
+                                    type="file"
+                                    accept="application/pdf"
+                                    className="glass-input w-full p-3 file:mr-4 file:py-1.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                    onChange={e => setFormData({ ...formData, letterPdf: e.target.files[0] })}
+                                />
+
+                                <p
+                                    style={{
+                                        fontSize: 12,
+                                        color: THEME.textFaint,
+                                        marginTop: 6
+                                    }}
+                                >
+                                    Upload a scanned copy or digital PDF of your offer or admission letter.
+                                </p>
+                            </div>
+
+                            <button
+                                disabled={loading}
+                                type="submit"
+                                style={{
+                                    width: '100%',
+                                    padding: '14px 24px',
+                                    background: loading ? '#9ca3af' : THEME.brand,
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: 10,
+                                    fontSize: 14,
+                                    fontWeight: 700,
+                                    cursor: loading ? 'not-allowed' : 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: 8,
+                                    transition: 'background 0.15s'
+                                }}
+                                onMouseEnter={e => {
+                                    if (!loading) e.currentTarget.style.background = THEME.brandHover
+                                }}
+                                onMouseLeave={e => {
+                                    if (!loading) e.currentTarget.style.background = THEME.brand
+                                }}
+                            >
+                                {loading ? (
+                                    <>
+                                        <span
+                                            style={{
+                                                width: 15,
+                                                height: 15,
+                                                border: '2px solid rgba(255,255,255,0.35)',
+                                                borderTopColor: 'white',
+                                                borderRadius: '50%',
+                                                display: 'inline-block',
+                                                animation: 'spin 0.7s linear infinite'
+                                            }}
+                                        />
+                                        Submitting…
+                                    </>
+                                ) : (
+                                    <>
+                                        Submit No Dues Form <ArrowRight size={15} />
+                                    </>
+                                )}
+                            </button>
+                        </form>
+                    </div>
                 </motion.div>
             </div>
+
+            <style>{`
+                @keyframes spin { to { transform: rotate(360deg); } }
+
+                .glass-input {
+                    width: 100%;
+                    border: 1px solid ${THEME.border};
+                    border-radius: 10px;
+                    background: #ffffff;
+                    color: ${THEME.text};
+                    font-size: 14px;
+                    outline: none;
+                    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+                }
+
+                .glass-input::placeholder {
+                    color: ${THEME.textFaint};
+                }
+
+                .glass-input:focus {
+                    border-color: ${THEME.blue300};
+                    box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.15);
+                    background: #ffffff;
+                }
+
+                @media (max-width: 640px) {
+                    .glass-input {
+                        font-size: 14px;
+                    }
+                }
+            `}</style>
+
             <Footer />
         </div>
     )
 }
+
+const Field = ({ label, children }) => (
+    <div>
+        <label
+            style={{
+                display: 'block',
+                fontSize: 13,
+                fontWeight: 600,
+                color: THEME.text,
+                marginBottom: 6
+            }}
+        >
+            {label}
+        </label>
+        {children}
+    </div>
+)
 
 export default NoDues

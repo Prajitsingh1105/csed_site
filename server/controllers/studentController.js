@@ -169,10 +169,32 @@ export const submitNoDues = async (req, res) => {
 }
 
 // Get No Dues Status
+// studentController.js (or wherever your student routes are handled)
+
 export const getNoDuesStatus = async (req, res) => {
     try {
-        const { userId } = req.auth;
-        const request = await NoDuesRequest.findOne({ userId }).sort({ date: -1 });
-        res.json({ success: true, request });
-    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+        const { userId } = req.auth  // Clerk userId from middleware
+
+        // Find the NoDuesRequest for status
+        const request = await NoDuesRequest.findOne({ userId }).sort({ createdAt: -1 })
+
+        if (!request) {
+            return res.json({ success: true, request: null })
+        }
+
+        let responseData = request.toObject()
+
+        // If approved, pull formData from User model (that's where backend saves it)
+        if (request.status === 'Approved') {
+            const user = await User.findOne({ rollNumber: request.rollNumber })
+            if (user?.noDuesApproval?.formData) {
+                responseData.formData = user.noDuesApproval.formData
+            }
+        }
+        // In getNoDuesStatus, right before res.json(...)
+        console.log('Returning request with formData keys:', Object.keys(responseData.formData || {}))
+        res.json({ success: true, request: responseData })
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message })
+    }
 }
