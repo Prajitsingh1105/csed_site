@@ -2,7 +2,16 @@ import React, { useState, useEffect, useContext } from 'react';
 import { motion } from 'framer-motion';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { User, BookOpen, GraduationCap, Calendar, Phone, Hash, CheckCircle } from 'lucide-react';
+import {
+  User,
+  BookOpen,
+  GraduationCap,
+  Calendar,
+  Phone,
+  Hash,
+  CheckCircle,
+  Camera,
+} from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
@@ -106,7 +115,11 @@ const StudentProfile = () => {
     branch: 'Computer Science and Engineering-Regular',
     passingYear: '2026',
     phone: '',
+    profileImage: '',
   });
+
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState('');
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth < 640);
@@ -133,33 +146,75 @@ const StudentProfile = () => {
             branch: u.branch || 'Computer Science and Engineering-Regular',
             passingYear: u.passingYear || '2026',
             phone: u.phone || '',
+            profileImage: u.profileImage || '',
           });
+
+          if (u.profileImage) {
+            setPreviewUrl(u.profileImage);
+          }
         }
       } catch (err) {
         console.error('Failed to load profile:', err);
       }
     };
+
     fetchProfile();
   }, [backendUrl, getToken]);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl && previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select a valid image file.');
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    setSelectedImage(file);
+    setPreviewUrl((prev) => {
+      if (prev && prev.startsWith('blob:')) URL.revokeObjectURL(prev);
+      return objectUrl;
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
     try {
       const token = await getToken();
+
+      const payload = new FormData();
+      payload.append('name', formData.name);
+      payload.append('phone', formData.phone);
+      payload.append('degree', formData.degree);
+      payload.append('branch', formData.branch);
+      payload.append('passingYear', formData.passingYear);
+
+      if (selectedImage) {
+        payload.append('profileImage', selectedImage);
+      }
+
       const res = await axios.put(
         `${backendUrl}/api/student/profile`,
+        payload,
         {
-          name: formData.name,
-          phone: formData.phone,
-          degree: formData.degree,
-          branch: formData.branch,
-          passingYear: formData.passingYear,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       if (res.data.success) {
@@ -323,6 +378,63 @@ const StudentProfile = () => {
               onSubmit={handleSubmit}
               style={{ padding: isMobile ? '22px 18px 24px' : '36px 40px 40px' }}
             >
+              <SectionHeading>Profile Photo</SectionHeading>
+
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: isMobile ? 'column' : 'row',
+                  alignItems: isMobile ? 'flex-start' : 'center',
+                  gap: 18,
+                  marginBottom: 28,
+                }}
+              >
+                <div
+                  style={{
+                    width: 92,
+                    height: 92,
+                    borderRadius: '50%',
+                    overflow: 'hidden',
+                    border: `2px solid ${THEME.blueBorder}`,
+                    background: THEME.blueBg,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  {previewUrl ? (
+                    <img
+                      src={previewUrl}
+                      alt="Profile preview"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                      }}
+                    />
+                  ) : (
+                    <User size={34} color={THEME.brand} />
+                  )}
+                </div>
+
+                <div style={{ flex: 1, width: '100%' }}>
+                  <Label icon={Camera}>Upload Profile Image</Label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    style={{
+                      ...inputStyle(),
+                      padding: '10px 12px',
+                    }}
+                  />
+                  <p style={{ fontSize: 11, color: THEME.textFaint, marginTop: 6 }}>
+                    JPG, PNG, or WEBP. Choose a clear passport-style photo.
+                  </p>
+                </div>
+              </div>
+
               <SectionHeading>Personal Information</SectionHeading>
 
               <div style={sectionGridStyle}>

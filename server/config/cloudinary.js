@@ -2,6 +2,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import streamifier from 'streamifier';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
+
 dotenv.config();
 
 cloudinary.config({
@@ -11,27 +12,31 @@ cloudinary.config({
 });
 
 /**
- * Uploads a file buffer to Cloudinary
- * @param {Buffer} fileBuffer - The buffer of the file to upload
- * @param {string} folder - The destination folder in Cloudinary
- * @param {Object} options - Additional upload options
- * @returns {Promise<string>} The secure URL of the uploaded file
+ * Upload a file buffer to Cloudinary
+ * @param {Buffer} fileBuffer
+ * @param {string} folder
+ * @param {Object} options
+ * @returns {Promise<Object>} Cloudinary upload result
  */
-export const uploadToCloudinary = (fileBuffer, folder = 'placements', options = {}) => {
+export const uploadToCloudinary = (
+  fileBuffer,
+  folder = 'placements',
+  options = {}
+) => {
   return new Promise((resolve, reject) => {
     const defaultOptions = {
       folder,
-      resource_type: 'raw', // Use raw to bypass PDF image delivery restrictions
-      public_id: crypto.randomBytes(12).toString('hex') + '.pdf', // Force PDF extension
+      resource_type: 'auto',
+      public_id: crypto.randomBytes(12).toString('hex'),
     };
-    
+
     const uploadOptions = { ...defaultOptions, ...options };
 
     const uploadStream = cloudinary.uploader.upload_stream(
       uploadOptions,
       (error, result) => {
         if (error) return reject(error);
-        resolve(result.secure_url);
+        resolve(result);
       }
     );
 
