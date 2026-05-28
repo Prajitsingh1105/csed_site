@@ -21,6 +21,8 @@ const StudentDoubts = () => {
   const [myQueries, setMyQueries] = useState([])
   const [newQuery, setNewQuery] = useState('')
   const chatEndRef = useRef(null)
+  const messagesContainerRef = useRef(null)
+  const isFirstLoadRef = useRef(true)
 
   const syncProfileAndFetchDoubts = async () => {
     try {
@@ -48,7 +50,17 @@ const StudentDoubts = () => {
   }, [isLoaded])
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (isFirstLoadRef.current) {
+      isFirstLoadRef.current = false
+      return
+    }
+
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: 'smooth',
+      })
+    }
   }, [myQueries])
 
   const handleSubmit = async (e) => {
@@ -135,7 +147,7 @@ const StudentDoubts = () => {
                     Department Support Chat
                   </h1>
                   <p className="text-xs text-blue-100/90">
-                    Depeartment of Computer Science & Engineering
+                    Department of Computer Science & Engineering
                   </p>
                 </div>
               </div>
@@ -155,7 +167,10 @@ const StudentDoubts = () => {
                 </div>
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto px-3 pb-28 pt-3 space-y-3">
+                <div
+                  ref={messagesContainerRef}
+                  className="flex-1 overflow-y-auto px-3 pb-28 pt-3 space-y-3"
+                >
                   {chatMessages.length === 0 ? (
                     <div className="flex h-full items-center justify-center">
                       <div className="w-full rounded-[24px] border border-[#dbe7f5] bg-white p-6 text-center shadow-sm">
@@ -203,7 +218,7 @@ const StudentDoubts = () => {
                             >
                               {msg.type === 'coordinator' && (
                                 <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#3b82f6]">
-                                  Placement Cell
+                                  Faculty Coordinator
                                 </p>
                               )}
 
