@@ -44,7 +44,7 @@ const Footer = () => {
               <div>
                 <h2 className="text-base font-bold text-white">IET Lucknow</h2>
                 <p className="text-[11px] text-blue-400 uppercase tracking-[0.18em] font-semibold mt-0.5">
-                  Placement Portal
+                  Dept. of Computer Science
                 </p>
               </div>
             </div>
