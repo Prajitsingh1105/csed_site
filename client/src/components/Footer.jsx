@@ -61,7 +61,7 @@ const Footer = () => {
                   href="mailto:placement@ietlucknow.ac.in"
                   className="text-[13px] text-gray-400 hover:text-white transition-colors"
                 >
-                  placement@ietlucknow.ac.in
+                  
                 </a>
               </div>
               <div className="flex items-start gap-2.5">
