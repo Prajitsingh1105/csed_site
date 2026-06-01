@@ -1,16 +1,85 @@
 import React, { useContext, useState, useRef } from 'react'
 import { AppContext } from '../context/AppContext'
 import { motion } from 'framer-motion'
-import { Search, UserX, UserCheck, ShieldAlert, Filter, Upload, FileSpreadsheet, Users, Briefcase, Trash2 } from 'lucide-react'
+import {
+    Search,
+    UserX,
+    UserCheck,
+    ShieldAlert,
+    Filter,
+    Upload,
+    FileSpreadsheet,
+    Users,
+    Trash2,
+    Download
+} from 'lucide-react'
 import { toast } from 'react-toastify'
 import axios from 'axios'
+
+const VALID_BRANCHES = [
+    'Computer Science and Engineering-Regular',
+    'Computer Science and Engineering-Self Finance',
+    'Computer Science and Engineering-Artificial Intelligence'
+]
+
+const normalizeBranch = (branch) => {
+    const value = (branch || '')
+        .toString()
+        .trim()
+        .toLowerCase()
+        .replace(/[_-]+/g, ' ')
+        .replace(/\s+/g, ' ')
+
+    if (!value) return ''
+
+    if (
+        value.includes('artificial intelligence') ||
+        value === 'cse ai' ||
+        value === 'ai' ||
+        value === 'cse artificial intelligence' ||
+        value === 'computer science engineering artificial intelligence' ||
+        value === 'computer science and engineering artificial intelligence'
+    ) {
+        return 'Computer Science and Engineering-Artificial Intelligence'
+    }
+
+    if (
+        value.includes('self finance') ||
+        value === 'cse self finance' ||
+        value === 'cse sf' ||
+        value === 'sf' ||
+        value === 'self finance'
+    ) {
+        return 'Computer Science and Engineering-Self Finance'
+    }
+
+    if (
+        value.includes('regular') ||
+        value === 'cse regular' ||
+        value === 'regular' ||
+        value === 'cse reg' ||
+        value === 'reg'
+    ) {
+        return 'Computer Science and Engineering-Regular'
+    }
+
+    if (
+        value === 'computer science and engineering regular' ||
+        value === 'computer science and engineering self finance' ||
+        value === 'computer science and engineering artificial intelligence'
+    ) {
+        return VALID_BRANCHES.find(b => normalizeBranch(b) === normalizeBranch(value)) || ''
+    }
+
+    return ''
+}
 
 const StudentDatabase = () => {
     const { students, studentRecords, offerLetters, backendUrl, fetchBackendData } = useContext(AppContext)
     const [search, setSearch] = useState('')
     const [branchFilter, setBranchFilter] = useState('All')
     const [statusFilter, setStatusFilter] = useState('All')
-    const [activeTab, setActiveTab] = useState('registered') // 'registered' | 'ledger'
+    const [activeTab, setActiveTab] = useState('registered')
     const fileInputRef = useRef(null)
 
     const handleToggleBlacklist = async (id) => {
@@ -30,7 +99,9 @@ const StudentDatabase = () => {
             await axios.delete(`${backendUrl}/api/admin/student-records/clear`)
             fetchBackendData()
             toast.success("Master ledger has been completely cleared.")
-        } catch (error) { toast.error("Failed to clear ledger.") }
+        } catch (error) {
+            toast.error("Failed to clear ledger.")
+        }
     }
 
     const handleDeleteLedgerRecord = async (id) => {
@@ -39,23 +110,98 @@ const StudentDatabase = () => {
             await axios.delete(`${backendUrl}/api/admin/student-records/${id}`)
             fetchBackendData()
             toast.success("Record deleted successfully.")
-        } catch (error) { toast.error("Failed to delete record.") }
+        } catch (error) {
+            toast.error("Failed to delete record.")
+        }
     }
 
     const filteredStudents = students.filter(s => {
-        const matchesSearch = (s.name || '').toLowerCase().includes(search.toLowerCase()) || (s.rollNumber || '').includes(search)
-        const matchesBranch = branchFilter === 'All' || s.branch === branchFilter
-        const matchesStatus = statusFilter === 'All' ||
+        const matchesSearch =
+            (s.name || '').toLowerCase().includes(search.toLowerCase()) ||
+            (s.rollNumber || '').includes(search)
+
+        const matchesBranch =
+            branchFilter === 'All' ||
+            normalizeBranch(s.branch) === normalizeBranch(branchFilter)
+
+        const matchesStatus =
+            statusFilter === 'All' ||
             (statusFilter === 'Active' && !s.isBlacklisted) ||
             (statusFilter === 'Blacklisted' && s.isBlacklisted)
 
         return matchesSearch && matchesBranch && matchesStatus
     })
 
-    const branches = activeTab === 'registered'
-        ? ['All', ...new Set(students.map(s => s.branch))]
-        : ['All', ...new Set(studentRecords.map(s => s.branch))]
+    const filteredLedgerRecords = studentRecords.filter(s =>
+        ((s.name || '').toLowerCase().includes(search.toLowerCase()) || (s.rollNumber || '').includes(search)) &&
+        (branchFilter === 'All' || normalizeBranch(s.branch) === normalizeBranch(branchFilter))
+    )
 
+    const branches = ['All', ...VALID_BRANCHES]
+
+    const exportToCsv = (filename, rows) => {
+        if (!rows || rows.length === 0) {
+            toast.error('No data available to export.')
+            return
+        }
+
+        const escapeCsvValue = (value) => {
+            const stringValue = value == null ? '' : String(value)
+            if (/[",\n]/.test(stringValue)) {
+                return `"${stringValue.replace(/"/g, '""')}"`
+            }
+            return stringValue
+        }
+
+        const csvContent = rows
+            .map(row => row.map(cell => escapeCsvValue(cell)).join(','))
+            .join('\n')
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', filename)
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
+    }
+
+    const handleExportRegistered = () => {
+        const rows = [
+            ['Roll Number', 'Full Name', 'Branch', 'Account Status'],
+            ...filteredStudents.map(student => [
+                student.rollNumber || '',
+                student.name || '',
+                normalizeBranch(student.branch) || student.branch || '',
+                student.isBlacklisted ? 'Blacklisted' : 'Active'
+            ])
+        ]
+
+        exportToCsv('registered-students.csv', rows)
+        toast.success('Registered students exported successfully.')
+    }
+
+    const handleExportLedger = () => {
+        const rows = [
+            ['Roll Number', 'Full Name', 'Degree', 'Branch', 'Year', 'Registration Status'],
+            ...filteredLedgerRecords.map(record => {
+                const isRegistered = students.some(rs => rs.rollNumber === record.rollNumber)
+                return [
+                    record.rollNumber || '',
+                    record.name || '',
+                    record.degree || '',
+                    normalizeBranch(record.branch) || record.branch || '',
+                    record.year || '',
+                    isRegistered ? 'Registered' : 'Unregistered'
+                ]
+            })
+        ]
+
+        exportToCsv('master-ledger.csv', rows)
+        toast.success('Master ledger exported successfully.')
+    }
 
     const handleFileUpload = async (e) => {
         const file = e.target.files[0]
@@ -66,7 +212,6 @@ const StudentDatabase = () => {
             const rows = text.split('\n').map(r => r.trim()).filter(r => r.length > 0)
             if (rows.length < 2) return toast.error("File is empty or missing headers")
 
-            // Resilient CSV parser to handle commas inside quotes
             const parseCsvRow = (row) => {
                 const cols = [];
                 let current = '';
@@ -103,7 +248,6 @@ const StudentDatabase = () => {
                 let rRoll = cols[rollIdx] ? cols[rollIdx].trim() : '';
                 let rName = cols[nameIdx] ? cols[nameIdx].trim() : '';
 
-                // Fallback for corrupted CSVs where Roll Number was pasted into the Name column (e.g. "22043... Abhay Kumar")
                 if (!rRoll && rName) {
                     const match = rName.match(/^(\d+|\d\.\d+E\+\d+)\s+(.+)$/i);
                     if (match) {
@@ -218,8 +362,27 @@ const StudentDatabase = () => {
                         </div>
                     )}
 
+                    {activeTab === 'registered' && (
+                        <div className="relative flex gap-2">
+                            <button
+                                onClick={handleExportRegistered}
+                                className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl shadow-sm font-semibold text-sm text-emerald-600 hover:bg-emerald-50 hover:border-emerald-200 transition-colors border border-gray-200 bg-white cursor-pointer"
+                                title="Export Registered Students"
+                            >
+                                <Download size={16} /> Export Excel
+                            </button>
+                        </div>
+                    )}
+
                     {activeTab === 'ledger' && (
                         <div className="relative flex gap-2">
+                            <button
+                                onClick={handleExportLedger}
+                                className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl shadow-sm font-semibold text-sm text-emerald-600 hover:bg-emerald-50 hover:border-emerald-200 transition-colors border border-gray-200 bg-white cursor-pointer"
+                                title="Export Master Ledger"
+                            >
+                                <Download size={16} /> Export Excel
+                            </button>
                             <button
                                 onClick={handleClearLedger}
                                 className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl shadow-sm font-semibold text-sm text-red-600 hover:bg-red-50 hover:border-red-200 transition-colors border border-gray-200 bg-white cursor-pointer"
@@ -295,10 +458,7 @@ const StudentDatabase = () => {
                                 </tr>
                             ))}
 
-                            {activeTab === 'ledger' && studentRecords.filter(s =>
-                                ((s.name || '').toLowerCase().includes(search.toLowerCase()) || (s.rollNumber || '').includes(search)) &&
-                                (branchFilter === 'All' || s.branch === branchFilter)
-                            ).map((record, index) => {
+                            {activeTab === 'ledger' && filteredLedgerRecords.map((record, index) => {
                                 const isRegistered = students.some(rs => rs.rollNumber === record.rollNumber);
                                 return (
                                     <tr key={index} className='hover:bg-blue-50/20 transition-colors'>
@@ -329,10 +489,7 @@ const StudentDatabase = () => {
                                 )
                             })}
 
-                            {((activeTab === 'registered' && filteredStudents.length === 0) || (activeTab === 'ledger' && studentRecords.filter(s =>
-                                ((s.name || '').toLowerCase().includes(search.toLowerCase()) || (s.rollNumber || '').includes(search)) &&
-                                (branchFilter === 'All' || s.branch === branchFilter)
-                            ).length === 0)) && (
+                            {((activeTab === 'registered' && filteredStudents.length === 0) || (activeTab === 'ledger' && filteredLedgerRecords.length === 0)) && (
                                 <tr>
                                     <td colSpan="5" className="py-12 text-center text-gray-500 font-medium">
                                         No students perfectly matched your filters, or database is empty.

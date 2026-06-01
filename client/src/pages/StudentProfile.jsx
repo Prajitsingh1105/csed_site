@@ -46,7 +46,7 @@ const THEME = {
 const BRANCHES = [
   'Computer Science and Engineering-Regular',
   'Computer Science and Engineering-Self Finance',
-  'Computer Science and Engineering-AI',
+  'Computer Science and Engineering-Artificial Intelligence',
 ];
 
 const DEGREES = ['B.Tech', 'MBA', 'MCA', 'M.Tech'];

@@ -5,6 +5,48 @@ import { Search, Plus, X, Trash2, Eye, Briefcase, Loader2 } from 'lucide-react'
 import axios from 'axios'
 import { toast } from 'react-toastify'
 
+const BRANCHES = [
+  'Computer Science and Engineering-Regular',
+  'Computer Science and Engineering-Self Finance',
+  'Computer Science and Engineering-Artificial Intelligence'
+]
+
+const normalizeBranch = (branch = '') => {
+  const value = branch.trim().toLowerCase()
+
+  if (
+    value.includes('computer') &&
+    value.includes('science') &&
+    value.includes('regular')
+  ) {
+    return 'Computer Science and Engineering-Regular'
+  }
+
+  if (
+    value.includes('computer') &&
+    value.includes('science') &&
+    value.includes('self') &&
+    value.includes('finance')
+  ) {
+    return 'Computer Science and Engineering-Self Finance'
+  }
+
+  if (
+    value.includes('computer') &&
+    value.includes('science') &&
+    (
+      value.includes('artificial intelligence') ||
+      value.includes('-ai') ||
+      value.includes(' ai') ||
+      value.endsWith('ai')
+    )
+  ) {
+    return 'Computer Science and Engineering-Artificial Intelligence'
+  }
+
+  return branch
+}
+
 const PlacementRecords = () => {
   const {
     offerLetters = [],
@@ -121,7 +163,7 @@ const PlacementRecords = () => {
         (record.name || '').toLowerCase().includes(search.toLowerCase()) ||
         (record.rollNumber || '').includes(search)
 
-      const matchesBranch = branchFilter === 'All' || record.branch === branchFilter
+      const matchesBranch = branchFilter === 'All' || normalizeBranch(record.branch) === branchFilter
       const matchesCompany = companyFilter === 'All' || record.company === companyFilter
       const matchesYear = yearFilter === 'All' || record.year === yearFilter
 
@@ -140,7 +182,11 @@ const PlacementRecords = () => {
         offer = { ...offer }
         if (!offer.type) offer.type = 'Job'
       }
-      return { ...record, offer }
+      return {
+        ...record,
+        branch: normalizeBranch(record.branch),
+        offer
+      }
     })
   }, [studentRecords, offerLetters])
 
@@ -150,7 +196,7 @@ const PlacementRecords = () => {
         (s.name || '').toLowerCase().includes(search.toLowerCase()) ||
         (s.rollNumber || '').includes(search)
 
-      const matchesBranch = branchFilter === 'All' || s.branch === branchFilter
+      const matchesBranch = branchFilter === 'All' || normalizeBranch(s.branch) === branchFilter
       const matchesYear = yearFilter === 'All' || s.year === yearFilter
       const matchesStatus =
         placementStatusFilter === 'All' ||
@@ -167,10 +213,12 @@ const PlacementRecords = () => {
   const uploadedCount = filteredPlacementData.filter((s) => s.offer).length
   const pendingCount = totalStudents - uploadedCount
 
-  const branches =
-    activeTab === 'Matcher'
-      ? ['All', ...new Set((studentRecords || []).map((r) => r.branch).filter(Boolean))]
-      : ['All', ...new Set((offerLetters || []).map((r) => r.branch).filter(Boolean))]
+  const branches = [
+    'All',
+    'Computer Science and Engineering-Regular',
+    'Computer Science and Engineering-Self Finance',
+    'Computer Science and Engineering-Artificial Intelligence'
+  ]
 
   const companiesList = ['All', ...new Set((offerLetters || []).map((r) => r.company).filter(Boolean))]
 
@@ -288,18 +336,16 @@ const PlacementRecords = () => {
           <div className='flex gap-2 mt-4 bg-gray-100 p-1 rounded-xl w-max flex-wrap'>
             <button
               onClick={() => setActiveTab('Archive')}
-              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-                activeTab === 'Archive' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500'
-              }`}
+              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'Archive' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500'
+                }`}
             >
               Placement Archive
             </button>
 
             <button
               onClick={() => setActiveTab('Queue')}
-              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${
-                activeTab === 'Queue' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'
-              }`}
+              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'Queue' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'
+                }`}
             >
               No Dues Approvals
               {pendingNoDues.length > 0 && (
@@ -311,9 +357,8 @@ const PlacementRecords = () => {
 
             <button
               onClick={() => setActiveTab('Matcher')}
-              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${
-                activeTab === 'Matcher' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500'
-              }`}
+              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'Matcher' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500'
+                }`}
             >
               <Briefcase size={16} /> Placement Matcher
             </button>
@@ -438,20 +483,18 @@ const PlacementRecords = () => {
                     <td className='py-4 px-6 text-center'>
                       <div className='flex flex-col items-center gap-1'>
                         <span
-                          className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold border ${
-                            record.type === 'Higher Studies'
-                              ? 'bg-purple-50 text-purple-700 border-purple-100'
-                              : record.type === 'Not Placed'
+                          className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold border ${record.type === 'Higher Studies'
+                            ? 'bg-purple-50 text-purple-700 border-purple-100'
+                            : record.type === 'Not Placed'
                               ? 'bg-gray-50 text-gray-700 border-gray-200'
                               : 'bg-indigo-50 text-indigo-700 border-indigo-100'
-                          }`}
+                            }`}
                         >
                           {record.type === 'Not Placed' ? 'Not Placed' : record.company}
                         </span>
                         <span
-                          className={`text-[10px] uppercase font-bold tracking-wider ${
-                            record.type === 'Higher Studies' ? 'text-purple-400' : record.type === 'Not Placed' ? 'text-gray-400' : 'text-indigo-400'
-                          }`}
+                          className={`text-[10px] uppercase font-bold tracking-wider ${record.type === 'Higher Studies' ? 'text-purple-400' : record.type === 'Not Placed' ? 'text-gray-400' : 'text-indigo-400'
+                            }`}
                         >
                           {record.type === 'Higher Studies' ? '🎓 University' : record.type === 'Not Placed' ? '📝 Application' : '💼 Job'}
                         </span>
@@ -460,9 +503,8 @@ const PlacementRecords = () => {
 
                     <td className='py-4 px-6 text-center'>
                       <span
-                        className={`font-extrabold ${
-                          record.type === 'Higher Studies' ? 'text-purple-600' : 'text-green-600'
-                        }`}
+                        className={`font-extrabold ${record.type === 'Higher Studies' ? 'text-purple-600' : 'text-green-600'
+                          }`}
                       >
                         {record.package}
                       </span>
@@ -546,9 +588,8 @@ const PlacementRecords = () => {
                             {req.type === 'Not Placed' ? 'Not Placed' : `${req.company} • ${req.package}`}
                           </span>
                           <span
-                            className={`text-[10px] uppercase font-bold tracking-wider ${
-                              req.type === 'Higher Studies' ? 'text-purple-400' : req.type === 'Not Placed' ? 'text-gray-400' : 'text-indigo-400'
-                            }`}
+                            className={`text-[10px] uppercase font-bold tracking-wider ${req.type === 'Higher Studies' ? 'text-purple-400' : req.type === 'Not Placed' ? 'text-gray-400' : 'text-indigo-400'
+                              }`}
                           >
                             {req.type === 'Higher Studies' ? '🎓 University' : req.type === 'Not Placed' ? '📝 Application' : '💼 Job'}
                           </span>
@@ -642,22 +683,20 @@ const PlacementRecords = () => {
                         {record.offer ? (
                           <div className='flex flex-col items-center gap-1'>
                             <span
-                              className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold border ${
-                                record.offer.type === 'Higher Studies'
-                                  ? 'bg-purple-50 text-purple-700 border-purple-100'
-                                  : record.offer.type === 'Not Placed'
+                              className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold border ${record.offer.type === 'Higher Studies'
+                                ? 'bg-purple-50 text-purple-700 border-purple-100'
+                                : record.offer.type === 'Not Placed'
                                   ? 'bg-gray-50 text-gray-700 border-gray-200'
                                   : 'bg-indigo-50 text-indigo-700 border-indigo-100'
-                              }`}
+                                }`}
                             >
                               {record.offer.type === 'Not Placed' ? 'Not Placed' : record.offer.company}
                             </span>
 
                             <div className='flex items-center gap-2 mt-1 flex-wrap justify-center'>
                               <span
-                                className={`text-[10px] uppercase font-bold tracking-wider ${
-                                  record.offer.type === 'Higher Studies' ? 'text-purple-400' : record.offer.type === 'Not Placed' ? 'text-gray-400' : 'text-indigo-400'
-                                }`}
+                                className={`text-[10px] uppercase font-bold tracking-wider ${record.offer.type === 'Higher Studies' ? 'text-purple-400' : record.offer.type === 'Not Placed' ? 'text-gray-400' : 'text-indigo-400'
+                                  }`}
                               >
                                 {record.offer.type === 'Higher Studies' ? '🎓 University' : record.offer.type === 'Not Placed' ? '📝 Application' : '💼 Job'}
                               </span>
@@ -665,9 +704,8 @@ const PlacementRecords = () => {
                               <span className='text-gray-300'>•</span>
 
                               <span
-                                className={`text-[10px] font-extrabold ${
-                                  record.offer.type === 'Higher Studies' ? 'text-purple-600' : 'text-green-600'
-                                }`}
+                                className={`text-[10px] font-extrabold ${record.offer.type === 'Higher Studies' ? 'text-purple-600' : 'text-green-600'
+                                  }`}
                               >
                                 {record.offer.package}
                               </span>
@@ -747,11 +785,10 @@ const PlacementRecords = () => {
                   <button
                     type='button'
                     onClick={() => setNewPlacement({ ...newPlacement, type: 'Job' })}
-                    className={`flex-1 py-2 rounded-lg font-bold text-xs transition-all ${
-                      newPlacement.type === 'Job'
-                        ? 'bg-white text-indigo-600 shadow-sm'
-                        : 'text-gray-500 hover:text-gray-700'
-                    }`}
+                    className={`flex-1 py-2 rounded-lg font-bold text-xs transition-all ${newPlacement.type === 'Job'
+                      ? 'bg-white text-indigo-600 shadow-sm'
+                      : 'text-gray-500 hover:text-gray-700'
+                      }`}
                   >
                     💼 Job Offer
                   </button>
@@ -759,11 +796,10 @@ const PlacementRecords = () => {
                   <button
                     type='button'
                     onClick={() => setNewPlacement({ ...newPlacement, type: 'Higher Studies' })}
-                    className={`flex-1 py-2 rounded-lg font-bold text-xs transition-all ${
-                      newPlacement.type === 'Higher Studies'
-                        ? 'bg-white text-purple-600 shadow-sm'
-                        : 'text-gray-500 hover:text-gray-700'
-                    }`}
+                    className={`flex-1 py-2 rounded-lg font-bold text-xs transition-all ${newPlacement.type === 'Higher Studies'
+                      ? 'bg-white text-purple-600 shadow-sm'
+                      : 'text-gray-500 hover:text-gray-700'
+                      }`}
                   >
                     🎓 Higher Studies
                   </button>
@@ -807,15 +843,12 @@ const PlacementRecords = () => {
                       <option value='' disabled>
                         Select branch
                       </option>
-                      <option>Computer Science and Engineering-Regular</option>
-                      <option>Computer Science and Engineering-Self Finance</option>
-                      <option>Computer Science and Engineering-AI</option>
-                      <option>Information Technology</option>
-                      <option>Electronics and Communication</option>
-                      <option>Electrical Engineering</option>
-                      <option>Mechanical Engineering</option>
-                      <option>Civil Engineering</option>
-                      <option>Chemical Engineering</option>
+
+                      {BRANCHES.map((branch) => (
+                        <option key={branch} value={branch}>
+                          {branch}
+                        </option>
+                      ))}
                     </select>
                   </div>
 

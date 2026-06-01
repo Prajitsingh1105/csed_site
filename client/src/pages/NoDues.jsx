@@ -895,7 +895,7 @@ const NoDues = () => {
                                         <option value="" disabled>Select branch</option>
                                         <option>Computer Science and Engineering-Regular</option>
                                         <option>Computer Science and Engineering-Self Finance</option>
-                                        <option>Computer Science and Engineering-AI</option>
+                                        <option>Computer Science and Engineering-Artificial Intelligence</option>
                                     </select>
                                 </Field>
 
