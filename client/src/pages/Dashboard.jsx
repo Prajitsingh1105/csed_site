@@ -32,14 +32,14 @@ const Dashboard = () => {
                     <div onClick={() => navigate('/')} className='flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity'>
                         <img className='w-10 sm:w-12 mix-blend-multiply' src={assets.iet_logo_2} alt="IET Logo" />
                         <h1 className='text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-indigo-800 tracking-tight'>
-                            IET Lucknow Placement Portal
+                            Computer Science IET Lucknow Placement Portal
                         </h1>
                     </div>
                     {/* Always show coordinator profile for now */}
                     <div className='flex items-center gap-4'>
                         <div className='text-right max-sm:hidden'>
                             <p className='text-sm font-semibold text-gray-800 tracking-tight'>Welcome, Coordinator</p>
-                            <p className='text-xs text-gray-500 font-medium'>Placement Cell</p>
+                            <p className='text-xs text-gray-500 font-medium'>Department of Computer Science and Engineering</p>
                         </div>
                         <div className='relative group'>
                             <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center shadow-md border-2 border-white cursor-pointer overflow-hidden">
