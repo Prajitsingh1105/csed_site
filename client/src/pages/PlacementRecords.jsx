@@ -101,9 +101,11 @@ const PlacementRecords = () => {
   }
 
   const handleRejectNoDues = async (id) => {
+    const remarks = window.prompt("Enter reason for rejection:");
+    if (remarks === null) return;
     try {
       setProcessingNoDuesId(id)
-      await axios.put(`${backendUrl}/api/admin/no-dues/${id}/reject`)
+      await axios.put(`${backendUrl}/api/admin/no-dues/${id}/reject`, { remarks })
       toast.info('Request Rejected')
       await fetchBackendData()
     } catch (error) {
@@ -154,6 +156,7 @@ const PlacementRecords = () => {
         placementStatusFilter === 'All' ||
         (placementStatusFilter === 'Job' && s.offer?.type === 'Job') ||
         (placementStatusFilter === 'Higher Studies' && s.offer?.type === 'Higher Studies') ||
+        (placementStatusFilter === 'Not Placed' && s.offer?.type === 'Not Placed') ||
         (placementStatusFilter === 'Pending' && !s.offer)
 
       return matchesSearch && matchesBranch && matchesYear && matchesStatus
@@ -183,7 +186,7 @@ const PlacementRecords = () => {
       className='container mx-auto p-2 sm:p-4'
     >
       {activeTab === 'Matcher' ? (
-        <div className='grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8'>
+        <div className='grid grid-cols-1 sm:grid-cols-4 gap-6 mb-8'>
           <div className='glass-panel p-5 rounded-2xl border border-gray-100 flex items-center gap-4 bg-white/60'>
             <div className='w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-lg'>
               {totalStudents}
@@ -213,9 +216,19 @@ const PlacementRecords = () => {
               <p className='text-xl font-bold text-red-800'>Pending</p>
             </div>
           </div>
+
+          <div className='glass-panel p-5 rounded-2xl border border-gray-200 flex items-center gap-4 bg-gray-50/50'>
+            <div className='w-12 h-12 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center font-bold text-lg'>
+              {filteredPlacementData.filter(s => s.offer?.type === 'Not Placed').length}
+            </div>
+            <div>
+              <p className='text-sm font-semibold text-gray-500'>Unplaced</p>
+              <p className='text-xl font-bold text-gray-800'>Not Placed</p>
+            </div>
+          </div>
         </div>
       ) : (
-        <div className='grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8'>
+        <div className='grid grid-cols-1 sm:grid-cols-4 gap-6 mb-8'>
           <div className='glass-panel p-5 rounded-2xl border border-gray-100 flex items-center gap-4 bg-white/60'>
             <div className='w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-lg'>
               {offerLetters.length}
@@ -243,6 +256,16 @@ const PlacementRecords = () => {
             <div>
               <p className='text-sm font-semibold text-purple-600'>Pursuing</p>
               <p className='text-xl font-bold text-purple-800'>Higher Studies</p>
+            </div>
+          </div>
+
+          <div className='glass-panel p-5 rounded-2xl border border-gray-200 flex items-center gap-4 bg-gray-50/50'>
+            <div className='w-12 h-12 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center font-bold text-lg'>
+              {offerLetters.filter((r) => r.type === 'Not Placed').length}
+            </div>
+            <div>
+              <p className='text-sm font-semibold text-gray-500'>Unplaced</p>
+              <p className='text-xl font-bold text-gray-800'>Not Placed</p>
             </div>
           </div>
         </div>
@@ -363,6 +386,7 @@ const PlacementRecords = () => {
               <option value='All'>All Statuses</option>
               <option value='Job'>💼 Job Offers</option>
               <option value='Higher Studies'>🎓 Higher Studies</option>
+              <option value='Not Placed'>📝 Not Placed</option>
               <option value='Pending'>⌛ Pending</option>
             </select>
           )}
@@ -417,17 +441,19 @@ const PlacementRecords = () => {
                           className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold border ${
                             record.type === 'Higher Studies'
                               ? 'bg-purple-50 text-purple-700 border-purple-100'
+                              : record.type === 'Not Placed'
+                              ? 'bg-gray-50 text-gray-700 border-gray-200'
                               : 'bg-indigo-50 text-indigo-700 border-indigo-100'
                           }`}
                         >
-                          {record.company}
+                          {record.type === 'Not Placed' ? 'Not Placed' : record.company}
                         </span>
                         <span
                           className={`text-[10px] uppercase font-bold tracking-wider ${
-                            record.type === 'Higher Studies' ? 'text-purple-400' : 'text-indigo-400'
+                            record.type === 'Higher Studies' ? 'text-purple-400' : record.type === 'Not Placed' ? 'text-gray-400' : 'text-indigo-400'
                           }`}
                         >
-                          {record.type === 'Higher Studies' ? '🎓 University' : '💼 Job'}
+                          {record.type === 'Higher Studies' ? '🎓 University' : record.type === 'Not Placed' ? '📝 Application' : '💼 Job'}
                         </span>
                       </div>
                     </td>
@@ -517,14 +543,14 @@ const PlacementRecords = () => {
                       <td className='py-4 px-6 text-center'>
                         <div className='flex flex-col items-center gap-1'>
                           <span className='inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold border border-gray-200 bg-gray-50'>
-                            {req.company} • {req.package}
+                            {req.type === 'Not Placed' ? 'Not Placed' : `${req.company} • ${req.package}`}
                           </span>
                           <span
                             className={`text-[10px] uppercase font-bold tracking-wider ${
-                              req.type === 'Higher Studies' ? 'text-purple-400' : 'text-indigo-400'
+                              req.type === 'Higher Studies' ? 'text-purple-400' : req.type === 'Not Placed' ? 'text-gray-400' : 'text-indigo-400'
                             }`}
                           >
-                            {req.type === 'Higher Studies' ? '🎓 University' : '💼 Job'}
+                            {req.type === 'Higher Studies' ? '🎓 University' : req.type === 'Not Placed' ? '📝 Application' : '💼 Job'}
                           </span>
                         </div>
                       </td>
@@ -619,19 +645,21 @@ const PlacementRecords = () => {
                               className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold border ${
                                 record.offer.type === 'Higher Studies'
                                   ? 'bg-purple-50 text-purple-700 border-purple-100'
+                                  : record.offer.type === 'Not Placed'
+                                  ? 'bg-gray-50 text-gray-700 border-gray-200'
                                   : 'bg-indigo-50 text-indigo-700 border-indigo-100'
                               }`}
                             >
-                              {record.offer.company}
+                              {record.offer.type === 'Not Placed' ? 'Not Placed' : record.offer.company}
                             </span>
 
                             <div className='flex items-center gap-2 mt-1 flex-wrap justify-center'>
                               <span
                                 className={`text-[10px] uppercase font-bold tracking-wider ${
-                                  record.offer.type === 'Higher Studies' ? 'text-purple-400' : 'text-indigo-400'
+                                  record.offer.type === 'Higher Studies' ? 'text-purple-400' : record.offer.type === 'Not Placed' ? 'text-gray-400' : 'text-indigo-400'
                                 }`}
                               >
-                                {record.offer.type === 'Higher Studies' ? '🎓 University' : '💼 Job'}
+                                {record.offer.type === 'Higher Studies' ? '🎓 University' : record.offer.type === 'Not Placed' ? '📝 Application' : '💼 Job'}
                               </span>
 
                               <span className='text-gray-300'>•</span>

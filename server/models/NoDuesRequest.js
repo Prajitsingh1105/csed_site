@@ -7,12 +7,12 @@ const noDuesSchema = new mongoose.Schema(
     rollNumber: { type: String, required: true, trim: true },
     branch: { type: String, required: true, trim: true },
     year: { type: String, required: true, trim: true },
-    company: { type: String, required: true, trim: true },
-    package: { type: String, required: true, trim: true },
+    company: { type: String, default: "", trim: true },
+    package: { type: String, default: "", trim: true },
     letterUrl: { type: String, default: "", trim: true },
     type: {
       type: String,
-      enum: ["Job", "Higher Studies"],
+      enum: ["Job", "Higher Studies", "Not Placed"],
       default: "Job",
     },
     status: {

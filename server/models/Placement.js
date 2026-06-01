@@ -5,10 +5,10 @@ const fileSchema = new mongoose.Schema({
     rollNumber: { type: String, required: true },
     branch: { type: String, required: true },
     year: { type: String, required: true },
-    company: { type: String, required: true },
-    package: { type: String, required: true },
+    company: { type: String, default: "" },
+    package: { type: String, default: "" },
     letterUrl: { type: String, default: "" },
-    type: { type: String, enum: ['Job', 'Higher Studies'], default: 'Job' },
+    type: { type: String, enum: ['Job', 'Higher Studies', 'Not Placed'], default: 'Job' },
     date: { type: Number, required: true }
 });
 

@@ -714,7 +714,9 @@ const NoDues = () => {
                                         lineHeight: 1.5
                                     }}
                                 >
-                                    Your previous submission was rejected. Please verify your details and re-submit with the correct information.
+                                    <strong>Your previous submission was rejected.</strong><br/>
+                                    Reason: {existingRequest.remarks || "No reason provided."}<br/>
+                                    Please verify your details and re-submit with the correct information below.
                                 </p>
                             </div>
                         )}
@@ -737,6 +739,7 @@ const NoDues = () => {
                                 <button
                                     key={type}
                                     type="button"
+                                    disabled={formData.type === 'Not Placed'}
                                     onClick={() => setFormData({ ...formData, type })}
                                     style={{
                                         flex: 1,
@@ -745,16 +748,30 @@ const NoDues = () => {
                                         border: 'none',
                                         fontSize: 13,
                                         fontWeight: 700,
-                                        cursor: 'pointer',
+                                        cursor: formData.type === 'Not Placed' ? 'not-allowed' : 'pointer',
                                         transition: 'all 0.15s',
                                         background: formData.type === type ? 'white' : 'transparent',
                                         color: formData.type === type ? THEME.brand : THEME.textMuted,
-                                        boxShadow: formData.type === type ? '0 1px 6px rgba(0, 24, 69, 0.08)' : 'none'
+                                        boxShadow: formData.type === type ? '0 1px 6px rgba(0, 24, 69, 0.08)' : 'none',
+                                        opacity: formData.type === 'Not Placed' ? 0.5 : 1
                                     }}
                                 >
                                     {type === 'Job' ? 'Job Offer' : 'Higher Studies'}
                                 </button>
                             ))}
+                        </div>
+
+                        <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <input 
+                                type="checkbox" 
+                                id="notPlacedCheck"
+                                checked={formData.type === 'Not Placed'}
+                                onChange={(e) => setFormData({...formData, type: e.target.checked ? 'Not Placed' : 'Job', company: '', package: ''})}
+                                style={{ width: 16, height: 16, cursor: 'pointer' }}
+                            />
+                            <label htmlFor="notPlacedCheck" style={{ fontSize: 14, color: THEME.text, cursor: 'pointer' }}>
+                                Not placed and not going for higher studies
+                            </label>
                         </div>
 
                         <form onSubmit={handleSubmit}>
@@ -815,23 +832,27 @@ const NoDues = () => {
 
                                 <Field label={formData.type === 'Higher Studies' ? 'University / Institute' : 'Company'}>
                                     <input
-                                        required
+                                        required={formData.type !== 'Not Placed'}
+                                        disabled={formData.type === 'Not Placed'}
                                         type="text"
                                         className="glass-input w-full p-3"
                                         value={formData.company}
                                         onChange={e => setFormData({ ...formData, company: e.target.value })}
-                                        placeholder={formData.type === 'Higher Studies' ? 'e.g. IIT Delhi' : 'Company name'}
+                                        placeholder={formData.type === 'Not Placed' ? 'N/A' : (formData.type === 'Higher Studies' ? 'e.g. IIT Delhi' : 'Company name')}
+                                        style={{ opacity: formData.type === 'Not Placed' ? 0.6 : 1 }}
                                     />
                                 </Field>
 
                                 <Field label={formData.type === 'Higher Studies' ? 'Program / Degree' : 'Package'}>
                                     <input
-                                        required
+                                        required={formData.type !== 'Not Placed'}
+                                        disabled={formData.type === 'Not Placed'}
                                         type="text"
                                         className="glass-input w-full p-3"
                                         value={formData.package}
                                         onChange={e => setFormData({ ...formData, package: e.target.value })}
-                                        placeholder={formData.type === 'Higher Studies' ? 'e.g. M.Tech AI' : 'e.g. 12 LPA'}
+                                        placeholder={formData.type === 'Not Placed' ? 'N/A' : (formData.type === 'Higher Studies' ? 'e.g. M.Tech AI' : 'e.g. 12 LPA')}
+                                        style={{ opacity: formData.type === 'Not Placed' ? 0.6 : 1 }}
                                     />
                                 </Field>
                             </div>
@@ -848,7 +869,7 @@ const NoDues = () => {
                                 >
                                     Proof Document{' '}
                                     <span style={{ color: THEME.textFaint, fontWeight: 400 }}>
-                                        (Offer / Admission Letter — PDF)
+                                        ({formData.type === 'Not Placed' ? 'Application Letter — PDF' : 'Offer / Admission Letter — PDF'})
                                     </span>
                                 </label>
 
@@ -867,7 +888,9 @@ const NoDues = () => {
                                         marginTop: 6
                                     }}
                                 >
-                                    Upload a scanned copy or digital PDF of your offer or admission letter.
+                                    {formData.type === 'Not Placed' 
+                                      ? 'Upload a scanned copy or digital PDF of your application letter stating you are not placed.'
+                                      : 'Upload a scanned copy or digital PDF of your offer or admission letter.'}
                                 </p>
                             </div>
 
