@@ -192,7 +192,7 @@ const NoDues = () => {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -16 }}
                             transition={{ duration: 0.4, ease: 'easeOut' }}
-                            className="flex-grow flex items-center justify-center p-6"
+                            className="flex-grow flex items-center justify-center p-4 sm:p-6"
                         >
                             <div
                                 style={{
@@ -205,15 +205,7 @@ const NoDues = () => {
                                     boxShadow: '0 10px 30px rgba(0, 24, 69, 0.08)'
                                 }}
                             >
-                                <div
-                                    style={{
-                                        background: `linear-gradient(135deg, ${THEME.navy} 0%, ${THEME.brand} 100%)`,
-                                        padding: '32px 40px 28px',
-                                        display: 'flex',
-                                        alignItems: 'flex-start',
-                                        gap: '18px'
-                                    }}
-                                >
+                                <div className="approved-hero">
                                     <div
                                         style={{
                                             width: 52,
@@ -230,7 +222,7 @@ const NoDues = () => {
                                         <FileCheck size={26} color="white" />
                                     </div>
 
-                                    <div>
+                                    <div style={{ minWidth: 0 }}>
                                         <p
                                             style={{
                                                 color: 'rgba(255,255,255,0.72)',
@@ -266,15 +258,7 @@ const NoDues = () => {
                                     </div>
                                 </div>
 
-                                <div
-                                    style={{
-                                        padding: '20px 40px',
-                                        borderBottom: `1px solid ${THEME.borderSoft}`,
-                                        display: 'grid',
-                                        gridTemplateColumns: '1fr 1fr',
-                                        gap: '14px'
-                                    }}
-                                >
+                                <div className="approved-grid">
                                     {[
                                         { label: 'Student Name', value: approvedFormData.name },
                                         { label: 'Roll Number', value: approvedFormData.rollNumber },
@@ -298,7 +282,8 @@ const NoDues = () => {
                                                 style={{
                                                     fontSize: 14,
                                                     fontWeight: 600,
-                                                    color: THEME.text
+                                                    color: THEME.text,
+                                                    wordBreak: 'break-word'
                                                 }}
                                             >
                                                 {value || '—'}
@@ -308,13 +293,9 @@ const NoDues = () => {
                                 </div>
 
                                 <div
+                                    className="approved-meta"
                                     style={{
-                                        padding: '16px 40px',
-                                        borderBottom: `1px solid ${THEME.borderSoft}`,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 10,
-                                        flexWrap: 'wrap'
+                                        borderBottom: `1px solid ${THEME.borderSoft}`
                                     }}
                                 >
                                     <span
@@ -328,7 +309,9 @@ const NoDues = () => {
                                             borderRadius: 20,
                                             padding: '5px 14px',
                                             fontSize: 12.5,
-                                            fontWeight: 700
+                                            fontWeight: 700,
+                                            maxWidth: '100%',
+                                            wordBreak: 'break-word'
                                         }}
                                     >
                                         {approvedFormData.type === 'Higher Studies' ? '🎓' : '💼'}
@@ -339,7 +322,8 @@ const NoDues = () => {
                                         style={{
                                             fontSize: 13,
                                             color: THEME.textMuted,
-                                            fontWeight: 500
+                                            fontWeight: 500,
+                                            wordBreak: 'break-word'
                                         }}
                                     >
                                         {approvedFormData.package}
@@ -348,7 +332,7 @@ const NoDues = () => {
 
                                 <div
                                     style={{
-                                        padding: '24px 40px',
+                                        padding: '24px clamp(16px, 5vw, 40px)',
                                         display: 'flex',
                                         flexDirection: 'column',
                                         gap: 12
@@ -380,7 +364,7 @@ const NoDues = () => {
                                     </button>
                                 </div>
 
-                                <div style={{ padding: '0 40px 20px', textAlign: 'center' }}>
+                                <div style={{ padding: '0 clamp(16px, 5vw, 40px) 20px', textAlign: 'center' }}>
                                     <p
                                         style={{
                                             fontSize: 12,
@@ -403,20 +387,17 @@ const NoDues = () => {
                             className="flex-grow"
                         >
                             <div
+                                className="sticky-cert-bar"
                                 style={{
                                     background: 'white',
                                     borderBottom: `1px solid ${THEME.border}`,
-                                    padding: '12px 32px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
                                     position: 'sticky',
                                     top: 0,
                                     zIndex: 40,
                                     boxShadow: '0 1px 10px rgba(0, 24, 69, 0.08)'
                                 }}
                             >
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <div className="sticky-cert-bar__left">
                                     <div
                                         style={{
                                             width: 28,
@@ -425,13 +406,14 @@ const NoDues = () => {
                                             background: THEME.blue50,
                                             display: 'flex',
                                             alignItems: 'center',
-                                            justifyContent: 'center'
+                                            justifyContent: 'center',
+                                            flexShrink: 0
                                         }}
                                     >
                                         <CheckCircle size={15} color={THEME.brand} />
                                     </div>
 
-                                    <div>
+                                    <div style={{ minWidth: 0 }}>
                                         <p
                                             style={{
                                                 fontSize: 13,
@@ -445,7 +427,8 @@ const NoDues = () => {
                                         <p
                                             style={{
                                                 fontSize: 11.5,
-                                                color: THEME.textMuted
+                                                color: THEME.textMuted,
+                                                wordBreak: 'break-word'
                                             }}
                                         >
                                             {approvedFormData.name} · {approvedFormData.rollNumber}
@@ -453,11 +436,11 @@ const NoDues = () => {
                                     </div>
                                 </div>
 
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <div className="sticky-cert-bar__actions">
                                     <button
                                         onClick={() => setShowForm(false)}
                                         style={{
-                                            padding: '8px 18px',
+                                            padding: '10px 18px',
                                             borderRadius: 8,
                                             border: `1px solid ${THEME.border}`,
                                             background: 'white',
@@ -465,7 +448,8 @@ const NoDues = () => {
                                             fontWeight: 500,
                                             color: THEME.textMuted,
                                             cursor: 'pointer',
-                                            transition: 'background 0.15s'
+                                            transition: 'background 0.15s',
+                                            minHeight: 44
                                         }}
                                         onMouseEnter={e => (e.currentTarget.style.background = '#f8fafc')}
                                         onMouseLeave={e => (e.currentTarget.style.background = 'white')}
@@ -478,8 +462,9 @@ const NoDues = () => {
                                         style={{
                                             display: 'flex',
                                             alignItems: 'center',
+                                            justifyContent: 'center',
                                             gap: 7,
-                                            padding: '8px 20px',
+                                            padding: '10px 20px',
                                             borderRadius: 8,
                                             border: 'none',
                                             background: THEME.brand,
@@ -487,7 +472,8 @@ const NoDues = () => {
                                             fontWeight: 700,
                                             color: 'white',
                                             cursor: 'pointer',
-                                            transition: 'background 0.15s'
+                                            transition: 'background 0.15s',
+                                            minHeight: 44
                                         }}
                                         onMouseEnter={e => (e.currentTarget.style.background = THEME.brandHover)}
                                         onMouseLeave={e => (e.currentTarget.style.background = THEME.brand)}
@@ -497,7 +483,7 @@ const NoDues = () => {
                                 </div>
                             </div>
 
-                            <div style={{ padding: '32px 16px', background: THEME.pageBg }}>
+                            <div style={{ padding: 'clamp(20px, 5vw, 32px) 16px', background: THEME.pageBg }}>
                                 <NoDuesForm prefillData={approvedFormData} />
                             </div>
                         </motion.div>
@@ -505,6 +491,83 @@ const NoDues = () => {
                 </AnimatePresence>
 
                 <Footer />
+
+                <style>{`
+                    .approved-hero {
+                        background: linear-gradient(135deg, ${THEME.navy} 0%, ${THEME.brand} 100%);
+                        padding: 32px clamp(16px, 5vw, 40px) 28px;
+                        display: flex;
+                        align-items: flex-start;
+                        gap: 18px;
+                    }
+
+                    .approved-grid {
+                        padding: 20px clamp(16px, 5vw, 40px);
+                        border-bottom: 1px solid ${THEME.borderSoft};
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 14px;
+                    }
+
+                    .approved-meta {
+                        padding: 16px clamp(16px, 5vw, 40px);
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        flex-wrap: wrap;
+                    }
+
+                    .sticky-cert-bar {
+                        padding: 12px clamp(16px, 4vw, 32px);
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        gap: 16px;
+                    }
+
+                    .sticky-cert-bar__left {
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        min-width: 0;
+                        flex: 1;
+                    }
+
+                    .sticky-cert-bar__actions {
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        flex-wrap: wrap;
+                        justify-content: flex-end;
+                    }
+
+                    @media (max-width: 640px) {
+                        .approved-hero {
+                            flex-direction: column;
+                            gap: 14px;
+                        }
+
+                        .approved-grid {
+                            grid-template-columns: 1fr;
+                            gap: 12px;
+                        }
+
+                        .sticky-cert-bar {
+                            flex-direction: column;
+                            align-items: stretch;
+                        }
+
+                        .sticky-cert-bar__actions {
+                            width: 100%;
+                            justify-content: stretch;
+                            flex-direction: column;
+                        }
+
+                        .sticky-cert-bar__actions button {
+                            width: 100%;
+                        }
+                    }
+                `}</style>
             </div>
         )
     }
@@ -531,7 +594,7 @@ const NoDues = () => {
         return (
             <div className="min-h-screen flex flex-col" style={{ background: THEME.pageBg }}>
                 <Navbar />
-                <div className="flex-grow flex items-center justify-center p-6">
+                <div className="flex-grow flex items-center justify-center p-4 sm:p-6">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -546,12 +609,9 @@ const NoDues = () => {
                         }}
                     >
                         <div
+                            className="pending-hero"
                             style={{
                                 background: `linear-gradient(135deg, ${THEME.navy} 0%, ${THEME.brand} 100%)`,
-                                padding: '32px 40px 28px',
-                                display: 'flex',
-                                alignItems: 'flex-start',
-                                gap: 18
                             }}
                         >
                             <div
@@ -569,7 +629,7 @@ const NoDues = () => {
                                 <Clock size={24} color="white" />
                             </div>
 
-                            <div>
+                            <div style={{ minWidth: 0 }}>
                                 <p
                                     style={{
                                         color: 'rgba(255,255,255,0.72)',
@@ -605,7 +665,7 @@ const NoDues = () => {
                             </div>
                         </div>
 
-                        <div style={{ padding: '24px 40px' }}>
+                        <div style={{ padding: '24px clamp(16px, 5vw, 40px)' }}>
                             <div
                                 style={{
                                     display: 'flex',
@@ -617,7 +677,7 @@ const NoDues = () => {
                                     border: `1px solid ${THEME.blue200}`
                                 }}
                             >
-                                <span style={{ fontSize: 20 }}>⏳</span>
+                                <span style={{ fontSize: 20, flexShrink: 0 }}>⏳</span>
                                 <p
                                     style={{
                                         fontSize: 13,
@@ -631,7 +691,24 @@ const NoDues = () => {
                         </div>
                     </motion.div>
                 </div>
+
                 <Footer />
+
+                <style>{`
+                    .pending-hero {
+                        padding: 32px clamp(16px, 5vw, 40px) 28px;
+                        display: flex;
+                        align-items: flex-start;
+                        gap: 18px;
+                    }
+
+                    @media (max-width: 640px) {
+                        .pending-hero {
+                            flex-direction: column;
+                            gap: 14px;
+                        }
+                    }
+                `}</style>
             </div>
         )
     }
@@ -640,7 +717,7 @@ const NoDues = () => {
         <div className="min-h-screen flex flex-col" style={{ background: THEME.pageBg }}>
             <Navbar />
 
-            <div className="flex-grow flex items-center justify-center p-6 py-12">
+            <div className="flex-grow flex items-center justify-center p-4 sm:p-6 py-8 sm:py-12">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -657,7 +734,7 @@ const NoDues = () => {
                     <div
                         style={{
                             background: `linear-gradient(135deg, ${THEME.navy} 0%, ${THEME.navySoft} 45%, ${THEME.brand} 100%)`,
-                            padding: '32px 40px 28px',
+                            padding: '32px clamp(16px, 5vw, 40px) 28px',
                             borderBottom: `1px solid ${THEME.borderSoft}`
                         }}
                     >
@@ -675,10 +752,11 @@ const NoDues = () => {
                         </p>
                         <h1
                             style={{
-                                fontSize: 24,
+                                fontSize: 'clamp(22px, 4vw, 24px)',
                                 fontWeight: 700,
                                 color: 'white',
-                                marginBottom: 8
+                                marginBottom: 8,
+                                lineHeight: 1.2
                             }}
                         >
                             No Dues Clearance Form
@@ -714,16 +792,17 @@ const NoDues = () => {
                                         lineHeight: 1.5
                                     }}
                                 >
-                                    <strong>Your previous submission was rejected.</strong><br/>
-                                    Reason: {existingRequest.remarks || "No reason provided."}<br/>
+                                    <strong>Your previous submission was rejected.</strong><br />
+                                    Reason: {existingRequest.remarks || "No reason provided."}<br />
                                     Please verify your details and re-submit with the correct information below.
                                 </p>
                             </div>
                         )}
                     </div>
 
-                    <div style={{ padding: '28px 40px 36px' }}>
+                    <div style={{ padding: '28px clamp(16px, 5vw, 40px) 36px' }}>
                         <div
+                            className="type-toggle-wrap"
                             style={{
                                 display: 'flex',
                                 gap: 8,
@@ -743,7 +822,7 @@ const NoDues = () => {
                                     onClick={() => setFormData({ ...formData, type })}
                                     style={{
                                         flex: 1,
-                                        padding: '9px 16px',
+                                        padding: '10px 16px',
                                         borderRadius: 8,
                                         border: 'none',
                                         fontSize: 13,
@@ -753,7 +832,8 @@ const NoDues = () => {
                                         background: formData.type === type ? 'white' : 'transparent',
                                         color: formData.type === type ? THEME.brand : THEME.textMuted,
                                         boxShadow: formData.type === type ? '0 1px 6px rgba(0, 24, 69, 0.08)' : 'none',
-                                        opacity: formData.type === 'Not Placed' ? 0.5 : 1
+                                        opacity: formData.type === 'Not Placed' ? 0.5 : 1,
+                                        minHeight: 44
                                     }}
                                 >
                                     {type === 'Job' ? 'Job Offer' : 'Higher Studies'}
@@ -761,28 +841,28 @@ const NoDues = () => {
                             ))}
                         </div>
 
-                        <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <input 
-                                type="checkbox" 
+                        <div
+                            style={{
+                                marginBottom: 20,
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                gap: 10
+                            }}
+                        >
+                            <input
+                                type="checkbox"
                                 id="notPlacedCheck"
                                 checked={formData.type === 'Not Placed'}
-                                onChange={(e) => setFormData({...formData, type: e.target.checked ? 'Not Placed' : 'Job', company: '', package: ''})}
-                                style={{ width: 16, height: 16, cursor: 'pointer' }}
+                                onChange={(e) => setFormData({ ...formData, type: e.target.checked ? 'Not Placed' : 'Job', company: '', package: '' })}
+                                style={{ width: 16, height: 16, cursor: 'pointer', marginTop: 2, flexShrink: 0 }}
                             />
-                            <label htmlFor="notPlacedCheck" style={{ fontSize: 14, color: THEME.text, cursor: 'pointer' }}>
+                            <label htmlFor="notPlacedCheck" style={{ fontSize: 14, color: THEME.text, cursor: 'pointer', lineHeight: 1.5 }}>
                                 Not placed and not going for higher studies
                             </label>
                         </div>
 
                         <form onSubmit={handleSubmit}>
-                            <div
-                                style={{
-                                    display: 'grid',
-                                    gridTemplateColumns: '1fr 1fr',
-                                    gap: '20px 24px',
-                                    marginBottom: 20
-                                }}
-                            >
+                            <div className="form-grid">
                                 <Field label="Student Name">
                                     <input
                                         required
@@ -864,7 +944,8 @@ const NoDues = () => {
                                         fontSize: 13,
                                         fontWeight: 600,
                                         color: THEME.text,
-                                        marginBottom: 8
+                                        marginBottom: 8,
+                                        lineHeight: 1.5
                                     }}
                                 >
                                     Proof Document{' '}
@@ -885,12 +966,13 @@ const NoDues = () => {
                                     style={{
                                         fontSize: 12,
                                         color: THEME.textFaint,
-                                        marginTop: 6
+                                        marginTop: 6,
+                                        lineHeight: 1.5
                                     }}
                                 >
-                                    {formData.type === 'Not Placed' 
-                                      ? 'Upload a scanned copy or digital PDF of your application letter stating you are not placed.'
-                                      : 'Upload a scanned copy or digital PDF of your offer or admission letter.'}
+                                    {formData.type === 'Not Placed'
+                                        ? 'Upload a scanned copy or digital PDF of your application letter stating you are not placed.'
+                                        : 'Upload a scanned copy or digital PDF of your offer or admission letter.'}
                                 </p>
                             </div>
 
@@ -911,7 +993,8 @@ const NoDues = () => {
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     gap: 8,
-                                    transition: 'background 0.15s'
+                                    transition: 'background 0.15s',
+                                    minHeight: 48
                                 }}
                                 onMouseEnter={e => {
                                     if (!loading) e.currentTarget.style.background = THEME.brandHover
@@ -958,6 +1041,7 @@ const NoDues = () => {
                     font-size: 14px;
                     outline: none;
                     transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+                    min-height: 44px;
                 }
 
                 .glass-input::placeholder {
@@ -970,9 +1054,26 @@ const NoDues = () => {
                     background: #ffffff;
                 }
 
+                .form-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 20px 24px;
+                    margin-bottom: 20px;
+                }
+
                 @media (max-width: 640px) {
                     .glass-input {
                         font-size: 14px;
+                    }
+
+                    .form-grid {
+                        grid-template-columns: 1fr;
+                        gap: 16px;
+                    }
+
+                    .type-toggle-wrap {
+                        max-width: 100% !important;
+                        width: 100%;
                     }
                 }
             `}</style>
@@ -990,7 +1091,8 @@ const Field = ({ label, children }) => (
                 fontSize: 13,
                 fontWeight: 600,
                 color: THEME.text,
-                marginBottom: 6
+                marginBottom: 6,
+                lineHeight: 1.4
             }}
         >
             {label}
