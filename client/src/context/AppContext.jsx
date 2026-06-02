@@ -38,27 +38,38 @@ export const AppContextProvider = (props) => {
     }
 
     // Fetch Database data
+    // Fetch Database data
     const fetchBackendData = async () => {
-        // Guard Clause: Don't execute if Clerk is still initializing or if the user is unauthenticated
-        if (!isLoaded || !isSignedIn) return
+        // Guard Clause: Don't execute if Clerk is still initializing
+        if (!isLoaded || !isSignedIn) {
+            console.log("Clerk not authenticated yet, skipping fetch.");
+            return;
+        }
 
         try {
-            // 1. Fetch the secure authentication token from Clerk
-            const token = await getToken()
+            // Force Clerk to wait or retry if token is pulling blank initially
+            let token = await getToken();
             
             if (!token) {
-                console.warn("Skipping fetch: Clerk token not available yet.")
-                return
+                console.warn("Token was empty on first try, attempting secondary retrieval...");
+                // Brief 300ms timeout cushion to allow the Clerk session state thread to settle
+                await new Promise(resolve => setTimeout(resolve, 300));
+                token = await getToken();
+            }
+            
+            if (!token) {
+                console.error("Clerk session token completely unavailable.");
+                return;
             }
 
-            // 2. Wrap the token into an authorization configuration object
             const authConfig = {
                 headers: { 
                     Authorization: `Bearer ${token}` 
                 }
-            }
+            };
 
-            // 3. Inject authConfig into every single administrative backend request
+            console.log("Fetching backend data with active token...");
+
             const [noticesRes, companiesRes, studentsRes, recordsRes, queriesRes, jobsRes, appsRes, placementsRes, noDuesRes] = await Promise.all([
                 axios.get(`${backendUrl}/api/admin/notices`, authConfig),
                 axios.get(`${backendUrl}/api/admin/companies`, authConfig),
@@ -69,29 +80,31 @@ export const AppContextProvider = (props) => {
                 axios.get(`${backendUrl}/api/admin/applications`, authConfig),
                 axios.get(`${backendUrl}/api/admin/placements`, authConfig),
                 axios.get(`${backendUrl}/api/admin/no-dues`, authConfig)
-            ])
+            ]);
 
-            setNotices(noticesRes.data.notices || [])
-            setCompanies(companiesRes.data.companies || [])
-            setStudents(studentsRes.data.students || [])
-            setStudentRecords(recordsRes.data.records || [])
-            setQueries(queriesRes.data.queries || [])
-            setJobs(jobsRes.data.jobs || [])
-            setApplications(appsRes.data.applications || [])
-            setOfferLetters(placementsRes.data.placements || [])
-            setNoDuesRequests(noDuesRes.data.requests || [])
+            setNotices(noticesRes.data.notices || []);
+            setCompanies(companiesRes.data.companies || []);
+            setStudents(studentsRes.data.students || []);
+            setStudentRecords(recordsRes.data.records || []);
+            setQueries(queriesRes.data.queries || []);
+            setJobs(jobsRes.data.jobs || []);
+            setApplications(appsRes.data.applications || []);
+            setOfferLetters(placementsRes.data.placements || []);
+            setNoDuesRequests(noDuesRes.data.requests || []);
+            
+            console.log("All application datasets loaded successfully.");
         } catch (error) {
-            console.error("Backend DB Error:", error)
+            console.error("Backend DB Error during state generation:", error);
         }
-    }
+    };
 
-    // Re-run data syncing whenever the user context transitions to a fully logged-in state
+    // Watch both authentication changes and explicit loading states
     useEffect(() => {
-        fetchJobs()
+        fetchJobs();
         if (isLoaded && isSignedIn) {
-            fetchBackendData()
+            fetchBackendData();
         }
-    }, [isLoaded, isSignedIn])
+    }, [isLoaded, isSignedIn]);
 
     const value = {
         backendUrl, fetchBackendData,
