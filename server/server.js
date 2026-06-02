@@ -11,7 +11,12 @@ const app = express();
 // app.use(cors());
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin || origin.startsWith('http://localhost') || origin.endsWith('.vercel.app')) {
+        if (
+            !origin ||
+            origin.startsWith('http://localhost') ||
+            origin.endsWith('.vercel.app') ||
+            origin === 'https://csed.placement.ietlucknow.ac.in' // <-- Added your production domain
+        ) {
             callback(null, true);
         } else {
             callback(new Error('Not allowed by CORS'));
