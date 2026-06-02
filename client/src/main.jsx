@@ -13,12 +13,15 @@ if (!PUBLISHABLE_KEY) {
   throw new Error("Missing Publishable Key")
 }
 
+//  This fixes the error instantly
 createRoot(document.getElementById('root')).render(
- <BrowserRouter> 
- <AppContextProvider>
-  <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/"> 
-   <App/>
-   </ClerkProvider>
- </AppContextProvider> 
- </BrowserRouter>
+  <StrictMode>
+    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+      <AppContextProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </AppContextProvider>
+    </ClerkProvider>
+  </StrictMode>,
 )
