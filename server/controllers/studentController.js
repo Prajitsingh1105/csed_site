@@ -349,14 +349,16 @@ export const submitNoDues = async (req, res) => {
 };
 
 // Get No Dues Status
+// Get No Dues Status
 export const getNoDuesStatus = async (req, res) => {
   try {
     const { userId } = req.auth;
 
-    // FIX 2: Enforce migration tracking here to prevent loading state bugs
+    // Enforce migration tracking here to prevent loading state bugs
     await resolveAndMigrateUser(userId);
 
-    const request = await NoDuesRequest.findOne({ userId }).sort({ createdAt: -1 });
+    // FIX: Changed sorting from non-existent 'createdAt' to 'date'
+    const request = await NoDuesRequest.findOne({ userId }).sort({ date: -1 });
 
     if (!request) {
       return res.json({ success: true, request: null });
@@ -373,6 +375,8 @@ export const getNoDuesStatus = async (req, res) => {
 
     res.json({ success: true, request: responseData });
   } catch (error) {
+    // This will print the exact database error string in your Render logs
+    console.error("Error in getNoDuesStatus:", error.message);
     res.status(500).json({ success: false, message: error.message });
   }
 };
