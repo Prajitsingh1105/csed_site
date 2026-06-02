@@ -9,18 +9,31 @@ const app = express();
 
 // Middlewares
 // app.use(cors());
+// Robust, Production-Grade CORS Filter
 app.use(cors({
     origin: (origin, callback) => {
-        if (
-            !origin ||
-            origin.startsWith('http://localhost') ||
-            origin.endsWith('.vercel.app') ||
-            origin === 'https://csed.placement.ietlucknow.ac.in' // <-- Added your production domain
-        ) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
+        // Debug Log: This will print the exact origin hitting your live Render container logs
+        console.log("Incoming request origin:", origin);
+
+        // 1. Allow server-to-server or local script requests (where origin is undefined)
+        if (!origin) {
+            return callback(null, true);
         }
+
+        // 2. Normalize string formatting (strip trailing slashes if present)
+        const cleanOrigin = origin.replace(/\/$/, "");
+
+        // 3. Absolute explicitly permitted origins check
+        if (
+            cleanOrigin.startsWith('http://localhost') || 
+            cleanOrigin.endsWith('.vercel.app') || 
+            cleanOrigin === 'https://csed.placement.ietlucknow.ac.in'
+        ) {
+            return callback(null, true);
+        } 
+        
+        // 4. Catch-all rejection safeguard
+        return callback(new Error(`Not allowed by CORS: ${origin}`));
     },
     credentials: true
 }));
