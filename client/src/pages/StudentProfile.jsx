@@ -153,8 +153,7 @@ const StudentProfile = () => {
             setPreviewUrl(u.profileImage);
           }
         }
-      } catch (err) {
-        console.error('Failed to load profile:', err);
+      } catch (err) {// console.('Failed to load profile:', err);
       }
     };
 

@@ -26,8 +26,7 @@ const Applications = () => {
           headers: { Authorization: `Bearer ${token}` }
       })
       setMyApplications(res.data.applications || [])
-    } catch (error) {
-      console.error(error)
+    } catch (error) {// console.(error)
     }
   }
 

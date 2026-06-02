@@ -69,8 +69,7 @@ const NoDues = () => {
                 // Fetch the JWT bearer token cleanly from the hook hook context
                 const token = await getToken()
                 
-                if (!token) {
-                    console.warn("Clerk authentication token is still generating...")
+                if (!token) {// console.("Clerk authentication token is still generating...")
                     return
                 }
 
@@ -81,8 +80,7 @@ const NoDues = () => {
                 if (response.data.success && response.data.request) {
                     setExistingRequest(response.data.request)
                 }
-            } catch (error) {
-                console.error('Failed to fetch no dues status:', error)
+            } catch (error) {// console.('Failed to fetch no dues status:', error)
                 // If it's a 401/unauthenticated error, we gracefully handle it without throwing a crash loop
                 if (error.response?.status === 401) {
                     toast.error("Session expired. Please log out and sign in again.")

@@ -30,6 +30,7 @@ app.use(cors({
         const isAllowed = allowedOrigins.includes(cleanOrigin) || 
                           cleanOrigin.includes('ietlucknow.ac.in') || 
                           cleanOrigin.startsWith('http://localhost') || 
+                          cleanOrigin.startsWith('http://127.0.0.1') || 
                           cleanOrigin.endsWith('.vercel.app');
 
         if (isAllowed) {

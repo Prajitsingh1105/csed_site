@@ -67,8 +67,7 @@ const App = () => {
                         if (!dbUser || !dbUser.name || !dbUser.branch || !dbUser.phone || !dbUser.passingYear) {
                             navigate('/profile');
                         }
-                    } catch (error) {
-                        console.error("Auth Sync Failure:", error);
+                    } catch (error) {// console.("Auth Sync Failure:", error);
                     }
                 }
                 performSync();

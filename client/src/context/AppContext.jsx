@@ -1,74 +1,47 @@
 import { createContext, useEffect, useState } from "react";
-import { jobsData, initialOfferLetters } from '../assets/assets'
+import { initialOfferLetters } from '../assets/assets'
 import axios from 'axios'
-import { useAuth } from '@clerk/react' // CRITICAL: Import useAuth to access the active session token
+import { useAuth } from '@clerk/react'
 
 export const AppContext = createContext()
 
 export const AppContextProvider = (props) => {
     const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-    const { getToken, isLoaded, isSignedIn } = useAuth() // Extract authentication helpers
+    const { getToken, isLoaded, isSignedIn } = useAuth()
 
-    const [searchFilter, setSearchFilter] = useState({
-        title: '',
-        location: ''
-    })
-
-    const [isSearched, setIsSearched] = useState(false)
+    // Main Data States
     const [jobs, setJobs] = useState([])
-    const [showRecruiterLogin, setShowRecruiterLogin] = useState(false)
-
-    const [companyToken, setCompanyToken] = useState(null)
-    const [companyData, setCompanyData] = useState(null)
-
-    // Feature States
     const [notices, setNotices] = useState([])
     const [companies, setCompanies] = useState([])
     const [offerLetters, setOfferLetters] = useState([])
     const [students, setStudents] = useState([])
     const [studentRecords, setStudentRecords] = useState([])
     const [queries, setQueries] = useState([])
+    const [applications, setApplications] = useState([])
     const [noDuesRequests, setNoDuesRequests] = useState([])
 
-    const [applications, setApplications] = useState([])
+    // UI/Misc States
+    const [searchFilter, setSearchFilter] = useState({ title: '', location: '' })
+    const [isSearched, setIsSearched] = useState(false)
+    const [showRecruiterLogin, setShowRecruiterLogin] = useState(false)
+    const [companyToken, setCompanyToken] = useState(() => localStorage.getItem('companyToken'))
+    const [companyData, setCompanyData] = useState(() => {
+        const data = localStorage.getItem('companyData');
+        return data ? JSON.parse(data) : null;
+    })
 
-    // Fetch mock data (stuff not in DB yet)
-    const fetchJobs = async () => {
-        setOfferLetters(initialOfferLetters)
-    }
-
-    // Fetch Database data
-    // Fetch Database data
     const fetchBackendData = async () => {
-        // Guard Clause: Don't execute if Clerk is still initializing
-        if (!isLoaded || !isSignedIn) {
-            console.log("Clerk not authenticated yet, skipping fetch.");
-            return;
+        const localCompanyToken = localStorage.getItem('companyToken');
+        
+        if (!localCompanyToken) {
+            if (!isLoaded || !isSignedIn) {// console.("🔍 [CONTEXT LOG] Clerk not authenticated yet.");
+                return;
+            }
         }
 
         try {
-            // Force Clerk to wait or retry if token is pulling blank initially
-            let token = await getToken();
-            
-            if (!token) {
-                console.warn("Token was empty on first try, attempting secondary retrieval...");
-                // Brief 300ms timeout cushion to allow the Clerk session state thread to settle
-                await new Promise(resolve => setTimeout(resolve, 300));
-                token = await getToken();
-            }
-            
-            if (!token) {
-                console.error("Clerk session token completely unavailable.");
-                return;
-            }
-
-            const authConfig = {
-                headers: { 
-                    Authorization: `Bearer ${token}` 
-                }
-            };
-
-            console.log("Fetching backend data with active token...");
+            const token = localCompanyToken || await getToken();
+            const authConfig = { headers: { Authorization: `Bearer ${token}` } };// console.("🚀 [CONTEXT LOG] Fetching data...");
 
             const [noticesRes, companiesRes, studentsRes, recordsRes, queriesRes, jobsRes, appsRes, placementsRes, noDuesRes] = await Promise.all([
                 axios.get(`${backendUrl}/api/admin/notices`, authConfig),
@@ -80,31 +53,44 @@ export const AppContextProvider = (props) => {
                 axios.get(`${backendUrl}/api/admin/applications`, authConfig),
                 axios.get(`${backendUrl}/api/admin/placements`, authConfig),
                 axios.get(`${backendUrl}/api/admin/no-dues`, authConfig)
-            ]);
-
-            setNotices(noticesRes.data.notices || []);
-            setCompanies(companiesRes.data.companies || []);
-            setStudents(studentsRes.data.students || []);
-            setStudentRecords(recordsRes.data.records || []);
-            setQueries(queriesRes.data.queries || []);
-            setJobs(jobsRes.data.jobs || []);
-            setApplications(appsRes.data.applications || []);
-            setOfferLetters(placementsRes.data.placements || []);
-            setNoDuesRequests(noDuesRes.data.requests || []);
+            ]);// console.("📊 === RAW BACKEND PAYLOAD INSPECTION ===");
             
-            console.log("All application datasets loaded successfully.");
-        } catch (error) {
-            console.error("Backend DB Error during state generation:", error);
+            // Helper to handle data mapping safely
+            const mapData = (data, key, setter) => {
+                if (data && data[key]) {
+                    setter(data[key]);
+                } else if (Array.isArray(data)) {
+                    setter(data);
+                } else {// console.(`⚠️ [CONTEXT WARNING] Key "${key}" not found. Payload structure:`, data);
+                    setter([]);
+                }
+            };
+
+            mapData(noticesRes.data, 'notices', setNotices);
+            mapData(companiesRes.data, 'companies', setCompanies);
+            mapData(studentsRes.data, 'students', setStudents);
+            mapData(recordsRes.data, 'records', setStudentRecords);
+            mapData(queriesRes.data, 'queries', setQueries);
+            mapData(jobsRes.data, 'jobs', setJobs);
+            mapData(appsRes.data, 'applications', setApplications);
+            mapData(placementsRes.data, 'placements', setOfferLetters);
+            mapData(noDuesRes.data, 'requests', setNoDuesRequests);// console.("✅ [CONTEXT LOG] All states updated.");
+
+        } catch (error) {// console.("💥 [CONTEXT LOG] API Error:", error.response?.data || error.message);
+            toast.error("Failed to fetch dashboard data: " + (error.response?.data?.message || error.message));
         }
     };
 
-    // Watch both authentication changes and explicit loading states
-    useEffect(() => {
-        fetchJobs();
-        if (isLoaded && isSignedIn) {
-            fetchBackendData();
-        }
-    }, [isLoaded, isSignedIn]);
+    // Auto-fetch trigger when Clerk session is ready
+    // Inside AppContext.jsx
+
+useEffect(() => {// console.(`🔄 [AUTH STATUS CHANGE] isLoaded: ${isLoaded}, isSignedIn: ${isSignedIn}, companyToken: ${!!companyToken}`);
+    
+    if ((isLoaded && isSignedIn) || companyToken) {// console.("🔓 [CONTEXT FLOW] Auth validated. Triggering fetch...");
+        fetchBackendData();
+    } else if (isLoaded && !isSignedIn && !companyToken) {// console.("🚫 [CONTEXT FLOW] User is NOT signed in.");
+    }
+}, [isLoaded, isSignedIn, companyToken]);
 
     const value = {
         backendUrl, fetchBackendData,
@@ -124,7 +110,9 @@ export const AppContextProvider = (props) => {
         noDuesRequests, setNoDuesRequests
     }
 
-    return <AppContext.Provider value={value}>
-        {props.children}
-    </AppContext.Provider>
+    return (
+        <AppContext.Provider value={value}>
+            {props.children}
+        </AppContext.Provider>
+    )
 }

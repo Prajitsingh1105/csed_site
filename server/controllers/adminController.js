@@ -90,9 +90,7 @@ export const getStudents = async (req, res) => {
   try {
     const students = await User.find();
     
-    // DIAGNOSTIC LOG: Run this to see if the "users" collection contains items
-    console.log("--- DEBUG REQ ---");
-    console.log("Raw documents found in User collection:", students.length);
+    // DIAGNOSTIC LOG: Run this to see if the "users" collection contains items// console.("--- DEBUG REQ ---");// console.("Raw documents found in User collection:", students.length);
 
     const populatedStudents = await Promise.all(students.map(async (student) => {
       let studentObj = student.toObject();
@@ -158,9 +156,8 @@ export const bulkUploadStudentRecords = async (req, res) => {
         },
       }));
 
-      await User.bulkWrite(bulkUserOps, { ordered: false }).catch((err) =>
-        console.error("Sync partial error:", err)
-      );
+      await User.bulkWrite(bulkUserOps, { ordered: false }).catch((err) => {
+      });
     }
 
     res.json({
@@ -349,9 +346,7 @@ export const getNoDuesRequests = async (req, res) => {
   try {
     const requests = await NoDuesRequest.find().sort({ date: -1 });
 
-    // DIAGNOSTIC LOG: Check raw request lengths
-    console.log("Raw documents found in NoDuesRequest collection:", requests.length);
-    console.log("-----------------");
+    // DIAGNOSTIC LOG: Check raw request lengths// console.("Raw documents found in NoDuesRequest collection:", requests.length);// console.("-----------------");
 
     const clearRequests = await Promise.all(requests.map(async (reqCard) => {
       let card = reqCard.toObject();

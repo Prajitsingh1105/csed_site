@@ -29,8 +29,11 @@ const RecruiterLogin = () => {
         }
 
         // Proceed if credentials match
-        setCompanyData({ name: "IET Lucknow Placement Cell", image: assets.iet_logo_2, email })
+        const cData = { name: "IET Lucknow Placement Cell", image: assets.iet_logo_2, email };
+        setCompanyData(cData)
         setCompanyToken("mock-token-123")
+        localStorage.setItem('companyToken', 'mock-token-123')
+        localStorage.setItem('companyData', JSON.stringify(cData))
         setShowRecruiterLogin(false)
         navigate('/dashboard')
     }

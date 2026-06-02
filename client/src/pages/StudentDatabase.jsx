@@ -82,6 +82,13 @@ const StudentDatabase = () => {
     const [activeTab, setActiveTab] = useState('registered')
     const fileInputRef = useRef(null)
 
+    // 👇 FORCE A RE-FETCH WHEN THIS DASHBOARD MOUNTS
+    React.useEffect(() => {
+        if (fetchBackendData) {
+            fetchBackendData();
+        }
+    }, []);
+
     const handleToggleBlacklist = async (id) => {
         try {
             const res = await axios.put(`${backendUrl}/api/admin/students/${id}/blacklist`)
@@ -115,27 +122,46 @@ const StudentDatabase = () => {
         }
     }
 
-    const filteredStudents = students.filter(s => {
+    const filteredStudents = students.filter((s, idx) => {
         const matchesSearch =
             (s.name || '').toLowerCase().includes(search.toLowerCase()) ||
             (s.rollNumber || '').includes(search)
 
+        const studentBranchClean = (s.branch || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const filterBranchClean = branchFilter.toLowerCase().replace(/[^a-z0-9]/g, '');
+
         const matchesBranch =
             branchFilter === 'All' ||
-            normalizeBranch(s.branch) === normalizeBranch(branchFilter)
+            studentBranchClean.includes(filterBranchClean) ||
+            normalizeBranch(s.branch) === normalizeBranch(branchFilter);
 
         const matchesStatus =
             statusFilter === 'All' ||
             (statusFilter === 'Active' && !s.isBlacklisted) ||
             (statusFilter === 'Blacklisted' && s.isBlacklisted)
 
+        // 🔍 TEST THE FIRST RECORD TO SEE WHERE IT DROPS
+        if (idx === 0) {// console.("🕵️‍♂️ [FILTER DEBUG] Inspecting first student record:", s);// console.("🔍 Search text:", `"${search}"`, "-> Matches?", matchesSearch);// console.("📐 Branch student vs filter:", `"${s.branch}"` || 'MISSING', "vs", `"${branchFilter}"`, "-> Matches?", matchesBranch);// console.("🛡️ Status:", `isBlacklisted: ${s.isBlacklisted}`, "Filter:", statusFilter, "-> Matches?", matchesStatus);
+        }
+
         return matchesSearch && matchesBranch && matchesStatus
     })
 
-    const filteredLedgerRecords = studentRecords.filter(s =>
-        ((s.name || '').toLowerCase().includes(search.toLowerCase()) || (s.rollNumber || '').includes(search)) &&
-        (branchFilter === 'All' || normalizeBranch(s.branch) === normalizeBranch(branchFilter))
-    )
+    const filteredLedgerRecords = studentRecords.filter(s => {
+        const matchesSearch = 
+            (s.name || '').toLowerCase().includes(search.toLowerCase()) || 
+            (s.rollNumber || '').includes(search);
+            
+        const recordBranchClean = (s.branch || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const filterBranchClean = branchFilter.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+        const matchesBranch =
+            branchFilter === 'All' ||
+            recordBranchClean.includes(filterBranchClean) ||
+            normalizeBranch(s.branch) === normalizeBranch(branchFilter);
+
+        return matchesSearch && matchesBranch;
+    })
 
     const branches = ['All', ...VALID_BRANCHES]
 
@@ -274,8 +300,7 @@ const StudentDatabase = () => {
             toast.success(`Successfully processed ${records.length} valid records! Duplicate IDs skipped.`)
             fetchBackendData()
         } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to parse or upload CSV: " + err.message)
-            console.error(err)
+            toast.error(err.response?.data?.message || "Failed to parse or upload CSV: " + err.message)// console.(err)
         }
 
         if (fileInputRef.current) fileInputRef.current.value = ''

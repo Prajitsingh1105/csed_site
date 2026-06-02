@@ -17,9 +17,13 @@ const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY 
  */
 const resolveAndMigrateUser = async (productionUserId) => {
   try {
+    if (!productionUserId) return;
+    
     // 1. Get user profile details from Clerk Production
     const clerkUser = await clerkClient.users.getUser(productionUserId);
     
+    if (!clerkUser) return;
+
     // 2. Extract old dev ID if it matches our migration pattern
     if (clerkUser.externalId && clerkUser.externalId.startsWith('migrated_')) {
       const developmentUserId = clerkUser.externalId.replace('migrated_', '');
@@ -34,13 +38,10 @@ const resolveAndMigrateUser = async (productionUserId) => {
         // Batch update all related database references across the platform
         await ForumQuery.updateMany({ studentId: developmentUserId }, { $set: { studentId: productionUserId } });
         await Application.updateMany({ userId: developmentUserId }, { $set: { userId: productionUserId } });
-        await NoDuesRequest.updateMany({ userId: developmentUserId }, { $set: { userId: productionUserId } });
-        
-        console.log(`Successfully mapped and migrated historical data for: ${clerkUser.emailAddresses[0]?.emailAddress}`);
+        await NoDuesRequest.updateMany({ userId: developmentUserId }, { $set: { userId: productionUserId } });// console.(`Successfully mapped and migrated historical data for: ${clerkUser.emailAddresses[0]?.emailAddress}`);
       }
     }
-  } catch (error) {
-    console.error("Migration fallback resolution error:", error.message);
+  } catch (error) {// console.("Migration fallback resolution error:", error.message);
   }
 };
 
@@ -49,10 +50,19 @@ export const getProfile = async (req, res) => {
   try {
     const { userId } = req.auth;
     
+    if (!userId) {
+       return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
     // Run real-time resolution scan
     await resolveAndMigrateUser(userId);
 
     const user = await User.findOne({ userId });
+    
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User profile not found. Please sync." });
+    }
+    
     res.json({ success: true, user });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -129,6 +139,10 @@ export const syncUser = async (req, res) => {
     const { userId } = req.auth; // The new Clerk production ID (e.g., user_4ZXY...)
     const { name, email, image } = req.body;
 
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required' });
+    }
+
     // 1. Get the clean roll number from their verified email handle
     const rollNumberRaw = email.split('@')[0].trim();
 
@@ -151,9 +165,7 @@ export const syncUser = async (req, res) => {
       // Cascade the ID update across all application collections instantly
       await ForumQuery.updateMany({ studentId: oldDevId }, { $set: { studentId: userId } });
       await Application.updateMany({ userId: oldDevId }, { $set: { userId: userId } });
-      await NoDuesRequest.updateMany({ userId: oldDevId }, { $set: { userId: userId } });
-
-      console.log(`Live Link Patch Success: Restored historical records for Roll Number ${rollNumberRaw}`);
+      await NoDuesRequest.updateMany({ userId: oldDevId }, { $set: { userId: userId } });// console.(`Live Link Patch Success: Restored historical records for Roll Number ${rollNumberRaw}`);
       
       return res.json({ success: true, user: existingHistoricUser });
     }
@@ -201,8 +213,7 @@ export const syncUser = async (req, res) => {
     );
 
     res.json({ success: true, user });
-  } catch (error) {
-    console.error("Live Sync Error Caught:", error.message);
+  } catch (error) {// console.("Live Sync Error Caught:", error.message);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -361,7 +372,7 @@ export const getNoDuesStatus = async (req, res) => {
         }
 
         // Query your collection using the verified Clerk ID string
-        const request = await NoDues.findOne({ studentId: clerkUserId }); 
+        const request = await NoDuesRequest.findOne({ userId: clerkUserId }); 
         
         // Return the exact structure your frontend NoDues.jsx expects: response.data.request
         return res.status(200).json({ 
@@ -369,8 +380,7 @@ export const getNoDuesStatus = async (req, res) => {
             request: request || null 
         });
 
-    } catch (error) {
-        console.error("Error in getNoDuesStatus:", error);
+    } catch (error) {// console.("Error in getNoDuesStatus:", error);
         return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };

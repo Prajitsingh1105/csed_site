@@ -38,8 +38,7 @@ const StudentDoubts = () => {
       })
 
       setMyQueries(res.data.queries || [])
-    } catch (error) {
-      console.error('Student Doubts Error:', error)
+    } catch (error) {// console.('Student Doubts Error:', error)
     }
   }
 

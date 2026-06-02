@@ -8,20 +8,23 @@ const Dashboard = () => {
 
     const navigate = useNavigate()
 
-    const { companyData, setCompanyData, setCompanyToken } = useContext(AppContext)
+    const { companyData, setCompanyData, companyToken, setCompanyToken } = useContext(AppContext)
 
     // Function to logout for company
     const logout = () => {
         setCompanyToken(null)
         localStorage.removeItem('companyToken')
         setCompanyData(null)
+        localStorage.removeItem('companyData')
         navigate('/')
     }
 
-    // Remove automatic redirect to manage-jobs so it lands on dashboard home (Overview)
+    // Ensure only authenticated coordinators can access the dashboard
     useEffect(() => {
-        // if (companyData) { navigate('/dashboard') } is not needed if the route drops them there
-    }, [companyData])
+        if (!companyToken) {
+            navigate('/')
+        }
+    }, [companyToken, navigate])
 
     return (
         <div className='min-h-screen flex flex-col'>
