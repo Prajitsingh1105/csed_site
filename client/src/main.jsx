@@ -15,7 +15,7 @@ if (!PUBLISHABLE_KEY) {
 
 //  This fixes the error instantly
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
+  <React.StrictMode> {/* Add React. prefix here */}
     <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
       <AppContextProvider>
         <BrowserRouter>
@@ -23,5 +23,5 @@ createRoot(document.getElementById('root')).render(
         </BrowserRouter>
       </AppContextProvider>
     </ClerkProvider>
-  </StrictMode>,
+  </React.StrictMode>,
 )
