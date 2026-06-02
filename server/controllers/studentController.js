@@ -284,10 +284,14 @@ export const getMyApplications = async (req, res) => {
 };
 
 // Submit No Dues Form
+// Submit No Dues Form
 export const submitNoDues = async (req, res) => {
   try {
     const { userId } = req.auth;
     const { name, rollNumber, branch, year, company, package: pkg, type } = req.body;
+
+    // FIX 1: Enforce migration lookup immediately if they land directly on this page
+    await resolveAndMigrateUser(userId);
 
     let letterUrl = req.body.letterUrl || '';
 
@@ -348,6 +352,9 @@ export const submitNoDues = async (req, res) => {
 export const getNoDuesStatus = async (req, res) => {
   try {
     const { userId } = req.auth;
+
+    // FIX 2: Enforce migration tracking here to prevent loading state bugs
+    await resolveAndMigrateUser(userId);
 
     const request = await NoDuesRequest.findOne({ userId }).sort({ createdAt: -1 });
 
