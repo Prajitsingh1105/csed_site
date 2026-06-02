@@ -8,36 +8,42 @@ dotenv.config();
 const app = express();
 
 // Middlewares
-// app.use(cors());
-// Robust, Production-Grade CORS Filter
+const allowedOrigins = [
+    'https://csed.placement.ietlucknow.ac.in',
+    'https://placement.ietlucknow.ac.in',
+    'http://localhost:5173',
+    'http://localhost:3000'
+];
+
 app.use(cors({
     origin: (origin, callback) => {
-        // Debug Log: This will print the exact origin hitting your live Render container logs
-        console.log("Incoming request origin:", origin);
-
-        // 1. Allow server-to-server or local script requests (where origin is undefined)
-        if (!origin) {
+        // 1. FIX: Explicitly allow requests with no origin header 
+        // (like mobile routing, direct API fetches, or specific browser GET requests)
+        if (!origin || origin === 'undefined') {
             return callback(null, true);
         }
 
-        // 2. Normalize string formatting (strip trailing slashes if present)
         const cleanOrigin = origin.replace(/\/$/, "");
 
-        // 3. Absolute explicitly permitted origins check
-        if (
-            cleanOrigin.startsWith('http://localhost') || 
-            cleanOrigin.endsWith('.vercel.app') || 
-            cleanOrigin === 'https://csed.placement.ietlucknow.ac.in'
-        ) {
+        // 2. Subdomain check for security
+        const isAllowed = allowedOrigins.includes(cleanOrigin) || 
+                          cleanOrigin.includes('ietlucknow.ac.in') || 
+                          cleanOrigin.startsWith('http://localhost') || 
+                          cleanOrigin.endsWith('.vercel.app');
+
+        if (isAllowed) {
             return callback(null, true);
-        } 
-        
-        // 4. Catch-all rejection safeguard
-        return callback(new Error(`Not allowed by CORS: ${origin}`));
+        } else {
+            console.error(`Blocked Origin via CORS: ${origin}`);
+            return callback(null, false); // Returns a clean CORS block instead of a 500 crash
+        }
     },
     credentials: true
 }));
+
+// Ensure parsing limits are active directly underneath
 app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 import adminRoutes from './routes/adminRoutes.js';
 import studentRoutes from './routes/studentRoutes.js';
