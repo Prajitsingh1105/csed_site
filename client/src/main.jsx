@@ -1,21 +1,19 @@
+import { StrictMode } from 'react' // Import StrictMode standalone (No 'React.' prefix needed)
 import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.jsx'
-import { BrowserRouter } from 'react-router-dom'
-import { AppContextProvider } from './context/AppContext.jsx'
 import { ClerkProvider } from '@clerk/react'
+import { AppContextProvider } from './context/AppContext'
+import { BrowserRouter } from 'react-router-dom'
+import App from './App'
+import './index.css'
 
-
-// Import your publishable key
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 
 if (!PUBLISHABLE_KEY) {
   throw new Error("Missing Publishable Key")
 }
 
-//  This fixes the error instantly
 createRoot(document.getElementById('root')).render(
-  <React.StrictMode> {/* Add React. prefix here */}
+  <StrictMode> {/* Use it cleanly without the "React." prefix */}
     <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
       <AppContextProvider>
         <BrowserRouter>
@@ -23,5 +21,5 @@ createRoot(document.getElementById('root')).render(
         </BrowserRouter>
       </AppContextProvider>
     </ClerkProvider>
-  </React.StrictMode>,
+  </StrictMode>,
 )
