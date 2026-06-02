@@ -55,6 +55,20 @@ app.get('/', (req, res) => res.send("IET Placement Portal Backend Server is Runn
 app.use('/api/admin', adminRoutes);
 app.use('/api/student', studentRoutes);
 
+// Add this right before your app.listen block to trap the exact bug
+app.use((err, req, res, next) => {
+    console.error("=== GLOBAL CRASH TRAP ===");
+    console.error("Path:", req.method, req.path);
+    console.error("Error Message:", err.message);
+    console.error("Stack Trace:", err.stack);
+    console.error("=========================");
+    
+    res.status(500).json({ 
+        success: false, 
+        message: err.message || "Internal Server Error trapped globally" 
+    });
+});
+
 // Boot Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, async () => {
