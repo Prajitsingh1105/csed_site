@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { createClerkClient } from '@clerk/clerk-sdk-node'; // IMPORT THIS HERE
 import User from '../models/User.js';
 import ForumQuery from '../models/ForumQuery.js';
 import Job from '../models/Job.js';
@@ -7,10 +8,50 @@ import NoDuesRequest from '../models/NoDuesRequest.js';
 import StudentRecord from '../models/StudentRecord.js';
 import cloudinary, { uploadToCloudinary } from '../config/cloudinary.js';
 
+// Initialize Clerk Backend SDK to fetch the metadata we seeded
+const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+
+/**
+ * HELPER FUNCTION: Resolves incoming Production Clerk ID to old Dev ID if it exists.
+ * If found, it programmatically updates old collections to the new Production ID so this only runs once.
+ */
+const resolveAndMigrateUser = async (productionUserId) => {
+  try {
+    // 1. Get user profile details from Clerk Production
+    const clerkUser = await clerkClient.users.getUser(productionUserId);
+    
+    // 2. Extract old dev ID if it matches our migration pattern
+    if (clerkUser.externalId && clerkUser.externalId.startsWith('migrated_')) {
+      const developmentUserId = clerkUser.externalId.replace('migrated_', '');
+
+      // Check if they have an unmigrated profile document in MongoDB
+      const oldUserExist = await User.findOne({ userId: developmentUserId });
+      
+      if (oldUserExist) {
+        // Update User profile table to use the new Production ID
+        await User.updateOne({ userId: developmentUserId }, { $set: { userId: productionUserId } });
+        
+        // Batch update all related database references across the platform
+        await ForumQuery.updateMany({ studentId: developmentUserId }, { $set: { studentId: productionUserId } });
+        await Application.updateMany({ userId: developmentUserId }, { $set: { userId: productionUserId } });
+        await NoDuesRequest.updateMany({ userId: developmentUserId }, { $set: { userId: productionUserId } });
+        
+        console.log(`Successfully mapped and migrated historical data for: ${clerkUser.emailAddresses[0]?.emailAddress}`);
+      }
+    }
+  } catch (error) {
+    console.error("Migration fallback resolution error:", error.message);
+  }
+};
+
 // Get Current User Profile
 export const getProfile = async (req, res) => {
   try {
     const { userId } = req.auth;
+    
+    // Run real-time resolution scan
+    await resolveAndMigrateUser(userId);
+
     const user = await User.findOne({ userId });
     res.json({ success: true, user });
   } catch (error) {
@@ -87,6 +128,9 @@ export const syncUser = async (req, res) => {
   try {
     const { userId } = req.auth;
     const { name, email, image } = req.body;
+
+    // Run resolution scan before sync to prevent duplicate row creation
+    await resolveAndMigrateUser(userId);
 
     const rollNumber = email.split('@')[0].toUpperCase();
     const ledgerRecord = await StudentRecord.findOne({ rollNumber });

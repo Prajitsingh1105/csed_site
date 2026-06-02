@@ -175,17 +175,28 @@ const PlacementRecords = () => {
     return noDuesRequests?.filter((r) => r.status === 'Pending') || []
   }, [noDuesRequests])
 
+  // FIXED: Ensured status maps accurately even if offer object payload is unlinked or structural
   const placementData = useMemo(() => {
-    return (studentRecords || []).map((record) => {
-      let offer = offerLetters.find((o) => o.rollNumber === record.rollNumber) || null
+    return (studentRecords || []).map((student) => {
+      const offer = (offerLetters || []).find(
+        (o) => o.rollNumber === student.rollNumber
+      )
+
+      let status = 'Pending'
+
       if (offer) {
-        offer = { ...offer }
-        if (!offer.type) offer.type = 'Job'
+        if (offer.type === 'Job') status = 'Job'
+        else if (offer.type === 'Higher Studies') status = 'Higher Studies'
+        else if (offer.type === 'Not Placed') status = 'Not Placed'
+      } else if (student.status === 'Not Placed' || student.placementStatus === 'Not Placed') {
+        status = 'Not Placed'
       }
+
       return {
-        ...record,
-        branch: normalizeBranch(record.branch),
-        offer
+        ...student,
+        branch: normalizeBranch(student.branch),
+        offer: offer || null,
+        status
       }
     })
   }, [studentRecords, offerLetters])
@@ -198,20 +209,17 @@ const PlacementRecords = () => {
 
       const matchesBranch = branchFilter === 'All' || normalizeBranch(s.branch) === branchFilter
       const matchesYear = yearFilter === 'All' || s.year === yearFilter
-      const matchesStatus =
-        placementStatusFilter === 'All' ||
-        (placementStatusFilter === 'Job' && s.offer?.type === 'Job') ||
-        (placementStatusFilter === 'Higher Studies' && s.offer?.type === 'Higher Studies') ||
-        (placementStatusFilter === 'Not Placed' && s.offer?.type === 'Not Placed') ||
-        (placementStatusFilter === 'Pending' && !s.offer)
+      const matchesStatus = placementStatusFilter === 'All' || s.status === placementStatusFilter
 
       return matchesSearch && matchesBranch && matchesYear && matchesStatus
     })
   }, [placementData, search, branchFilter, yearFilter, placementStatusFilter])
 
+  // FIXED: Counter statistics calculation synchronized precisely to isolate verification uploads from declarations
   const totalStudents = filteredPlacementData.length
-  const uploadedCount = filteredPlacementData.filter((s) => s.offer).length
-  const pendingCount = totalStudents - uploadedCount
+  const uploadedCount = filteredPlacementData.filter((s) => s.offer && s.offer.type !== 'Not Placed').length
+  const pendingCount = filteredPlacementData.filter((s) => s.status === 'Pending').length
+  const unplacedCount = filteredPlacementData.filter((s) => s.status === 'Not Placed').length
 
   const branches = [
     'All',
@@ -267,7 +275,7 @@ const PlacementRecords = () => {
 
           <div className='glass-panel p-5 rounded-2xl border border-gray-200 flex items-center gap-4 bg-gray-50/50'>
             <div className='w-12 h-12 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center font-bold text-lg'>
-              {filteredPlacementData.filter(s => s.offer?.type === 'Not Placed').length}
+              {unplacedCount}
             </div>
             <div>
               <p className='text-sm font-semibold text-gray-500'>Unplaced</p>
@@ -336,16 +344,14 @@ const PlacementRecords = () => {
           <div className='flex gap-2 mt-4 bg-gray-100 p-1 rounded-xl w-max flex-wrap'>
             <button
               onClick={() => setActiveTab('Archive')}
-              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'Archive' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500'
-                }`}
+              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'Archive' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500'}`}
             >
               Placement Archive
             </button>
 
             <button
               onClick={() => setActiveTab('Queue')}
-              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'Queue' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'
-                }`}
+              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'Queue' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'}`}
             >
               No Dues Approvals
               {pendingNoDues.length > 0 && (
@@ -357,8 +363,7 @@ const PlacementRecords = () => {
 
             <button
               onClick={() => setActiveTab('Matcher')}
-              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'Matcher' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500'
-                }`}
+              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'Matcher' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500'}`}
             >
               <Briefcase size={16} /> Placement Matcher
             </button>
@@ -467,19 +472,15 @@ const PlacementRecords = () => {
                 {filteredRecords.map((record, index) => (
                   <tr key={record._id || index} className='hover:bg-blue-50/20 transition-colors'>
                     <td className='py-4 px-6 text-center font-medium text-gray-500'>{index + 1}</td>
-
                     <td className='py-4 px-6'>
                       <p className='font-bold text-gray-800 text-base'>{record.name}</p>
                     </td>
-
                     <td className='py-4 px-6 text-center'>
                       <span className='text-sm text-gray-600 font-semibold'>{record.rollNumber}</span>
                     </td>
-
                     <td className='py-4 px-6 text-center'>
                       <span className='text-sm text-gray-600 font-semibold'>{record.branch}</span>
                     </td>
-
                     <td className='py-4 px-6 text-center'>
                       <div className='flex flex-col items-center gap-1'>
                         <span
@@ -493,23 +494,18 @@ const PlacementRecords = () => {
                           {record.type === 'Not Placed' ? 'Not Placed' : record.company}
                         </span>
                         <span
-                          className={`text-[10px] uppercase font-bold tracking-wider ${record.type === 'Higher Studies' ? 'text-purple-400' : record.type === 'Not Placed' ? 'text-gray-400' : 'text-indigo-400'
-                            }`}
+                          className={`text-[10px] uppercase font-bold tracking-wider ${record.type === 'Higher Studies' ? 'text-purple-400' : record.type === 'Not Placed' ? 'text-gray-400' : 'text-indigo-400'}`}
                         >
                           {record.type === 'Higher Studies' ? '🎓 University' : record.type === 'Not Placed' ? '📝 Application' : '💼 Job'}
                         </span>
                       </div>
                     </td>
-
                     <td className='py-4 px-6 text-center'>
-                      <span
-                        className={`font-extrabold ${record.type === 'Higher Studies' ? 'text-purple-600' : 'text-green-600'
-                          }`}
-                      >
-                        {record.package}
+                      {/* FIXED: Prevent empty package rows breaking table elements for declarations */}
+                      <span className={`font-extrabold ${record.type === 'Higher Studies' ? 'text-purple-600' : record.type === 'Not Placed' ? 'text-gray-400' : 'text-green-600'}`}>
+                        {record.type === 'Not Placed' ? 'N/A' : record.package}
                       </span>
                     </td>
-
                     <td className='py-4 px-6 text-center'>
                       <div className='flex justify-center items-center gap-3'>
                         <button
@@ -573,29 +569,23 @@ const PlacementRecords = () => {
                     <tr key={req._id || index} className='hover:bg-blue-50/20 transition-colors'>
                       <td className='py-4 px-6'>
                         <p className='font-bold text-gray-800 text-base'>{req.name}</p>
-                        <p className='text-xs text-gray-500'>
-                          {req.branch} • {req.year}
-                        </p>
+                        <p className='text-xs text-gray-500'>{req.branch} • {req.year}</p>
                       </td>
-
                       <td className='py-4 px-6 text-center'>
                         <span className='text-sm text-gray-600 font-semibold'>{req.rollNumber}</span>
                       </td>
-
                       <td className='py-4 px-6 text-center'>
                         <div className='flex flex-col items-center gap-1'>
                           <span className='inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold border border-gray-200 bg-gray-50'>
                             {req.type === 'Not Placed' ? 'Not Placed' : `${req.company} • ${req.package}`}
                           </span>
                           <span
-                            className={`text-[10px] uppercase font-bold tracking-wider ${req.type === 'Higher Studies' ? 'text-purple-400' : req.type === 'Not Placed' ? 'text-gray-400' : 'text-indigo-400'
-                              }`}
+                            className={`text-[10px] uppercase font-bold tracking-wider ${req.type === 'Higher Studies' ? 'text-purple-400' : req.type === 'Not Placed' ? 'text-gray-400' : 'text-indigo-400'}`}
                           >
                             {req.type === 'Higher Studies' ? '🎓 University' : req.type === 'Not Placed' ? '📝 Application' : '💼 Job'}
                           </span>
                         </div>
                       </td>
-
                       <td className='py-4 px-6 text-center'>
                         {req.letterUrl ? (
                           <a
@@ -610,7 +600,6 @@ const PlacementRecords = () => {
                           <span className='text-gray-400 text-xs'>No Link</span>
                         )}
                       </td>
-
                       <td className='py-4 px-6 text-center'>
                         <div className='flex justify-center items-center gap-2'>
                           <button
@@ -666,9 +655,7 @@ const PlacementRecords = () => {
                 {filteredPlacementData.map((record, index) => (
                   <tr key={record._id || record.rollNumber || index} className='hover:bg-blue-50/20 transition-colors'>
                     <td className='py-3 px-6 font-semibold text-gray-600'>{record.rollNumber}</td>
-
                     <td className='py-3 px-6 font-bold text-gray-800 break-words'>{record.name}</td>
-
                     <td className='py-3 px-6'>
                       <div className='flex flex-col'>
                         <span className='text-gray-700 font-semibold text-xs'>
@@ -677,36 +664,46 @@ const PlacementRecords = () => {
                         <span className='text-gray-400 text-xs text-left'>Graduation Year {record.year}</span>
                       </div>
                     </td>
-
                     <td className='py-3 px-6 text-center'>
                       <div className='flex items-center justify-center gap-3'>
-                        {record.offer ? (
+                        {/* FIXED: Conditional tracking routing matrix matches 'Not Placed' statuses cleanly */}
+                        {record.status === 'Not Placed' ? (
+                          <div className='flex flex-col items-center gap-1'>
+                            <span className='inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600 border border-gray-200'>
+                              📝 Not Placed
+                            </span>
+                            {record.offer?.letterUrl && record.offer.letterUrl !== '#' && (
+                              <a
+                                href={record.offer.letterUrl}
+                                target='_blank'
+                                rel='noopener noreferrer'
+                                className='text-blue-500 hover:underline text-[10px] font-bold mt-1'
+                              >
+                                View Declaration Document
+                              </a>
+                            )}
+                          </div>
+                        ) : record.offer ? (
                           <div className='flex flex-col items-center gap-1'>
                             <span
                               className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold border ${record.offer.type === 'Higher Studies'
                                 ? 'bg-purple-50 text-purple-700 border-purple-100'
-                                : record.offer.type === 'Not Placed'
-                                  ? 'bg-gray-50 text-gray-700 border-gray-200'
-                                  : 'bg-indigo-50 text-indigo-700 border-indigo-100'
+                                : 'bg-indigo-50 text-indigo-700 border-indigo-100'
                                 }`}
                             >
-                              {record.offer.type === 'Not Placed' ? 'Not Placed' : record.offer.company}
+                              {record.offer.company}
                             </span>
 
                             <div className='flex items-center gap-2 mt-1 flex-wrap justify-center'>
                               <span
-                                className={`text-[10px] uppercase font-bold tracking-wider ${record.offer.type === 'Higher Studies' ? 'text-purple-400' : record.offer.type === 'Not Placed' ? 'text-gray-400' : 'text-indigo-400'
-                                  }`}
+                                className={`text-[10px] uppercase font-bold tracking-wider ${record.offer.type === 'Higher Studies' ? 'text-purple-400' : 'text-indigo-400'}`}
                               >
-                                {record.offer.type === 'Higher Studies' ? '🎓 University' : record.offer.type === 'Not Placed' ? '📝 Application' : '💼 Job'}
+                                {record.offer.type === 'Higher Studies' ? '🎓 University' : '💼 Job'}
                               </span>
 
                               <span className='text-gray-300'>•</span>
 
-                              <span
-                                className={`text-[10px] font-extrabold ${record.offer.type === 'Higher Studies' ? 'text-purple-600' : 'text-green-600'
-                                  }`}
-                              >
+                              <span className={`text-[10px] font-extrabold ${record.offer.type === 'Higher Studies' ? 'text-purple-600' : 'text-green-600'}`}>
                                 {record.offer.package}
                               </span>
 
@@ -785,10 +782,7 @@ const PlacementRecords = () => {
                   <button
                     type='button'
                     onClick={() => setNewPlacement({ ...newPlacement, type: 'Job' })}
-                    className={`flex-1 py-2 rounded-lg font-bold text-xs transition-all ${newPlacement.type === 'Job'
-                      ? 'bg-white text-indigo-600 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700'
-                      }`}
+                    className={`flex-1 py-2 rounded-lg font-bold text-xs transition-all ${newPlacement.type === 'Job' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                   >
                     💼 Job Offer
                   </button>
@@ -796,10 +790,7 @@ const PlacementRecords = () => {
                   <button
                     type='button'
                     onClick={() => setNewPlacement({ ...newPlacement, type: 'Higher Studies' })}
-                    className={`flex-1 py-2 rounded-lg font-bold text-xs transition-all ${newPlacement.type === 'Higher Studies'
-                      ? 'bg-white text-purple-600 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700'
-                      }`}
+                    className={`flex-1 py-2 rounded-lg font-bold text-xs transition-all ${newPlacement.type === 'Higher Studies' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                   >
                     🎓 Higher Studies
                   </button>
@@ -840,14 +831,9 @@ const PlacementRecords = () => {
                       value={newPlacement.branch}
                       onChange={(e) => setNewPlacement({ ...newPlacement, branch: e.target.value })}
                     >
-                      <option value='' disabled>
-                        Select branch
-                      </option>
-
+                      <option value='' disabled>Select branch</option>
                       {BRANCHES.map((branch) => (
-                        <option key={branch} value={branch}>
-                          {branch}
-                        </option>
+                        <option key={branch} value={branch}>{branch}</option>
                       ))}
                     </select>
                   </div>
@@ -860,7 +846,7 @@ const PlacementRecords = () => {
                       className='glass-input w-full p-3'
                       value={newPlacement.year}
                       onChange={(e) => setNewPlacement({ ...newPlacement, year: e.target.value })}
-                      placeholder='e.g. 2024'
+                      placeholder='e.g. 2026'
                     />
                   </div>
                 </div>
@@ -876,9 +862,7 @@ const PlacementRecords = () => {
                       className='glass-input w-full p-3'
                       value={newPlacement.company}
                       onChange={(e) => setNewPlacement({ ...newPlacement, company: e.target.value })}
-                      placeholder={
-                        newPlacement.type === 'Higher Studies' ? 'e.g. IIT Delhi' : 'Company Name'
-                      }
+                      placeholder={newPlacement.type === 'Higher Studies' ? 'e.g. IIT Delhi' : 'Company Name'}
                     />
                   </div>
 
@@ -892,9 +876,7 @@ const PlacementRecords = () => {
                       className='glass-input w-full p-3'
                       value={newPlacement.package}
                       onChange={(e) => setNewPlacement({ ...newPlacement, package: e.target.value })}
-                      placeholder={
-                        newPlacement.type === 'Higher Studies' ? 'e.g. M.Tech AI' : 'e.g. 12 LPA'
-                      }
+                      placeholder={newPlacement.type === 'Higher Studies' ? 'e.g. M.Tech AI' : 'e.g. 12 LPA'}
                     />
                   </div>
                 </div>
@@ -912,9 +894,7 @@ const PlacementRecords = () => {
                       })
                     }
                   />
-                  <p className='text-xs text-gray-400 mt-1'>
-                    Provide a PDF copy of the offer or admission letter.
-                  </p>
+                  <p className='text-xs text-gray-400 mt-1'>Provide a PDF copy of the offer or admission letter.</p>
                 </div>
 
                 <button
