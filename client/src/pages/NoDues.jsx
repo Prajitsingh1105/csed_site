@@ -3,11 +3,12 @@ import { AppContext } from '../context/AppContext'
 import { motion, AnimatePresence } from 'framer-motion'
 import axios from 'axios'
 import { toast } from 'react-toastify'
-import { useUser, RedirectToSignIn } from '@clerk/react'
+import { useUser, RedirectToSignIn, useAuth } from '@clerk/react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { CheckCircle, Clock, XCircle, Printer, FileCheck, ArrowRight } from 'lucide-react'
 import NoDuesForm from '../components/NoDuesForm'
+
 
 const THEME = {
     navy: '#001845',
@@ -36,6 +37,8 @@ const THEME = {
 const NoDues = () => {
     const { backendUrl } = useContext(AppContext)
     const { isSignedIn, user, isLoaded } = useUser()
+    const { getToken } = useAuth() // Securely handles background token caching
+    
     const [existingRequest, setExistingRequest] = useState(null)
     const [loadingData, setLoadingData] = useState(true)
     const [loading, setLoading] = useState(false)
@@ -54,26 +57,43 @@ const NoDues = () => {
 
     useEffect(() => {
         const fetchStatus = async () => {
+            // Guard clause: Do nothing until Clerk is completely ready
+            if (!isLoaded) return
+            
             if (!isSignedIn) {
                 setLoadingData(false)
                 return
             }
+
             try {
-                const token = await window.Clerk.session.getToken()
+                // Fetch the JWT bearer token cleanly from the hook hook context
+                const token = await getToken()
+                
+                if (!token) {
+                    console.warn("Clerk authentication token is still generating...")
+                    return
+                }
+
                 const response = await axios.get(`${backendUrl}/api/student/no-dues/status`, {
                     headers: { Authorization: `Bearer ${token}` }
                 })
+
                 if (response.data.success && response.data.request) {
                     setExistingRequest(response.data.request)
                 }
             } catch (error) {
                 console.error('Failed to fetch no dues status:', error)
+                // If it's a 401/unauthenticated error, we gracefully handle it without throwing a crash loop
+                if (error.response?.status === 401) {
+                    toast.error("Session expired. Please log out and sign in again.")
+                }
             } finally {
                 setLoadingData(false)
             }
         }
-        if (isLoaded) fetchStatus()
-    }, [isSignedIn, isLoaded, backendUrl])
+
+        fetchStatus()
+    }, [isSignedIn, isLoaded, backendUrl, getToken])
 
     if (!isSignedIn) return <RedirectToSignIn forceRedirectUrl="/no-dues" />
 

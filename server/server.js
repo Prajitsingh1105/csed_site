@@ -56,11 +56,19 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/student', studentRoutes);
 
 // Add this right before your app.listen block to trap the exact bug
+// Update your global crash trap block at the bottom of server.js
 app.use((err, req, res, next) => {
+    // FIX: Catch Clerk's unauthenticated error state cleanly
+    if (err.message === 'Unauthenticated') {
+        return res.status(401).json({ 
+            success: false, 
+            message: 'Session token missing or expired. Please sign in again.' 
+        });
+    }
+
     console.error("=== GLOBAL CRASH TRAP ===");
     console.error("Path:", req.method, req.path);
     console.error("Error Message:", err.message);
-    console.error("Stack Trace:", err.stack);
     console.error("=========================");
     
     res.status(500).json({ 
