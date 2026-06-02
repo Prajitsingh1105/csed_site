@@ -126,27 +126,50 @@ export const updateProfile = async (req, res) => {
 // Sync Clerk Verified User to DB with Master Ledger Auto-Population
 export const syncUser = async (req, res) => {
   try {
-    const { userId } = req.auth;
+    const { userId } = req.auth; // The new Clerk production ID (e.g., user_4ZXY...)
     const { name, email, image } = req.body;
 
-    // Run resolution scan before sync to prevent duplicate row creation
-    await resolveAndMigrateUser(userId);
-
-    // 1. Extract the raw roll number without forcing uppercase
+    // 1. Get the clean roll number from their verified email handle
     const rollNumberRaw = email.split('@')[0].trim();
 
-    // 2. Query StudentRecord case-insensitively so your live server matches strings flawlessly
+    // 2. CRITICAL PRODUCTION COUPLING: Look for an existing historical account 
+    // using their unique Roll Number before doing anything else.
+    let existingHistoricUser = await User.findOne({
+      rollNumber: { $regex: new RegExp(`^${rollNumberRaw}$`, 'i') }
+    });
+
+    // 3. If we find their old account and it's still using an old development ID,
+    // seamlessly migrate all tables to their new ID in one sweep!
+    if (existingHistoricUser && existingHistoricUser.userId !== userId) {
+      const oldDevId = existingHistoricUser.userId;
+
+      // Update their core profile document to the live production ID
+      existingHistoricUser.userId = userId;
+      if (email) existingHistoricUser.email = email;
+      await existingHistoricUser.save();
+
+      // Cascade the ID update across all application collections instantly
+      await ForumQuery.updateMany({ studentId: oldDevId }, { $set: { studentId: userId } });
+      await Application.updateMany({ userId: oldDevId }, { $set: { userId: userId } });
+      await NoDuesRequest.updateMany({ userId: oldDevId }, { $set: { userId: userId } });
+
+      console.log(`Live Link Patch Success: Restored historical records for Roll Number ${rollNumberRaw}`);
+      
+      return res.json({ success: true, user: existingHistoricUser });
+    }
+
+    // 4. FALLBACK: If they are a genuinely new user, pull structural details from ledger
     const ledgerRecord = await StudentRecord.findOne({ 
       rollNumber: { $regex: new RegExp(`^${rollNumberRaw}$`, 'i') } 
     });
 
     let branch = '';
     let finalName = name;
-    let accurateRollNumber = rollNumberRaw.toUpperCase(); // Fallback clean look
+    let accurateRollNumber = rollNumberRaw.toUpperCase();
 
     if (ledgerRecord) {
       branch = ledgerRecord.branch;
-      accurateRollNumber = ledgerRecord.rollNumber; // Use the exact roll number formatting stored in your ledger
+      accurateRollNumber = ledgerRecord.rollNumber;
       if (!finalName || finalName.trim() === '') {
         finalName = ledgerRecord.name;
       }
@@ -156,13 +179,11 @@ export const syncUser = async (req, res) => {
       finalName = `Student ${accurateRollNumber}`;
     }
 
-    // 3. Find or Upsert using case-insensitive check if needed, or by matching the resolved userId directly
+    // Upsert safely if no historical match was encountered
     const user = await User.findOneAndUpdate(
       { userId },
       {
-        $set: {
-          email,
-        },
+        $set: { email },
         $setOnInsert: {
           userId,
           name: finalName,
@@ -181,6 +202,7 @@ export const syncUser = async (req, res) => {
 
     res.json({ success: true, user });
   } catch (error) {
+    console.error("Live Sync Error Caught:", error.message);
     res.status(500).json({ success: false, message: error.message });
   }
 };
