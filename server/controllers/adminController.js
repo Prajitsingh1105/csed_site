@@ -89,12 +89,13 @@ export const deleteCompany = async (req, res) => {
 export const getStudents = async (req, res) => {
   try {
     const students = await User.find();
+    
+    // DIAGNOSTIC LOG: Run this to see if the "users" collection contains items
+    console.log("--- DEBUG REQ ---");
+    console.log("Raw documents found in User collection:", students.length);
 
-    // Auto-patch missing structural info for the coordinator if empty rows exist
     const populatedStudents = await Promise.all(students.map(async (student) => {
       let studentObj = student.toObject();
-
-      // If a live login created a blank row, restore details from the master ledger
       if ((!studentObj.name || studentObj.name.startsWith('Student ')) && studentObj.rollNumber) {
         const ledger = await StudentRecord.findOne({ rollNumber: studentObj.rollNumber });
         if (ledger) {
@@ -348,7 +349,10 @@ export const getNoDuesRequests = async (req, res) => {
   try {
     const requests = await NoDuesRequest.find().sort({ date: -1 });
 
-    // Ensure coordinator always sees a valid name, even if the user document is in transition
+    // DIAGNOSTIC LOG: Check raw request lengths
+    console.log("Raw documents found in NoDuesRequest collection:", requests.length);
+    console.log("-----------------");
+
     const clearRequests = await Promise.all(requests.map(async (reqCard) => {
       let card = reqCard.toObject();
       if (!card.name || card.name.startsWith('Student ')) {
@@ -365,6 +369,7 @@ export const getNoDuesRequests = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 export const approveNoDuesRequest = async (req, res) => {
   const session = await mongoose.startSession();
 

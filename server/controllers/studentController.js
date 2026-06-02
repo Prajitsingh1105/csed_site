@@ -350,33 +350,27 @@ export const submitNoDues = async (req, res) => {
 
 // Get No Dues Status
 // Get No Dues Status
+// Example of the fix inside your student controller file
 export const getNoDuesStatus = async (req, res) => {
-  try {
-    const { userId } = req.auth;
+    try {
+        // CRITICAL FIX: Extract the verified userId directly from req.auth
+        const clerkUserId = req.auth?.userId; 
 
-    // Enforce migration tracking here to prevent loading state bugs
-    await resolveAndMigrateUser(userId);
+        if (!clerkUserId) {
+            return res.status(400).json({ success: false, message: "User identity missing from request" });
+        }
 
-    // FIX: Changed sorting from non-existent 'createdAt' to 'date'
-    const request = await NoDuesRequest.findOne({ userId }).sort({ date: -1 });
+        // Query your collection using the verified Clerk ID string
+        const request = await NoDues.findOne({ studentId: clerkUserId }); 
+        
+        // Return the exact structure your frontend NoDues.jsx expects: response.data.request
+        return res.status(200).json({ 
+            success: true, 
+            request: request || null 
+        });
 
-    if (!request) {
-      return res.json({ success: true, request: null });
+    } catch (error) {
+        console.error("Error in getNoDuesStatus:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
     }
-
-    const responseData = request.toObject();
-
-    if (request.status === 'Approved') {
-      const user = await User.findOne({ rollNumber: request.rollNumber });
-      if (user?.noDuesApproval?.formData) {
-        responseData.formData = user.noDuesApproval.formData;
-      }
-    }
-
-    res.json({ success: true, request: responseData });
-  } catch (error) {
-    // This will print the exact database error string in your Render logs
-    console.error("Error in getNoDuesStatus:", error.message);
-    res.status(500).json({ success: false, message: error.message });
-  }
 };
