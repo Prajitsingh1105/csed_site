@@ -1,9 +1,11 @@
+import dotenv from 'dotenv';
+dotenv.config(); // CRITICAL FIX: This must be lines 1 and 2 so environment variables exist for all subsequent imports
+
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import connectDB from './config/db.js';
-
-dotenv.config();
+import adminRoutes from './routes/adminRoutes.js'; // Now safely imports with valid env keys loaded
+import studentRoutes from './routes/studentRoutes.js'; // Now safely imports with valid env keys loaded
 
 const app = express();
 
@@ -17,15 +19,14 @@ const allowedOrigins = [
 
 app.use(cors({
     origin: (origin, callback) => {
-        // 1. FIX: Explicitly allow requests with no origin header 
-        // (like mobile routing, direct API fetches, or specific browser GET requests)
+        // Allow requests with no origin header (like mobile routing, direct API fetches, etc.)
         if (!origin || origin === 'undefined') {
             return callback(null, true);
         }
 
         const cleanOrigin = origin.replace(/\/$/, "");
 
-        // 2. Subdomain check for security
+        // Subdomain check for security
         const isAllowed = allowedOrigins.includes(cleanOrigin) || 
                           cleanOrigin.includes('ietlucknow.ac.in') || 
                           cleanOrigin.startsWith('http://localhost') || 
@@ -41,12 +42,9 @@ app.use(cors({
     credentials: true
 }));
 
-// Ensure parsing limits are active directly underneath
+// Parsing limits configuration
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
-
-import adminRoutes from './routes/adminRoutes.js';
-import studentRoutes from './routes/studentRoutes.js';
 
 // Base Route
 app.get('/', (req, res) => res.send("IET Placement Portal Backend Server is Running"));
@@ -55,10 +53,9 @@ app.get('/', (req, res) => res.send("IET Placement Portal Backend Server is Runn
 app.use('/api/admin', adminRoutes);
 app.use('/api/student', studentRoutes);
 
-// Add this right before your app.listen block to trap the exact bug
-// Update your global crash trap block at the bottom of server.js
+// Global Error Handler & Crash Trap
 app.use((err, req, res, next) => {
-    // FIX: Catch Clerk's unauthenticated error state cleanly
+    // Catch Clerk's unauthenticated error state cleanly
     if (err.message === 'Unauthenticated') {
         return res.status(401).json({ 
             success: false, 
@@ -81,5 +78,9 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, async () => {
     console.log(`Server listening on port ${PORT}`);
-    await connectDB();
+    try {
+        await connectDB();
+    } catch (dbError) {
+        console.error("Critical: Failed to connect to Database on startup:", dbError.message);
+    }
 });
