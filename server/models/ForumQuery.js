@@ -8,5 +8,7 @@ const fileSchema = new mongoose.Schema({
     reply: { type: String, default: "" }
 }, { timestamps: true });
 
-const ForumQuery = mongoose.model('ForumQuery', fileSchema);
+// FIX: Prevent re-compilation crashes during concurrent backend route execution
+const ForumQuery = mongoose.models.ForumQuery || mongoose.model('ForumQuery', fileSchema);
+
 export default ForumQuery;

@@ -9,5 +9,7 @@ const fileSchema = new mongoose.Schema({
     year: { type: String, required: true }
 });
 
-const StudentRecord = mongoose.model('StudentRecord', fileSchema);
+// FIX: Check mongoose.models first to prevent fatal compilation crashes on multi-route production loads
+const StudentRecord = mongoose.models.StudentRecord || mongoose.model('StudentRecord', fileSchema);
+
 export default StudentRecord;

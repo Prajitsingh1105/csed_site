@@ -27,5 +27,7 @@ const fileSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const User = mongoose.model("User", fileSchema);
+
+const User = mongoose.models.User || mongoose.model("User", fileSchema);
+
 export default User;

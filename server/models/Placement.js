@@ -12,5 +12,7 @@ const fileSchema = new mongoose.Schema({
     date: { type: Number, required: true }
 });
 
-const Placement = mongoose.model('Placement', fileSchema);
+// FIX: Prevent overwrite and re-compilation crashes on concurrent production requests
+const Placement = mongoose.models.Placement || mongoose.model('Placement', fileSchema);
+
 export default Placement;
