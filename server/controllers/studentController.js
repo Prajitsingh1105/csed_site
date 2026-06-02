@@ -132,23 +132,31 @@ export const syncUser = async (req, res) => {
     // Run resolution scan before sync to prevent duplicate row creation
     await resolveAndMigrateUser(userId);
 
-    const rollNumber = email.split('@')[0].toUpperCase();
-    const ledgerRecord = await StudentRecord.findOne({ rollNumber });
+    // 1. Extract the raw roll number without forcing uppercase
+    const rollNumberRaw = email.split('@')[0].trim();
+
+    // 2. Query StudentRecord case-insensitively so your live server matches strings flawlessly
+    const ledgerRecord = await StudentRecord.findOne({ 
+      rollNumber: { $regex: new RegExp(`^${rollNumberRaw}$`, 'i') } 
+    });
 
     let branch = '';
     let finalName = name;
+    let accurateRollNumber = rollNumberRaw.toUpperCase(); // Fallback clean look
 
     if (ledgerRecord) {
       branch = ledgerRecord.branch;
+      accurateRollNumber = ledgerRecord.rollNumber; // Use the exact roll number formatting stored in your ledger
       if (!finalName || finalName.trim() === '') {
         finalName = ledgerRecord.name;
       }
     }
 
     if (!finalName || finalName.trim() === '') {
-      finalName = `Student ${rollNumber}`;
+      finalName = `Student ${accurateRollNumber}`;
     }
 
+    // 3. Find or Upsert using case-insensitive check if needed, or by matching the resolved userId directly
     const user = await User.findOneAndUpdate(
       { userId },
       {
@@ -159,7 +167,7 @@ export const syncUser = async (req, res) => {
           userId,
           name: finalName,
           image: image || '',
-          rollNumber,
+          rollNumber: accurateRollNumber,
           branch,
           degree: 'B.Tech',
           passingYear: '',
