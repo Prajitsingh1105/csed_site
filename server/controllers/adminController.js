@@ -89,7 +89,23 @@ export const deleteCompany = async (req, res) => {
 export const getStudents = async (req, res) => {
   try {
     const students = await User.find();
-    res.json({ success: true, students });
+
+    // Auto-patch missing structural info for the coordinator if empty rows exist
+    const populatedStudents = await Promise.all(students.map(async (student) => {
+      let studentObj = student.toObject();
+
+      // If a live login created a blank row, restore details from the master ledger
+      if ((!studentObj.name || studentObj.name.startsWith('Student ')) && studentObj.rollNumber) {
+        const ledger = await StudentRecord.findOne({ rollNumber: studentObj.rollNumber });
+        if (ledger) {
+          studentObj.name = ledger.name;
+          studentObj.branch = ledger.branch;
+        }
+      }
+      return studentObj;
+    }));
+
+    res.json({ success: true, students: populatedStudents });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -97,7 +113,7 @@ export const getStudents = async (req, res) => {
 
 export const toggleBlacklist = async (req, res) => {
   try {
-    const student = await User.findById(req.params.id); 
+    const student = await User.findById(req.params.id);
 
     if (!student) {
       return res.status(404).json({ success: false, message: "Student not found" });
@@ -331,12 +347,24 @@ export const deletePlacement = async (req, res) => {
 export const getNoDuesRequests = async (req, res) => {
   try {
     const requests = await NoDuesRequest.find().sort({ date: -1 });
-    res.json({ success: true, requests });
+
+    // Ensure coordinator always sees a valid name, even if the user document is in transition
+    const clearRequests = await Promise.all(requests.map(async (reqCard) => {
+      let card = reqCard.toObject();
+      if (!card.name || card.name.startsWith('Student ')) {
+        const accountDoc = await User.findOne({ rollNumber: card.rollNumber });
+        if (accountDoc && accountDoc.name) {
+          card.name = accountDoc.name;
+        }
+      }
+      return card;
+    }));
+
+    res.json({ success: true, requests: clearRequests });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
 export const approveNoDuesRequest = async (req, res) => {
   const session = await mongoose.startSession();
 
