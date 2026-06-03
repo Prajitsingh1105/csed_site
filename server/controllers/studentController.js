@@ -306,8 +306,9 @@ export const submitNoDues = async (req, res) => {
 
     let letterUrl = req.body.letterUrl || '';
 
-    const existing = await NoDuesRequest.findOne({ userId, status: 'Pending' });
-    if (existing) {
+    const existing = await NoDuesRequest.findOne({ userId });
+
+    if (existing && existing.status === 'Pending') {
       return res.status(400).json({
         success: false,
         message: 'You already have a pending No Dues request.',
@@ -335,20 +336,34 @@ export const submitNoDues = async (req, res) => {
       }
     }
 
-    const newRequest = new NoDuesRequest({
-      userId,
+    const requestPayload = {
       name,
       rollNumber,
       branch,
       year,
       company,
       package: pkg,
-      letterUrl,
       type,
       date: Date.now(),
-    });
+      status: 'Pending',
+      remarks: '' // clear any previous rejection remarks
+    };
 
-    await newRequest.save();
+    if (letterUrl) {
+      requestPayload.letterUrl = letterUrl;
+    }
+
+    if (existing) {
+      // Update the existing request (e.g. from Rejected back to Pending)
+      await NoDuesRequest.findOneAndUpdate({ userId }, { $set: requestPayload });
+    } else {
+      // Create a brand new request
+      const newRequest = new NoDuesRequest({
+        userId,
+        ...requestPayload
+      });
+      await newRequest.save();
+    }
 
     res.json({
       success: true,
