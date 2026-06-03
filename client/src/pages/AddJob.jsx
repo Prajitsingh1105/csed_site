@@ -20,7 +20,7 @@ const AddJob = () => {
     const editorRef = useRef(null)
     const quillRef = useRef(null)
 
-    const { backendUrl, fetchBackendData } = useContext(AppContext)
+    const { backendUrl, fetchBackendData, getAdminHeaders } = useContext(AppContext)
 
     const onSubmitHandler = async (e) => {
         e.preventDefault()
@@ -28,7 +28,7 @@ const AddJob = () => {
             const description = quillRef.current.root.innerHTML
             const { data } = await axios.post(`${backendUrl}/api/admin/jobs`, {
                 title, description, location, category, level, salary, company: company || "General Company", logo
-            })
+            }, await getAdminHeaders())
             if (data.success) {
                 toast.success(data.message)
                 setTitle('')

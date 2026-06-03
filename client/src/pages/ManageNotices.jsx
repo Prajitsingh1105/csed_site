@@ -7,7 +7,7 @@ import moment from 'moment'
 import axios from 'axios'
 
 const ManageNotices = () => {
-    const { notices, backendUrl, fetchBackendData } = useContext(AppContext)
+    const { notices, backendUrl, fetchBackendData, getAdminHeaders } = useContext(AppContext)
     const [title, setTitle] = useState('')
     const [content, setContent] = useState('')
     const [urgency, setUrgency] = useState('General')
@@ -20,7 +20,7 @@ const ManageNotices = () => {
         }
 
         try {
-            await axios.post(`${backendUrl}/api/admin/notices`, { title, content, urgency })
+            await axios.post(`${backendUrl}/api/admin/notices`, { title, content, urgency }, await getAdminHeaders())
             setTitle('')
             setContent('')
             setUrgency('General')
@@ -33,7 +33,7 @@ const ManageNotices = () => {
 
     const handleDelete = async (id) => {
         try {
-            await axios.delete(`${backendUrl}/api/admin/notices/${id}`)
+            await axios.delete(`${backendUrl}/api/admin/notices/${id}`, await getAdminHeaders())
             toast.success("Notice removed")
             fetchBackendData()
         } catch (error) {

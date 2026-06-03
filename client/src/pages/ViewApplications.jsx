@@ -9,7 +9,7 @@ import axios from 'axios'
 
 const ViewApplications = () => {
 
-  const { applications, backendUrl, fetchBackendData } = useContext(AppContext)
+  const { applications, backendUrl, fetchBackendData, getAdminHeaders } = useContext(AppContext)
   const [activeMenu, setActiveMenu] = useState(null)
   const [selectedJobFilter, setSelectedJobFilter] = useState('All')
 
@@ -66,7 +66,7 @@ const ViewApplications = () => {
 
   const changeJobApplicationStatus = async (id, status) => {
     try {
-        await axios.put(`${backendUrl}/api/admin/applications/${id}/status`, { status })
+        await axios.put(`${backendUrl}/api/admin/applications/${id}/status`, { status }, await getAdminHeaders())
         toast.success(`Applicant status updated to ${status}`)
         setActiveMenu(null)
         fetchBackendData()

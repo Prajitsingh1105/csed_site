@@ -6,13 +6,13 @@ import { toast } from 'react-toastify'
 import axios from 'axios'
 
 const ManageQueries = () => {
-    const { queries, backendUrl, fetchBackendData } = useContext(AppContext)
+    const { queries, backendUrl, fetchBackendData, getAdminHeaders } = useContext(AppContext)
     const [replyingTo, setReplyingTo] = useState(null)
     const [replyText, setReplyText] = useState('')
 
     const handleResolve = async (id) => {
         try {
-            await axios.put(`${backendUrl}/api/admin/queries/${id}/resolve`, { reply: "" })
+            await axios.put(`${backendUrl}/api/admin/queries/${id}/resolve`, { reply: "" }, await getAdminHeaders())
             fetchBackendData()
             toast.success("Query marked as Resolved.")
         } catch (error) { toast.error(error.message) }
@@ -20,7 +20,7 @@ const ManageQueries = () => {
 
     const handleDelete = async (id) => {
         try {
-            await axios.delete(`${backendUrl}/api/admin/queries/${id}`)
+            await axios.delete(`${backendUrl}/api/admin/queries/${id}`, await getAdminHeaders())
             fetchBackendData()
             toast.success("Query permanently removed.")
         } catch (error) { toast.error(error.message) }
@@ -29,7 +29,7 @@ const ManageQueries = () => {
     const handleSubmitReply = async (id) => {
         if(!replyText.trim()) return;
         try {
-            await axios.put(`${backendUrl}/api/admin/queries/${id}/resolve`, { reply: replyText })
+            await axios.put(`${backendUrl}/api/admin/queries/${id}/resolve`, { reply: replyText }, await getAdminHeaders())
             setReplyingTo(null)
             setReplyText('')
             fetchBackendData()

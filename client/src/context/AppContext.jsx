@@ -30,6 +30,12 @@ export const AppContextProvider = (props) => {
         return data ? JSON.parse(data) : null;
     })
 
+    const getAdminHeaders = async () => {
+        const localCompanyToken = localStorage.getItem('companyToken');
+        const token = localCompanyToken || await getToken();
+        return { headers: { Authorization: `Bearer ${token}` } };
+    };
+
     const fetchBackendData = async () => {
         const localCompanyToken = localStorage.getItem('companyToken');
         
@@ -107,7 +113,8 @@ useEffect(() => {// console.(`🔄 [AUTH STATUS CHANGE] isLoaded: ${isLoaded}, 
         studentRecords, setStudentRecords,
         queries, setQueries,
         applications, setApplications,
-        noDuesRequests, setNoDuesRequests
+        noDuesRequests, setNoDuesRequests,
+        getAdminHeaders
     }
 
     return (

@@ -75,7 +75,7 @@ const normalizeBranch = (branch) => {
 }
 
 const StudentDatabase = () => {
-    const { students, studentRecords, offerLetters, backendUrl, fetchBackendData } = useContext(AppContext)
+    const { students, studentRecords, offerLetters, backendUrl, fetchBackendData, getAdminHeaders } = useContext(AppContext)
     const [search, setSearch] = useState('')
     const [branchFilter, setBranchFilter] = useState('All')
     const [statusFilter, setStatusFilter] = useState('All')
@@ -91,7 +91,7 @@ const StudentDatabase = () => {
 
     const handleToggleBlacklist = async (id) => {
         try {
-            const res = await axios.put(`${backendUrl}/api/admin/students/${id}/blacklist`)
+            const res = await axios.put(`${backendUrl}/api/admin/students/${id}/blacklist`, {}, await getAdminHeaders())
             fetchBackendData()
             if (res.data.isBlacklisted) toast.error("Student has been blacklisted.")
             else toast.success("Student blacklist lifted.")
@@ -103,7 +103,7 @@ const StudentDatabase = () => {
     const handleClearLedger = async () => {
         if (!window.confirm("Are you ABSOLUTELY sure you want to clear the entire Master Ledger? This action cannot be undone.")) return;
         try {
-            await axios.delete(`${backendUrl}/api/admin/student-records/clear`)
+            await axios.delete(`${backendUrl}/api/admin/student-records/clear`, await getAdminHeaders())
             fetchBackendData()
             toast.success("Master ledger has been completely cleared.")
         } catch (error) {
@@ -114,7 +114,7 @@ const StudentDatabase = () => {
     const handleDeleteLedgerRecord = async (id) => {
         if (!window.confirm("Delete this student record from the ledger?")) return;
         try {
-            await axios.delete(`${backendUrl}/api/admin/student-records/${id}`)
+            await axios.delete(`${backendUrl}/api/admin/student-records/${id}`, await getAdminHeaders())
             fetchBackendData()
             toast.success("Record deleted successfully.")
         } catch (error) {
@@ -296,7 +296,7 @@ const StudentDatabase = () => {
                 return toast.error("No valid records found in the CSV. Make sure each row has Roll, Name, Branch, and strictly includes the Year.");
             }
 
-            await axios.post(`${backendUrl}/api/admin/student-records/bulk`, { records })
+            await axios.post(`${backendUrl}/api/admin/student-records/bulk`, { records }, await getAdminHeaders())
             toast.success(`Successfully processed ${records.length} valid records! Duplicate IDs skipped.`)
             fetchBackendData()
         } catch (err) {

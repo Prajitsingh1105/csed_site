@@ -53,7 +53,8 @@ const PlacementRecords = () => {
     noDuesRequests = [],
     studentRecords = [],
     backendUrl,
-    fetchBackendData
+    fetchBackendData,
+    getAdminHeaders
   } = useContext(AppContext)
 
   const [activeTab, setActiveTab] = useState('Archive')
@@ -103,8 +104,12 @@ const PlacementRecords = () => {
 
     try {
       setIsAddingPlacement(true)
+      const adminHeaders = await getAdminHeaders()
       await axios.post(`${backendUrl}/api/admin/placements`, uploadData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: {
+          ...adminHeaders.headers,
+          'Content-Type': 'multipart/form-data'
+        }
       })
       toast.success('Record Added!')
       setShowAddModal(false)
@@ -121,7 +126,7 @@ const PlacementRecords = () => {
     if (!window.confirm('Are you sure you want to remove this placement record?')) return
 
     try {
-      await axios.delete(`${backendUrl}/api/admin/placements/${id}`)
+      await axios.delete(`${backendUrl}/api/admin/placements/${id}`, await getAdminHeaders())
       await fetchBackendData()
       toast.success('Placement record deleted.')
     } catch (error) {
@@ -132,7 +137,7 @@ const PlacementRecords = () => {
   const handleApproveNoDues = async (id) => {
     try {
       setProcessingNoDuesId(id)
-      await axios.put(`${backendUrl}/api/admin/no-dues/${id}/approve`)
+      await axios.put(`${backendUrl}/api/admin/no-dues/${id}/approve`, {}, await getAdminHeaders())
       toast.success('Request Approved!')
       await fetchBackendData()
     } catch (error) {
@@ -147,7 +152,7 @@ const PlacementRecords = () => {
     if (remarks === null) return;
     try {
       setProcessingNoDuesId(id)
-      await axios.put(`${backendUrl}/api/admin/no-dues/${id}/reject`, { remarks })
+      await axios.put(`${backendUrl}/api/admin/no-dues/${id}/reject`, { remarks }, await getAdminHeaders())
       toast.info('Request Rejected')
       await fetchBackendData()
     } catch (error) {

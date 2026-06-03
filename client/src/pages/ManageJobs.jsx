@@ -12,11 +12,11 @@ const ManageJobs = () => {
 
   const navigate = useNavigate()
 
-  const { jobs, applications, fetchBackendData, backendUrl } = useContext(AppContext)
+  const { jobs, applications, fetchBackendData, backendUrl, getAdminHeaders } = useContext(AppContext)
 
     const changeJobVisiblity = async (id) => {
     try {
-      await axios.put(`${backendUrl}/api/admin/jobs/${id}/visibility`)
+      await axios.put(`${backendUrl}/api/admin/jobs/${id}/visibility`, {}, await getAdminHeaders())
       fetchBackendData()
     } catch (error) {
       toast.error(error.message)
@@ -26,7 +26,7 @@ const ManageJobs = () => {
   const handleDeleteJob = async (id) => {
     if (!window.confirm("Are you sure you want to permanently delete this job posting?")) return;
     try {
-      await axios.delete(`${backendUrl}/api/admin/jobs/${id}`)
+      await axios.delete(`${backendUrl}/api/admin/jobs/${id}`, await getAdminHeaders())
       fetchBackendData()
       toast.success("Job posting deleted.")
     } catch (error) {

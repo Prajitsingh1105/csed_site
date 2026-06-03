@@ -7,7 +7,7 @@ import { assets } from '../assets/assets'
 import axios from 'axios'
 
 const CompanyTracker = () => {
-    const { companies, backendUrl, fetchBackendData } = useContext(AppContext)
+    const { companies, backendUrl, fetchBackendData, getAdminHeaders } = useContext(AppContext)
     const [search, setSearch] = useState('')
     const [filter, setFilter] = useState('All')
 
@@ -28,7 +28,7 @@ const CompanyTracker = () => {
     const handleAddCompany = async (e) => {
         e.preventDefault()
         try {
-            await axios.post(`${backendUrl}/api/admin/companies`, newCompany)
+            await axios.post(`${backendUrl}/api/admin/companies`, newCompany, await getAdminHeaders())
             toast.success("Company Added successfully!")
             setShowAddModal(false)
             setNewCompany({ name: '', sector: '', tag: 'In Discussion', logo: '' })
@@ -40,7 +40,7 @@ const CompanyTracker = () => {
 
     const handleUpdateTag = async (id, newTag) => {
         try {
-            await axios.put(`${backendUrl}/api/admin/companies/${id}/tag`, { tag: newTag })
+            await axios.put(`${backendUrl}/api/admin/companies/${id}/tag`, { tag: newTag }, await getAdminHeaders())
             fetchBackendData()
             if(newTag.includes('Fraud')) toast.error(`Company flagged as Fraud!`)
             else toast.success(`Status updated to ${newTag}`)
@@ -52,7 +52,7 @@ const CompanyTracker = () => {
     const handleDeleteCompany = async (id) => {
         if (!window.confirm("Are you sure you want to remove this company?")) return;
         try {
-            await axios.delete(`${backendUrl}/api/admin/companies/${id}`)
+            await axios.delete(`${backendUrl}/api/admin/companies/${id}`, await getAdminHeaders())
             fetchBackendData()
             toast.success("Company organization deleted.")
         } catch (error) { toast.error(error.message) }
