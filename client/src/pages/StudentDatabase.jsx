@@ -161,6 +161,8 @@ const StudentDatabase = () => {
             normalizeBranch(s.branch) === normalizeBranch(branchFilter);
 
         return matchesSearch && matchesBranch;
+    }).sort((a, b) => {
+        return String(a.rollNumber || '').localeCompare(String(b.rollNumber || ''), undefined, { numeric: true, sensitivity: 'base' });
     })
 
     const branches = ['All', ...VALID_BRANCHES]
