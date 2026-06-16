@@ -144,7 +144,12 @@ const StudentDatabase = () => {
             (statusFilter === 'Active' && !s.isBlacklisted) ||
             (statusFilter === 'Blacklisted' && s.isBlacklisted)
 
-        const matchesYear = yearFilter === 'All' || String(s.year || '') === yearFilter
+        let studentYear = s.passingYear || s.year;
+        if (!studentYear) {
+            const ledgerRecord = studentRecords.find(r => r.rollNumber === s.rollNumber);
+            if (ledgerRecord) studentYear = ledgerRecord.year;
+        }
+        const matchesYear = yearFilter === 'All' || String(studentYear || '') === yearFilter
 
         return matchesSearch && matchesBranch && matchesStatus && matchesYear
     })
@@ -172,7 +177,7 @@ const StudentDatabase = () => {
     const branches = ['All', ...VALID_BRANCHES]
     const availableYears = ['All', ...Array.from(new Set([
         ...studentRecords.map(r => r.year),
-        ...students.map(s => s.year)
+        ...students.map(s => s.passingYear || s.year)
     ].filter(y => y))).sort().reverse()]
 
     const exportToCsv = (filename, rows) => {
