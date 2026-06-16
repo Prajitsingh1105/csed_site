@@ -144,8 +144,16 @@ export const bulkUploadStudentRecords = async (req, res) => {
   try {
     const { records } = req.body;
 
-    await StudentRecord.insertMany(records, { ordered: false }).catch((err) => {
-      if (err.code !== 11000) throw err;
+    const bulkOps = records.map((record) => ({
+      updateOne: {
+        filter: { rollNumber: record.rollNumber },
+        update: { $set: record },
+        upsert: true
+      }
+    }));
+
+    await StudentRecord.bulkWrite(bulkOps, { ordered: false }).catch((err) => {
+      // console.error("Error during bulkWrite of StudentRecords:", err);
     });
 
     if (records && records.length > 0) {

@@ -228,6 +228,16 @@ const StudentDatabase = () => {
                     } else {
                         placementStatus = placementInfo.type;
                     }
+                } else if (record.placementType) {
+                    if (record.placementType === 'Job') {
+                        placementStatus = `Placed - ${record.company || ''}`.trim();
+                    } else if (record.placementType === 'Higher Studies') {
+                        placementStatus = `Higher Studies - ${record.company || ''}`.trim();
+                    } else if (record.placementType === 'Not Placed') {
+                        placementStatus = 'Not Placed';
+                    } else {
+                        placementStatus = record.placementType;
+                    }
                 }
                 return [
                     record.rollNumber || '',
@@ -280,6 +290,8 @@ const StudentDatabase = () => {
             const branchIdx = headers.findIndex(h => h.includes('branch'))
             const degreeIdx = headers.findIndex(h => h.includes('degree'))
             const yearIdx = headers.findIndex(h => h.includes('year'))
+            const placementTypeIdx = headers.findIndex(h => h.includes('placement status') || h.includes('placement type') || h === 'status')
+            const companyIdx = headers.findIndex(h => h.includes('company') || h.includes('employer'))
 
             if (rollIdx === -1 || nameIdx === -1 || branchIdx === -1 || yearIdx === -1) {
                 return toast.error("CSV Headers missing. Required: Roll, Name, Branch, Year. Found: " + headers.join(',').substring(0, 50));
@@ -304,7 +316,9 @@ const StudentDatabase = () => {
                     email: emailIdx !== -1 ? cols[emailIdx] : '',
                     branch: cols[branchIdx] ? cols[branchIdx].trim() : '',
                     degree: (degreeIdx !== -1 && cols[degreeIdx]) ? cols[degreeIdx].trim() : 'B.Tech',
-                    year: cols[yearIdx] ? cols[yearIdx].trim() : ''
+                    year: cols[yearIdx] ? cols[yearIdx].trim() : '',
+                    placementType: (placementTypeIdx !== -1 && cols[placementTypeIdx]) ? cols[placementTypeIdx].trim() : '',
+                    company: (companyIdx !== -1 && cols[companyIdx]) ? cols[companyIdx].trim() : ''
                 }
             }).filter(r => r.rollNumber && r.name && r.branch && r.year)
 
@@ -514,7 +528,19 @@ const StudentDatabase = () => {
                                     } else {
                                         placementStatus = placementInfo.type;
                                     }
+                                } else if (record.placementType) {
+                                    if (record.placementType === 'Job') {
+                                        placementStatus = `Placed - ${record.company || ''}`.trim();
+                                    } else if (record.placementType === 'Higher Studies') {
+                                        placementStatus = `Higher Studies - ${record.company || ''}`.trim();
+                                    } else if (record.placementType === 'Not Placed') {
+                                        placementStatus = 'Not Placed';
+                                    } else {
+                                        placementStatus = record.placementType;
+                                    }
                                 }
+
+                                const actualPlacementType = placementInfo?.type || record.placementType;
 
                                 return (
                                     <tr key={index} className='hover:bg-blue-50/20 transition-colors'>
@@ -528,9 +554,9 @@ const StudentDatabase = () => {
                                         </td>
                                         <td className='py-3 px-6 text-center'>
                                             <span className={`text-xs font-bold px-2 py-1 rounded-full whitespace-nowrap ${
-                                                placementInfo?.type === 'Job' ? 'bg-green-100 text-green-700 border border-green-200' :
-                                                placementInfo?.type === 'Higher Studies' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
-                                                placementInfo?.type === 'Not Placed' ? 'bg-red-100 text-red-700 border border-red-200' :
+                                                actualPlacementType === 'Job' ? 'bg-green-100 text-green-700 border border-green-200' :
+                                                actualPlacementType === 'Higher Studies' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
+                                                actualPlacementType === 'Not Placed' ? 'bg-red-100 text-red-700 border border-red-200' :
                                                 'bg-gray-100 text-gray-500 border border-gray-200'
                                             }`}>
                                                 {placementStatus}
