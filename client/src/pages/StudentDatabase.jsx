@@ -161,6 +161,8 @@ const StudentDatabase = () => {
             normalizeBranch(s.branch) === normalizeBranch(branchFilter);
 
         return matchesSearch && matchesBranch;
+    }).sort((a, b) => {
+        return String(a.rollNumber || '').localeCompare(String(b.rollNumber || ''), undefined, { numeric: true, sensitivity: 'base' });
     })
 
     const branches = ['All', ...VALID_BRANCHES]
@@ -211,16 +213,30 @@ const StudentDatabase = () => {
 
     const handleExportLedger = () => {
         const rows = [
-            ['Roll Number', 'Full Name', 'Degree', 'Branch', 'Year', 'Registration Status'],
+            ['Roll Number', 'Full Name', 'Degree', 'Branch', 'Year', 'Registration Status', 'Placement Status'],
             ...filteredLedgerRecords.map(record => {
                 const isRegistered = students.some(rs => rs.rollNumber === record.rollNumber)
+                const placementInfo = offerLetters.find(offer => offer.rollNumber === record.rollNumber);
+                let placementStatus = '-';
+                if (placementInfo) {
+                    if (placementInfo.type === 'Job') {
+                        placementStatus = `Placed - ${placementInfo.company}`;
+                    } else if (placementInfo.type === 'Higher Studies') {
+                        placementStatus = `Higher Studies - ${placementInfo.company}`;
+                    } else if (placementInfo.type === 'Not Placed') {
+                        placementStatus = 'Not Placed';
+                    } else {
+                        placementStatus = placementInfo.type;
+                    }
+                }
                 return [
                     record.rollNumber || '',
                     record.name || '',
                     record.degree || '',
                     normalizeBranch(record.branch) || record.branch || '',
                     record.year || '',
-                    isRegistered ? 'Registered' : 'Unregistered'
+                    isRegistered ? 'Registered' : 'Unregistered',
+                    placementStatus
                 ]
             })
         ]
@@ -310,7 +326,7 @@ const StudentDatabase = () => {
         <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className='container mx-auto p-2 sm:p-4'
+            className='container mx-auto p-2 sm:p-4 h-full flex flex-col overflow-hidden'
         >
             <div className="flex border-b border-gray-200 mb-6 gap-6">
                 <button
@@ -427,15 +443,16 @@ const StudentDatabase = () => {
                 </div>
             </div>
 
-            <div className='glass-panel rounded-3xl overflow-hidden border border-gray-100 bg-white/50 shadow-sm'>
-                <div className='overflow-x-auto'>
+            <div className='glass-panel rounded-3xl overflow-hidden border border-gray-100 bg-white/50 shadow-sm flex-1 flex flex-col min-h-0'>
+                <div className='overflow-x-auto overflow-y-hidden flex-1'>
                     <table className='w-full text-sm text-left whitespace-nowrap'>
-                        <thead className='bg-gray-50/80 border-b border-gray-100 text-gray-600 font-bold uppercase tracking-wider text-xs'>
+                        <thead className='bg-gray-50/80 border-b border-gray-100 text-gray-600 font-bold uppercase tracking-wider text-xs sticky top-0 z-10'>
                             <tr>
                                 <th className='py-4 px-6'>Roll Number</th>
                                 <th className='py-4 px-6'>Full Name</th>
                                 <th className='py-4 px-6'>{activeTab === 'ledger' ? 'Course Details' : 'Branch'}</th>
                                 {activeTab === 'registered' && <th className='py-4 px-6 text-center'>Account Status</th>}
+                                {activeTab === 'ledger' && <th className='py-4 px-6 text-center'>Placement Status</th>}
                                 <th className='py-4 px-6 text-center'>{activeTab === 'ledger' ? 'Verification & Actions' : 'Quick Action'}</th>
                             </tr>
                         </thead>
@@ -485,6 +502,20 @@ const StudentDatabase = () => {
 
                             {activeTab === 'ledger' && filteredLedgerRecords.map((record, index) => {
                                 const isRegistered = students.some(rs => rs.rollNumber === record.rollNumber);
+                                const placementInfo = offerLetters.find(offer => offer.rollNumber === record.rollNumber);
+                                let placementStatus = '-';
+                                if (placementInfo) {
+                                    if (placementInfo.type === 'Job') {
+                                        placementStatus = `Placed - ${placementInfo.company}`;
+                                    } else if (placementInfo.type === 'Higher Studies') {
+                                        placementStatus = `Higher Studies - ${placementInfo.company}`;
+                                    } else if (placementInfo.type === 'Not Placed') {
+                                        placementStatus = 'Not Placed';
+                                    } else {
+                                        placementStatus = placementInfo.type;
+                                    }
+                                }
+
                                 return (
                                     <tr key={index} className='hover:bg-blue-50/20 transition-colors'>
                                         <td className='py-3 px-6 font-semibold text-gray-600'>{record.rollNumber}</td>
@@ -494,6 +525,16 @@ const StudentDatabase = () => {
                                                 <span className="text-gray-700 font-semibold text-xs">{record.degree} - {record.branch}</span>
                                                 <span className="text-gray-400 text-xs text-left">Graduation Year {record.year}</span>
                                             </div>
+                                        </td>
+                                        <td className='py-3 px-6 text-center'>
+                                            <span className={`text-xs font-bold px-2 py-1 rounded-full whitespace-nowrap ${
+                                                placementInfo?.type === 'Job' ? 'bg-green-100 text-green-700 border border-green-200' :
+                                                placementInfo?.type === 'Higher Studies' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
+                                                placementInfo?.type === 'Not Placed' ? 'bg-red-100 text-red-700 border border-red-200' :
+                                                'bg-gray-100 text-gray-500 border border-gray-200'
+                                            }`}>
+                                                {placementStatus}
+                                            </span>
                                         </td>
                                         <td className='py-3 px-6 text-center'>
                                             <div className="flex items-center justify-center gap-3">
