@@ -326,7 +326,7 @@ const StudentDatabase = () => {
         <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className='container mx-auto p-2 sm:p-4 h-full flex flex-col overflow-hidden'
+            className='container mx-auto p-2 sm:p-4 h-full flex flex-col'
         >
             <div className="flex border-b border-gray-200 mb-6 gap-6">
                 <button
@@ -444,8 +444,8 @@ const StudentDatabase = () => {
             </div>
 
             <div className='glass-panel rounded-3xl overflow-hidden border border-gray-100 bg-white/50 shadow-sm flex-1 flex flex-col min-h-0'>
-                <div className='overflow-x-auto overflow-y-hidden flex-1'>
-                    <table className='w-full text-sm text-left whitespace-nowrap'>
+                <div className='overflow-x-hidden overflow-y-auto flex-1'>
+                    <table className='w-full text-sm text-left'>
                         <thead className='bg-gray-50/80 border-b border-gray-100 text-gray-600 font-bold uppercase tracking-wider text-xs sticky top-0 z-10'>
                             <tr>
                                 <th className='py-4 px-6'>Roll Number</th>
