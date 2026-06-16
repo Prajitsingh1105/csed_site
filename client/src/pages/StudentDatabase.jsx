@@ -29,6 +29,7 @@ const normalizeBranch = (branch) => {
         .toLowerCase()
         .replace(/[_-]+/g, ' ')
         .replace(/\s+/g, ' ')
+        .replace(/sciemce/g, 'science')
 
     if (!value) return ''
 
@@ -58,7 +59,9 @@ const normalizeBranch = (branch) => {
         value === 'cse regular' ||
         value === 'regular' ||
         value === 'cse reg' ||
-        value === 'reg'
+        value === 'reg' ||
+        value === 'computer science and engineering' ||
+        value === 'computer science engineering'
     ) {
         return 'Computer Science and Engineering-Regular'
     }
@@ -78,6 +81,7 @@ const StudentDatabase = () => {
     const { students, studentRecords, offerLetters, backendUrl, fetchBackendData, getAdminHeaders } = useContext(AppContext)
     const [search, setSearch] = useState('')
     const [branchFilter, setBranchFilter] = useState('All')
+    const [yearFilter, setYearFilter] = useState('2026')
     const [statusFilter, setStatusFilter] = useState('All')
     const [activeTab, setActiveTab] = useState('registered')
     const fileInputRef = useRef(null)
@@ -140,11 +144,9 @@ const StudentDatabase = () => {
             (statusFilter === 'Active' && !s.isBlacklisted) ||
             (statusFilter === 'Blacklisted' && s.isBlacklisted)
 
-        // 🔍 TEST THE FIRST RECORD TO SEE WHERE IT DROPS
-        if (idx === 0) {// console.("🕵️‍♂️ [FILTER DEBUG] Inspecting first student record:", s);// console.("🔍 Search text:", `"${search}"`, "-> Matches?", matchesSearch);// console.("📐 Branch student vs filter:", `"${s.branch}"` || 'MISSING', "vs", `"${branchFilter}"`, "-> Matches?", matchesBranch);// console.("🛡️ Status:", `isBlacklisted: ${s.isBlacklisted}`, "Filter:", statusFilter, "-> Matches?", matchesStatus);
-        }
+        const matchesYear = yearFilter === 'All' || String(s.year || '') === yearFilter
 
-        return matchesSearch && matchesBranch && matchesStatus
+        return matchesSearch && matchesBranch && matchesStatus && matchesYear
     })
 
     const filteredLedgerRecords = studentRecords.filter(s => {
@@ -160,12 +162,18 @@ const StudentDatabase = () => {
             recordBranchClean.includes(filterBranchClean) ||
             normalizeBranch(s.branch) === normalizeBranch(branchFilter);
 
-        return matchesSearch && matchesBranch;
+        const matchesYear = yearFilter === 'All' || String(s.year || '') === yearFilter;
+
+        return matchesSearch && matchesBranch && matchesYear;
     }).sort((a, b) => {
         return String(a.rollNumber || '').localeCompare(String(b.rollNumber || ''), undefined, { numeric: true, sensitivity: 'base' });
     })
 
     const branches = ['All', ...VALID_BRANCHES]
+    const availableYears = ['All', ...Array.from(new Set([
+        ...studentRecords.map(r => r.year),
+        ...students.map(s => s.year)
+    ].filter(y => y))).sort().reverse()]
 
     const exportToCsv = (filename, rows) => {
         if (!rows || rows.length === 0) {
@@ -229,14 +237,16 @@ const StudentDatabase = () => {
                         placementStatus = placementInfo.type;
                     }
                 } else if (record.placementType) {
-                    if (record.placementType === 'Job') {
-                        placementStatus = `Placed - ${record.company || ''}`.trim();
-                    } else if (record.placementType === 'Higher Studies') {
-                        placementStatus = `Higher Studies - ${record.company || ''}`.trim();
-                    } else if (record.placementType === 'Not Placed') {
+                    const pTypeLower = String(record.placementType).trim().toLowerCase();
+                    if (pTypeLower === 'job' || pTypeLower === 'placed') {
+                        placementStatus = `Placed - ${record.company || ''}`.replace(/ -$/, '').trim();
+                    } else if (pTypeLower === 'higher studies') {
+                        placementStatus = `Higher Studies - ${record.company || ''}`.replace(/ -$/, '').trim();
+                    } else if (pTypeLower === 'not placed') {
                         placementStatus = 'Not Placed';
                     } else {
                         placementStatus = record.placementType;
+                        if (record.company) placementStatus += ` - ${record.company}`;
                     }
                 }
                 return [
@@ -403,6 +413,19 @@ const StudentDatabase = () => {
                         </select>
                     </div>
 
+                    <div className="relative">
+                        <select
+                            value={yearFilter}
+                            onChange={(e) => setYearFilter(e.target.value)}
+                            className="glass-input px-4 py-2.5 text-sm font-medium min-w-[130px]"
+                        >
+                            {!availableYears.includes('2026') && yearFilter === '2026' && <option value="2026">2026</option>}
+                            {availableYears.map(y => (
+                                <option key={`year-${y}`} value={y}>{y === 'All' ? 'All Years' : y}</option>
+                            ))}
+                        </select>
+                    </div>
+
                     {activeTab === 'registered' && (
                         <div className="relative">
                             <select
@@ -529,18 +552,20 @@ const StudentDatabase = () => {
                                         placementStatus = placementInfo.type;
                                     }
                                 } else if (record.placementType) {
-                                    if (record.placementType === 'Job') {
-                                        placementStatus = `Placed - ${record.company || ''}`.trim();
-                                    } else if (record.placementType === 'Higher Studies') {
-                                        placementStatus = `Higher Studies - ${record.company || ''}`.trim();
-                                    } else if (record.placementType === 'Not Placed') {
+                                    const pTypeLower = String(record.placementType).trim().toLowerCase();
+                                    if (pTypeLower === 'job' || pTypeLower === 'placed') {
+                                        placementStatus = `Placed - ${record.company || ''}`.replace(/ -$/, '').trim();
+                                    } else if (pTypeLower === 'higher studies') {
+                                        placementStatus = `Higher Studies - ${record.company || ''}`.replace(/ -$/, '').trim();
+                                    } else if (pTypeLower === 'not placed') {
                                         placementStatus = 'Not Placed';
                                     } else {
                                         placementStatus = record.placementType;
+                                        if (record.company) placementStatus += ` - ${record.company}`;
                                     }
                                 }
 
-                                const actualPlacementType = placementInfo?.type || record.placementType;
+                                const actualPlacementType = placementInfo?.type || (String(record.placementType).trim().toLowerCase() === 'placed' ? 'Job' : record.placementType);
 
                                 return (
                                     <tr key={index} className='hover:bg-blue-50/20 transition-colors'>
