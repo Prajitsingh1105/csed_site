@@ -86,7 +86,6 @@ const StudentDatabase = () => {
     const [activeTab, setActiveTab] = useState('registered')
     const fileInputRef = useRef(null)
 
-    // 👇 FORCE A RE-FETCH WHEN THIS DASHBOARD MOUNTS
     React.useEffect(() => {
         if (fetchBackendData) {
             fetchBackendData();
@@ -185,19 +184,12 @@ const StudentDatabase = () => {
             toast.error('No data available to export.')
             return
         }
-
         const escapeCsvValue = (value) => {
             const stringValue = value == null ? '' : String(value)
-            if (/[",\n]/.test(stringValue)) {
-                return `"${stringValue.replace(/"/g, '""')}"`
-            }
+            if (/[",\n]/.test(stringValue)) return `"${stringValue.replace(/"/g, '""')}"`
             return stringValue
         }
-
-        const csvContent = rows
-            .map(row => row.map(cell => escapeCsvValue(cell)).join(','))
-            .join('\n')
-
+        const csvContent = rows.map(row => row.map(cell => escapeCsvValue(cell)).join(',')).join('\n')
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
         const url = URL.createObjectURL(blob)
         const link = document.createElement('a')
@@ -219,7 +211,6 @@ const StudentDatabase = () => {
                 student.isBlacklisted ? 'Blacklisted' : 'Active'
             ])
         ]
-
         exportToCsv('registered-students.csv', rows)
         toast.success('Registered students exported successfully.')
     }
@@ -232,24 +223,16 @@ const StudentDatabase = () => {
                 const placementInfo = offerLetters.find(offer => offer.rollNumber === record.rollNumber);
                 let placementStatus = '-';
                 if (placementInfo) {
-                    if (placementInfo.type === 'Job') {
-                        placementStatus = `Placed - ${placementInfo.company}`;
-                    } else if (placementInfo.type === 'Higher Studies') {
-                        placementStatus = `Higher Studies - ${placementInfo.company}`;
-                    } else if (placementInfo.type === 'Not Placed') {
-                        placementStatus = 'Not Placed';
-                    } else {
-                        placementStatus = placementInfo.type;
-                    }
+                    if (placementInfo.type === 'Job') placementStatus = `Placed - ${placementInfo.company}`;
+                    else if (placementInfo.type === 'Higher Studies') placementStatus = `Higher Studies - ${placementInfo.company}`;
+                    else if (placementInfo.type === 'Not Placed') placementStatus = 'Not Placed';
+                    else placementStatus = placementInfo.type;
                 } else if (record.placementType) {
                     const pTypeLower = String(record.placementType).trim().toLowerCase();
-                    if (pTypeLower === 'job' || pTypeLower === 'placed') {
-                        placementStatus = `Placed - ${record.company || ''}`.replace(/ -$/, '').trim();
-                    } else if (pTypeLower === 'higher studies') {
-                        placementStatus = `Higher Studies - ${record.company || ''}`.replace(/ -$/, '').trim();
-                    } else if (pTypeLower === 'not placed') {
-                        placementStatus = 'Not Placed';
-                    } else {
+                    if (pTypeLower === 'job' || pTypeLower === 'placed') placementStatus = `Placed - ${record.company || ''}`.replace(/ -$/, '').trim();
+                    else if (pTypeLower === 'higher studies') placementStatus = `Higher Studies - ${record.company || ''}`.replace(/ -$/, '').trim();
+                    else if (pTypeLower === 'not placed') placementStatus = 'Not Placed';
+                    else {
                         placementStatus = record.placementType;
                         if (record.company) placementStatus += ` - ${record.company}`;
                     }
@@ -265,7 +248,6 @@ const StudentDatabase = () => {
                 ]
             })
         ]
-
         exportToCsv('master-ledger.csv', rows)
         toast.success('Master ledger exported successfully.')
     }
@@ -284,21 +266,17 @@ const StudentDatabase = () => {
                 let current = '';
                 let inQuotes = false;
                 for (let i = 0; i < row.length; i++) {
-                    if (row[i] === '"') {
-                        inQuotes = !inQuotes;
-                    } else if (row[i] === ',' && !inQuotes) {
+                    if (row[i] === '"') inQuotes = !inQuotes;
+                    else if (row[i] === ',' && !inQuotes) {
                         cols.push(current.trim().replace(/^"|"$/g, ''));
                         current = '';
-                    } else {
-                        current += row[i];
-                    }
+                    } else current += row[i];
                 }
                 cols.push(current.trim().replace(/^"|"$/g, ''));
                 return cols;
             };
 
             const headers = parseCsvRow(rows[0]).map(h => h.toLowerCase())
-
             const rollIdx = headers.findIndex(h => h.includes('roll'))
             const nameIdx = headers.findIndex(h => h.includes('name'))
             const emailIdx = headers.findIndex(h => h.includes('email'))
@@ -309,22 +287,17 @@ const StudentDatabase = () => {
             const companyIdx = headers.findIndex(h => h.includes('company') || h.includes('employer'))
 
             if (rollIdx === -1 || nameIdx === -1 || branchIdx === -1 || yearIdx === -1) {
-                return toast.error("CSV Headers missing. Required: Roll, Name, Branch, Year. Found: " + headers.join(',').substring(0, 50));
+                return toast.error("CSV Headers missing. Required: Roll, Name, Branch, Year.");
             }
 
             const records = rows.slice(1).map(row => {
                 const cols = parseCsvRow(row);
                 let rRoll = cols[rollIdx] ? cols[rollIdx].trim() : '';
                 let rName = cols[nameIdx] ? cols[nameIdx].trim() : '';
-
                 if (!rRoll && rName) {
                     const match = rName.match(/^(\d+|\d\.\d+E\+\d+)\s+(.+)$/i);
-                    if (match) {
-                        rRoll = match[1];
-                        rName = match[2];
-                    }
+                    if (match) { rRoll = match[1]; rName = match[2]; }
                 }
-
                 return {
                     rollNumber: rRoll,
                     name: rName,
@@ -337,207 +310,159 @@ const StudentDatabase = () => {
                 }
             }).filter(r => r.rollNumber && r.name && r.branch && r.year)
 
-            if (records.length === 0) {
-                return toast.error("No valid records found in the CSV. Make sure each row has Roll, Name, Branch, and strictly includes the Year.");
-            }
+            if (records.length === 0) return toast.error("No valid records found in the CSV.");
 
             await axios.post(`${backendUrl}/api/admin/student-records/bulk`, { records }, await getAdminHeaders())
-            toast.success(`Successfully processed ${records.length} valid records! Duplicate IDs skipped.`)
+            toast.success(`Successfully processed ${records.length} valid records!`)
             fetchBackendData()
         } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to parse or upload CSV: " + err.message)// console.(err)
+            toast.error(err.response?.data?.message || "Failed to parse or upload CSV")
         }
-
         if (fileInputRef.current) fileInputRef.current.value = ''
     }
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className='container mx-auto p-2 sm:p-4 h-full flex flex-col'
-        >
-            <div className="flex border-b border-gray-200 mb-6 gap-6">
-                <button
-                    onClick={() => setActiveTab('registered')}
-                    className={`flex items-center gap-2 pb-3 font-semibold transition-colors ${activeTab === 'registered' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}
-                >
-                    <Users size={18} /> Registered Accounts
-                </button>
-                <button
-                    onClick={() => setActiveTab('ledger')}
-                    className={`flex items-center gap-2 pb-3 font-semibold transition-colors ${activeTab === 'ledger' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}
-                >
-                    <FileSpreadsheet size={18} /> Master Ledger
-                </button>
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className='max-w-7xl mx-auto p-4 md:p-6 lg:p-8 space-y-8 h-full flex flex-col'>
+            
+            {/* Structural Tabs */}
+            <div className="border-b border-gray-200 shrink-0">
+                <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+                    <button
+                        onClick={() => setActiveTab('registered')}
+                        className={`whitespace-nowrap py-4 px-1 border-b-2 font-bold text-sm flex items-center gap-2 ${activeTab === 'registered' ? 'border-[#0B2447] text-[#0B2447]' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+                    >
+                        <Users size={16} /> Registered Accounts
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('ledger')}
+                        className={`whitespace-nowrap py-4 px-1 border-b-2 font-bold text-sm flex items-center gap-2 ${activeTab === 'ledger' ? 'border-[#0B2447] text-[#0B2447]' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+                    >
+                        <FileSpreadsheet size={16} /> Master Ledger
+                    </button>
+                </nav>
             </div>
 
-            <div className='glass-panel p-6 rounded-3xl mb-8 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 shadow-sm border border-gray-100'>
+            {/* Header & Description */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 shrink-0">
                 <div>
-                    <h2 className='text-2xl font-bold text-gray-800 tracking-tight flex items-center gap-3'>
+                    <h2 className='text-2xl font-extrabold text-[#0F172A] tracking-tight'>
                         {activeTab === 'registered' && 'Student Directory'}
                         {activeTab === 'ledger' && 'Official Batch Ledger'}
                     </h2>
-                    {activeTab === 'registered' && studentRecords.length > 0 && (
-                        <div className="mt-3 flex items-center gap-2 bg-indigo-50 border border-indigo-100 px-3 py-1.5 rounded-lg text-sm font-bold text-indigo-700 w-fit shadow-sm">
-                            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                            {students.length} / {studentRecords.length} Master Ledger Students Registered
-                        </div>
-                    )}
-                    <p className='text-gray-500 text-sm mt-3'>
+                    <p className='text-gray-500 text-sm mt-1 font-medium'>
                         {activeTab === 'registered' && 'Manage registered candidates and enforce strict disciplinary actions.'}
                         {activeTab === 'ledger' && 'Upload official CSVs and track the entire enrolled branch.'}
                     </p>
+                    {activeTab === 'registered' && studentRecords.length > 0 && (
+                        <div className="mt-3 flex items-center gap-2 bg-indigo-50 border border-indigo-100 px-3 py-1.5 rounded-lg text-xs font-bold text-indigo-700 w-fit">
+                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                            {students.length} of {studentRecords.length} Master Ledger Students Registered
+                        </div>
+                    )}
                 </div>
+                
+                <div className="flex gap-2">
+                    {activeTab === 'registered' && (
+                        <button onClick={handleExportRegistered} className="flex items-center gap-2 bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm">
+                            <Download size={16} /> Export CSV
+                        </button>
+                    )}
+                    {activeTab === 'ledger' && (
+                        <>
+                            <button onClick={handleExportLedger} className="flex items-center gap-2 bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm">
+                                <Download size={16} /> Export
+                            </button>
+                            <button onClick={handleClearLedger} className="flex items-center gap-2 bg-white border border-red-200 hover:bg-red-50 text-red-600 px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm">
+                                <Trash2 size={16} /> Clear Ledger
+                            </button>
+                            <input type="file" accept=".csv" ref={fileInputRef} onChange={handleFileUpload} className="hidden" />
+                            <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 bg-[#0B2447] hover:bg-[#113264] text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm">
+                                <Upload size={16} /> Import CSV
+                            </button>
+                        </>
+                    )}
+                </div>
+            </div>
 
-                <div className='flex flex-wrap items-center gap-3 w-full xl:w-auto'>
-                    <div className="relative flex-grow sm:flex-grow-0 sm:w-56">
+            {/* Filters Bar */}
+            <div className='bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 shrink-0'>
+                <div className='flex flex-wrap items-center gap-3 w-full'>
+                    <div className="relative w-full sm:w-64">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <Search size={16} className="text-gray-400" />
                         </div>
                         <input
                             placeholder="Search Name or Roll No..."
-                            className="glass-input pl-9 pr-4 py-2.5 text-sm w-full font-medium"
+                            className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-[#0B2447] focus:border-transparent transition-all outline-none"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
                     </div>
 
                     <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Filter size={14} className="text-gray-400" />
-                        </div>
-                        <select
-                            value={branchFilter}
-                            onChange={(e) => setBranchFilter(e.target.value)}
-                            className="glass-input pl-9 pr-4 py-2.5 text-sm font-medium min-w-[130px]"
-                        >
-                            {branches.map(b => (
-                                <option key={`branch-${b}`} value={b}>{b === 'All' ? 'All Branches' : b}</option>
-                            ))}
+                        <select value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)} className="py-2 px-3 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium focus:bg-white focus:ring-2 focus:ring-[#0B2447] outline-none min-w-[140px]">
+                            {branches.map(b => (<option key={`branch-${b}`} value={b}>{b === 'All' ? 'All Branches' : b}</option>))}
                         </select>
                     </div>
 
                     <div className="relative">
-                        <select
-                            value={yearFilter}
-                            onChange={(e) => setYearFilter(e.target.value)}
-                            className="glass-input px-4 py-2.5 text-sm font-medium min-w-[130px]"
-                        >
+                        <select value={yearFilter} onChange={(e) => setYearFilter(e.target.value)} className="py-2 px-3 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium focus:bg-white focus:ring-2 focus:ring-[#0B2447] outline-none min-w-[120px]">
                             {!availableYears.includes('2026') && yearFilter === '2026' && <option value="2026">2026</option>}
-                            {availableYears.map(y => (
-                                <option key={`year-${y}`} value={y}>{y === 'All' ? 'All Years' : y}</option>
-                            ))}
+                            {availableYears.map(y => (<option key={`year-${y}`} value={y}>{y === 'All' ? 'All Years' : y}</option>))}
                         </select>
                     </div>
 
                     {activeTab === 'registered' && (
                         <div className="relative">
-                            <select
-                                value={statusFilter}
-                                onChange={(e) => setStatusFilter(e.target.value)}
-                                className="glass-input px-4 py-2.5 text-sm font-medium min-w-[130px]"
-                            >
+                            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="py-2 px-3 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium focus:bg-white focus:ring-2 focus:ring-[#0B2447] outline-none min-w-[140px]">
                                 <option value="All">All Statuses</option>
                                 <option value="Active">🟢 Active Only</option>
                                 <option value="Blacklisted">🔴 Blacklisted</option>
                             </select>
                         </div>
                     )}
-
-                    {activeTab === 'registered' && (
-                        <div className="relative flex gap-2">
-                            <button
-                                onClick={handleExportRegistered}
-                                className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl shadow-sm font-semibold text-sm text-emerald-600 hover:bg-emerald-50 hover:border-emerald-200 transition-colors border border-gray-200 bg-white cursor-pointer"
-                                title="Export Registered Students"
-                            >
-                                <Download size={16} /> Export Excel
-                            </button>
-                        </div>
-                    )}
-
-                    {activeTab === 'ledger' && (
-                        <div className="relative flex gap-2">
-                            <button
-                                onClick={handleExportLedger}
-                                className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl shadow-sm font-semibold text-sm text-emerald-600 hover:bg-emerald-50 hover:border-emerald-200 transition-colors border border-gray-200 bg-white cursor-pointer"
-                                title="Export Master Ledger"
-                            >
-                                <Download size={16} /> Export Excel
-                            </button>
-                            <button
-                                onClick={handleClearLedger}
-                                className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl shadow-sm font-semibold text-sm text-red-600 hover:bg-red-50 hover:border-red-200 transition-colors border border-gray-200 bg-white cursor-pointer"
-                                title="Clear Entire Ledger"
-                            >
-                                <Trash2 size={16} /> Clear
-                            </button>
-                            <input type="file" accept=".csv" ref={fileInputRef} onChange={handleFileUpload} className="hidden" />
-                            <button
-                                onClick={() => fileInputRef.current?.click()}
-                                className="btn-primary flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl shadow-md"
-                            >
-                                <Upload size={16} /> Import CSV
-                            </button>
-                        </div>
-                    )}
                 </div>
             </div>
 
-            <div className='glass-panel rounded-3xl overflow-hidden border border-gray-100 bg-white/50 shadow-sm flex-1 flex flex-col min-h-0'>
-                <div className='overflow-x-hidden overflow-y-auto flex-1'>
+            {/* Main Data Table */}
+            <div className='bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm flex-1 flex flex-col min-h-0'>
+                <div className='overflow-x-auto overflow-y-auto flex-1'>
                     <table className='w-full text-sm text-left'>
-                        <thead className='bg-gray-50/80 border-b border-gray-100 text-gray-600 font-bold uppercase tracking-wider text-xs sticky top-0 z-10'>
+                        <thead className='bg-[#F8F9FA] border-b border-gray-200 text-gray-500 font-bold uppercase tracking-wider text-[10px] sticky top-0 z-10'>
                             <tr>
-                                <th className='py-4 px-6'>Roll Number</th>
-                                <th className='py-4 px-6'>Full Name</th>
-                                <th className='py-4 px-6'>{activeTab === 'ledger' ? 'Course Details' : 'Branch'}</th>
-                                {activeTab === 'registered' && <th className='py-4 px-6 text-center'>Account Status</th>}
-                                {activeTab === 'ledger' && <th className='py-4 px-6 text-center'>Placement Status</th>}
-                                <th className='py-4 px-6 text-center'>{activeTab === 'ledger' ? 'Verification & Actions' : 'Quick Action'}</th>
+                                <th className='py-4 px-6 w-32'>Roll Number</th>
+                                <th className='py-4 px-6'>Student Identity</th>
+                                <th className='py-4 px-6'>{activeTab === 'ledger' ? 'Course Details' : 'Branch Details'}</th>
+                                {activeTab === 'registered' && <th className='py-4 px-6 w-40'>Access Status</th>}
+                                {activeTab === 'ledger' && <th className='py-4 px-6 w-48'>Current Outcome</th>}
+                                <th className='py-4 px-6 text-center w-24'>{activeTab === 'ledger' ? 'Actions' : 'Modify'}</th>
                             </tr>
                         </thead>
                         <tbody className='divide-y divide-gray-100'>
                             {activeTab === 'registered' && filteredStudents.map((student, index) => (
-                                <tr key={index} className={`transition-colors ${student.isBlacklisted ? 'bg-red-50/30 hover:bg-red-50/50' : 'hover:bg-blue-50/20'}`}>
-                                    <td className='py-3 px-6 font-semibold text-gray-600'>
-                                        {student.rollNumber}
-                                    </td>
-                                    <td className='py-3 px-6'>
-                                        <span className={`font-bold ${student.isBlacklisted ? 'text-red-700' : 'text-gray-800'}`}>
-                                            {student.name}
-                                        </span>
-                                    </td>
-                                    <td className='py-3 px-6'>
-                                        <span className="text-gray-500 font-medium">
-                                            {student.branch}
-                                        </span>
-                                    </td>
-                                    <td className='py-3 px-6 text-center'>
+                                <tr key={index} className={`transition-colors ${student.isBlacklisted ? 'bg-red-50/20' : 'hover:bg-gray-50'}`}>
+                                    <td className='py-4 px-6 font-semibold text-gray-500'>{student.rollNumber}</td>
+                                    <td className='py-4 px-6 font-bold text-[#0F172A]'>{student.name}</td>
+                                    <td className='py-4 px-6 font-medium text-gray-600'>{student.branch}</td>
+                                    <td className='py-4 px-6'>
                                         {student.isBlacklisted ? (
-                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200">
-                                                <ShieldAlert size={12} /> BANNED
+                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[10px] font-bold bg-red-100 text-red-700 border border-red-200 tracking-wide uppercase">
+                                                <ShieldAlert size={12} /> Banned
                                             </span>
                                         ) : (
-                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-50 text-green-700 border border-green-200">
-                                                <UserCheck size={12} /> ACTIVE
+                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 tracking-wide uppercase">
+                                                <UserCheck size={12} /> Active
                                             </span>
                                         )}
                                     </td>
-                                    <td className='py-3 px-6 text-center'>
-                                        <div className="flex items-center justify-center">
-                                            <button
-                                                onClick={() => handleToggleBlacklist(student._id)}
-                                                title={student.isBlacklisted ? "Lift Ban" : "Blacklist Student"}
-                                                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-sm ${student.isBlacklisted
-                                                    ? 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800'
-                                                    : 'bg-red-50 text-red-500 hover:bg-red-500 hover:text-white'
-                                                    }`}
-                                            >
-                                                {student.isBlacklisted ? <UserCheck size={14} /> : <UserX size={14} />}
-                                            </button>
-                                        </div>
+                                    <td className='py-4 px-6 text-center'>
+                                        <button
+                                            onClick={() => handleToggleBlacklist(student._id)}
+                                            title={student.isBlacklisted ? "Restore Access" : "Blacklist Account"}
+                                            className={`p-2 rounded-lg border transition-all shadow-sm ${student.isBlacklisted ? 'bg-white text-gray-600 border-gray-200 hover:border-gray-300' : 'bg-red-50 text-red-600 border-red-100 hover:bg-red-600 hover:text-white hover:border-red-600'}`}
+                                        >
+                                            {student.isBlacklisted ? <UserCheck size={16} /> : <UserX size={16} />}
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
@@ -547,24 +472,16 @@ const StudentDatabase = () => {
                                 const placementInfo = offerLetters.find(offer => offer.rollNumber === record.rollNumber);
                                 let placementStatus = '-';
                                 if (placementInfo) {
-                                    if (placementInfo.type === 'Job') {
-                                        placementStatus = `Placed - ${placementInfo.company}`;
-                                    } else if (placementInfo.type === 'Higher Studies') {
-                                        placementStatus = `Higher Studies - ${placementInfo.company}`;
-                                    } else if (placementInfo.type === 'Not Placed') {
-                                        placementStatus = 'Not Placed';
-                                    } else {
-                                        placementStatus = placementInfo.type;
-                                    }
+                                    if (placementInfo.type === 'Job') placementStatus = `Placed - ${placementInfo.company}`;
+                                    else if (placementInfo.type === 'Higher Studies') placementStatus = `Higher Studies - ${placementInfo.company}`;
+                                    else if (placementInfo.type === 'Not Placed') placementStatus = 'Not Placed';
+                                    else placementStatus = placementInfo.type;
                                 } else if (record.placementType) {
                                     const pTypeLower = String(record.placementType).trim().toLowerCase();
-                                    if (pTypeLower === 'job' || pTypeLower === 'placed') {
-                                        placementStatus = `Placed - ${record.company || ''}`.replace(/ -$/, '').trim();
-                                    } else if (pTypeLower === 'higher studies') {
-                                        placementStatus = `Higher Studies - ${record.company || ''}`.replace(/ -$/, '').trim();
-                                    } else if (pTypeLower === 'not placed') {
-                                        placementStatus = 'Not Placed';
-                                    } else {
+                                    if (pTypeLower === 'job' || pTypeLower === 'placed') placementStatus = `Placed - ${record.company || ''}`.replace(/ -$/, '').trim();
+                                    else if (pTypeLower === 'higher studies') placementStatus = `Higher Studies - ${record.company || ''}`.replace(/ -$/, '').trim();
+                                    else if (pTypeLower === 'not placed') placementStatus = 'Not Placed';
+                                    else {
                                         placementStatus = record.placementType;
                                         if (record.company) placementStatus += ` - ${record.company}`;
                                     }
@@ -573,36 +490,30 @@ const StudentDatabase = () => {
                                 const actualPlacementType = placementInfo?.type || (String(record.placementType).trim().toLowerCase() === 'placed' ? 'Job' : record.placementType);
 
                                 return (
-                                    <tr key={index} className='hover:bg-blue-50/20 transition-colors'>
-                                        <td className='py-3 px-6 font-semibold text-gray-600'>{record.rollNumber}</td>
-                                        <td className='py-3 px-6 font-bold text-gray-800 break-words'>{record.name}</td>
-                                        <td className='py-3 px-6'>
-                                            <div className='flex flex-col'>
-                                                <span className="text-gray-700 font-semibold text-xs">{record.degree} - {record.branch}</span>
-                                                <span className="text-gray-400 text-xs text-left">Graduation Year {record.year}</span>
-                                            </div>
+                                    <tr key={index} className='hover:bg-gray-50 transition-colors'>
+                                        <td className='py-4 px-6 font-semibold text-gray-500'>{record.rollNumber}</td>
+                                        <td className='py-4 px-6 font-bold text-[#0F172A]'>{record.name}</td>
+                                        <td className='py-4 px-6'>
+                                            <p className="font-medium text-gray-700 text-sm">{record.degree} - {record.branch}</p>
+                                            <p className="text-gray-400 text-xs font-semibold mt-0.5">Batch of {record.year}</p>
                                         </td>
-                                        <td className='py-3 px-6 text-center'>
-                                            <span className={`text-xs font-bold px-2 py-1 rounded-full whitespace-nowrap ${
-                                                actualPlacementType === 'Job' ? 'bg-green-100 text-green-700 border border-green-200' :
-                                                actualPlacementType === 'Higher Studies' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
-                                                actualPlacementType === 'Not Placed' ? 'bg-red-100 text-red-700 border border-red-200' :
-                                                'bg-gray-100 text-gray-500 border border-gray-200'
+                                        <td className='py-4 px-6'>
+                                            <span className={`text-[10px] font-bold px-2 py-1 rounded tracking-wide uppercase border ${
+                                                actualPlacementType === 'Job' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                                actualPlacementType === 'Higher Studies' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' :
+                                                actualPlacementType === 'Not Placed' ? 'bg-gray-50 text-gray-600 border-gray-200' :
+                                                'bg-amber-50 text-amber-700 border-amber-200'
                                             }`}>
                                                 {placementStatus}
                                             </span>
                                         </td>
-                                        <td className='py-3 px-6 text-center'>
-                                            <div className="flex items-center justify-center gap-3">
+                                        <td className='py-4 px-6 text-center'>
+                                            <div className="flex items-center justify-center gap-2">
                                                 {isRegistered ?
-                                                    <span className='inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-600 border border-indigo-100'>Registered</span> :
-                                                    <span className='inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-500 border border-gray-200'>Unregistered</span>
+                                                    <span className='px-2 py-1 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 tracking-wide uppercase'>Registered</span> :
+                                                    <span className='px-2 py-1 rounded text-[10px] font-bold bg-white text-gray-400 border border-gray-200 tracking-wide uppercase'>Unregistered</span>
                                                 }
-                                                <button
-                                                    onClick={() => handleDeleteLedgerRecord(record._id)}
-                                                    title="Delete Ledger Record"
-                                                    className="w-8 h-8 rounded-full flex items-center justify-center transition-all bg-red-50 text-red-500 hover:bg-red-500 hover:text-white"
-                                                >
+                                                <button onClick={() => handleDeleteLedgerRecord(record._id)} title="Delete Record" className="p-1.5 rounded bg-white border border-gray-200 text-gray-400 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors shadow-sm">
                                                     <Trash2 size={14} />
                                                 </button>
                                             </div>
@@ -613,8 +524,8 @@ const StudentDatabase = () => {
 
                             {((activeTab === 'registered' && filteredStudents.length === 0) || (activeTab === 'ledger' && filteredLedgerRecords.length === 0)) && (
                                 <tr>
-                                    <td colSpan="5" className="py-12 text-center text-gray-500 font-medium">
-                                        No students perfectly matched your filters, or database is empty.
+                                    <td colSpan="6" className="py-12 text-center text-gray-500 font-medium bg-gray-50/50">
+                                        No students found matching your filters.
                                     </td>
                                 </tr>
                             )}

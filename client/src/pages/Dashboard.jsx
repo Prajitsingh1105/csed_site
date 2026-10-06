@@ -1,13 +1,12 @@
 import React, { useContext, useEffect } from 'react'
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { assets } from '../assets/assets'
 import { AppContext } from '../context/AppContext'
-import { LogOut, Bell, Building2, FileCheck, Users, MessageSquare } from 'lucide-react'
+import { LogOut, Bell, FileCheck, Users, MessageSquare, LayoutDashboard } from 'lucide-react'
 
 const Dashboard = () => {
-
     const navigate = useNavigate()
-
+    const location = useLocation()
     const { companyData, setCompanyData, companyToken, setCompanyToken } = useContext(AppContext)
 
     // Function to logout for company
@@ -26,85 +25,84 @@ const Dashboard = () => {
         }
     }, [companyToken, navigate])
 
-    return (
-        <div className='min-h-screen flex flex-col'>
+    const navLinks = [
+        { path: '/dashboard', label: 'Overview', icon: LayoutDashboard, exact: true },
+        { path: '/dashboard/placement-records', label: 'Placement Records', icon: FileCheck },
+        { path: '/dashboard/student-database', label: 'Student Base', icon: Users },
+        { path: '/dashboard/manage-notices', label: 'Manage Notices', icon: Bell },
+        { path: '/dashboard/manage-queries', label: 'Query Forum', icon: MessageSquare },
+    ]
 
-            {/* Navbar for Recuriter Panel */}
-            <div className='shadow-sm border-b border-gray-100 py-4 bg-white/80 backdrop-blur-md sticky top-0 z-50'>
-                <div className='px-6 flex justify-between items-center'>
-                    <div onClick={() => navigate('/')} className='flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity'>
-                        <img className='w-10 sm:w-12 mix-blend-multiply' src={assets.iet_logo_2} alt="IET Logo" />
-                        <h1 className='text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-indigo-800 tracking-tight'>
-                            Computer Science IET Lucknow Placement Portal
-                        </h1>
+    return (
+        <div className='min-h-screen flex flex-col bg-[#F8F9FA] font-sans'>
+
+            {/* Top Navbar */}
+            <header className='bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm flex flex-col'>
+                
+                {/* Top Tier: Brand & Profile */}
+                <div className='max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center shrink-0'>
+                    <div onClick={() => navigate('/')} className='flex items-center gap-3 cursor-pointer'>
+                        <img className='w-8 sm:w-10 mix-blend-multiply' src={assets.iet_logo_2} alt="IET Logo" />
+                        <div>
+                            <h1 className='text-base sm:text-lg font-extrabold text-[#0B2447] tracking-tight leading-tight'>
+                                CSED Placement Portal
+                            </h1>
+                            <div className="text-[10px] sm:text-xs text-gray-500 font-bold uppercase tracking-widest mt-0.5">
+                                Coordinator Dashboard
+                            </div>
+                        </div>
                     </div>
-                    {/* Always show coordinator profile for now */}
-                    <div className='flex items-center gap-4'>
-                        <div className='text-right max-sm:hidden'>
-                            <p className='text-sm font-semibold text-gray-800 tracking-tight'>Welcome, Coordinator</p>
-                            <p className='text-xs text-gray-500 font-medium'>Department of Computer Science and Engineering</p>
+
+                    <div className='flex items-center gap-5'>
+                        <div className='text-right hidden sm:block'>
+                            <p className='text-sm font-extrabold text-[#0F172A] leading-tight'>Admin Access</p>
+                            <button onClick={logout} className='text-xs text-red-500 hover:text-red-700 font-bold mt-0.5 transition-colors flex items-center justify-end gap-1 w-full'>
+                                <LogOut size={12} /> Logout
+                            </button>
                         </div>
                         <div className='relative group'>
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center shadow-md border-2 border-white cursor-pointer overflow-hidden">
-                                <img src={assets.iet_logo_2} alt="Profile" className="w-full h-full object-cover" />
+                            <div className="w-9 h-9 rounded-full bg-[#0B2447] flex items-center justify-center shadow-sm border border-gray-200 cursor-pointer text-white font-extrabold text-sm hover:scale-105 transition-transform">
+                                C
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div className='flex items-start flex-1'>
-
-                {/* Left Sidebar with option to add job, manage jobs, view applications */}
-                <div className='flex flex-col min-h-[calc(100vh-80px)] border-r border-gray-100 bg-white/50 w-16 sm:w-64 shrink-0 transition-all'>
-                    <ul className='flex flex-col items-start pt-6 text-gray-600 font-medium w-full flex-1 overflow-y-auto max-h-[calc(100vh-140px)] overflow-x-hidden'>
-                        <NavLink className={({ isActive }) => ` flex items-center px-4 sm:px-6 py-4 gap-3 w-full transition-all border-l-4 overflow-hidden ${isActive ? 'bg-indigo-50/50 text-indigo-700 border-indigo-600 font-bold' : 'border-transparent hover:bg-gray-50 hover:text-gray-900'}`} end to={'/dashboard'}>
-                            <img className='w-5 opacity-80 shrink-0' src={assets.home_icon} alt="" />
-                            <p className='max-sm:hidden'>Overview</p>
-                        </NavLink>
-
-                        <div className='w-full px-4 sm:px-6 py-2 mt-2'>
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block border-b border-gray-100 pb-2 max-sm:hidden">Power Tools</span>
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block border-b border-gray-100 pb-2 sm:hidden text-center">PT</span>
-                        </div>
-
-                        <NavLink className={({ isActive }) => ` flex items-center px-4 sm:px-6 py-3.5 gap-3 w-full transition-all border-l-4 overflow-hidden ${isActive ? 'bg-indigo-50/50 text-indigo-700 border-indigo-600 font-bold' : 'border-transparent hover:bg-gray-50 hover:text-gray-900'}`} to={'/dashboard/manage-notices'}>
-                            <Bell size={20} className='opacity-80 shrink-0' />
-                            <p className='max-sm:hidden whitespace-nowrap'>Manage Notices</p>
-                        </NavLink>
-
-                        <NavLink className={({ isActive }) => ` flex items-center px-4 sm:px-6 py-3.5 gap-3 w-full transition-all border-l-4 overflow-hidden ${isActive ? 'bg-indigo-50/50 text-indigo-700 border-indigo-600 font-bold' : 'border-transparent hover:bg-gray-50 hover:text-gray-900'}`} to={'/dashboard/placement-records'}>
-                            <FileCheck size={20} className='opacity-80 shrink-0' />
-                            <p className='max-sm:hidden whitespace-nowrap'>Placement Records</p>
-                        </NavLink>
-
-                        <NavLink className={({ isActive }) => ` flex items-center px-4 sm:px-6 py-3.5 gap-3 w-full transition-all border-l-4 overflow-hidden ${isActive ? 'bg-indigo-50/50 text-indigo-700 border-indigo-600 font-bold' : 'border-transparent hover:bg-gray-50 hover:text-gray-900'}`} to={'/dashboard/student-database'}>
-                            <Users size={20} className='opacity-80 shrink-0' />
-                            <p className='max-sm:hidden whitespace-nowrap'>Student Base</p>
-                        </NavLink>
-
-                        <NavLink className={({ isActive }) => ` flex items-center px-4 sm:px-6 py-3.5 gap-3 w-full transition-all border-l-4 overflow-hidden ${isActive ? 'bg-indigo-50/50 text-indigo-700 border-indigo-600 font-bold' : 'border-transparent hover:bg-gray-50 hover:text-gray-900'}`} to={'/dashboard/manage-queries'}>
-                            <MessageSquare size={20} className='opacity-80 shrink-0' />
-                            <p className='max-sm:hidden whitespace-nowrap'>Query Forum</p>
-                        </NavLink>
-                    </ul>
-
-                    <div className='p-2 sm:p-4 border-t border-gray-100 mt-auto bg-white/50 z-10 block'>
+                {/* Bottom Tier: Navigation Links */}
+                <div className='max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 shrink-0'>
+                    <div className='flex items-center gap-2 overflow-x-auto -mb-px [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]'>
+                        {navLinks.map((link) => (
+                            <NavLink
+                                key={link.path}
+                                to={link.path}
+                                end={link.exact}
+                                className={({ isActive }) => `
+                                    flex items-center gap-2 py-3.5 px-4 whitespace-nowrap text-sm font-bold transition-all border-b-2
+                                    ${isActive 
+                                        ? 'border-[#0B2447] text-[#0B2447]' 
+                                        : 'border-transparent text-gray-500 hover:text-[#0F172A] hover:border-gray-300'}
+                                `}
+                            >
+                                <link.icon size={16} />
+                                {link.label}
+                            </NavLink>
+                        ))}
+                        {/* Mobile Logout Button */}
                         <button
                             onClick={logout}
-                            className='flex items-center justify-center gap-2 w-full py-3 px-2 sm:px-4 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors'
+                            className='sm:hidden flex items-center gap-2 py-3.5 px-4 whitespace-nowrap text-sm font-bold text-red-500 border-b-2 border-transparent transition-all hover:text-red-700'
                         >
-                            <LogOut size={18} className='shrink-0' />
-                            <span className='max-sm:hidden'>Logout</span>
+                            <LogOut size={16} />
+                            Logout
                         </button>
                     </div>
                 </div>
+            </header>
 
-                <div className='flex-1 h-[calc(100vh-80px)] p-2 sm:p-5 m-2 overflow-y-auto overflow-x-hidden'>
-                    <Outlet />
-                </div>
-
-            </div>
+            {/* Main Content Area */}
+            <main className='flex-1 w-full flex flex-col relative'>
+                <Outlet />
+            </main>
 
         </div>
     )

@@ -1,45 +1,42 @@
 @import "tailwindcss";
 
 @layer components {
-  /* Premium Glassmorphism styling */
+  /* Clean, Structural Panels */
   .glass-panel {
-    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)];
+    @apply bg-white border border-gray-200 shadow-sm rounded-xl transition-all;
   }
   
   .glass-dark-panel {
-    @apply bg-gray-900/70 backdrop-blur-md border border-gray-700/50 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)];
+    @apply bg-slate-900 border border-slate-800 shadow-sm rounded-xl transition-all;
   }
 
-  /* Sleek input fields */
+  /* Sharp input fields */
   .glass-input {
-    @apply w-full bg-white/50 border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:bg-white transition-all backdrop-blur-sm;
+    @apply w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#0B2447] focus:border-transparent transition-all shadow-sm;
   }
 
-  /* Premium Buttons */
+  /* Refined Buttons */
   .btn-primary {
-    @apply relative overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium py-2.5 px-6 rounded-lg transition-all hover:shadow-[0_0_20px_rgba(79,70,229,0.4)] hover:-translate-y-0.5 active:translate-y-0 duration-300;
+    @apply relative overflow-hidden bg-[#0B2447] text-white font-medium py-2.5 px-6 rounded-lg transition-all hover:bg-[#113264] active:scale-[0.98] duration-200 shadow-sm;
   }
   
   .btn-secondary {
-    @apply relative overflow-hidden bg-white text-gray-800 font-medium py-2.5 px-6 rounded-lg border border-gray-200 transition-all hover:bg-gray-50 hover:border-gray-300 hover:-translate-y-0.5 active:translate-y-0 duration-300;
+    @apply relative overflow-hidden bg-white text-gray-800 font-medium py-2.5 px-6 rounded-lg border border-gray-200 transition-all hover:bg-gray-50 hover:border-gray-300 active:scale-[0.98] duration-200 shadow-sm;
   }
 
-  /* Application Card Hover */
+  /* Subtle Hover */
   .hover-lift {
-    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-500/10;
+    @apply transition-all duration-300 hover:border-gray-300 hover:shadow-md;
   }
 }
 
 body {
-  font-family: 'Outfit', sans-serif;
-  background-color: #f8fafc; /* light slate */
-  background-image: 
-    radial-gradient(at 0% 0%, hsla(210, 100%, 95%, 1) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, hsla(280, 100%, 95%, 1) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, hsla(210, 100%, 95%, 1) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, hsla(280, 100%, 95%, 1) 0px, transparent 50%);
-  background-attachment: fixed;
-  color: #1e293b;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #F8F9FA; /* Clean off-white */
+  color: #0F172A; /* Slate 900 for high contrast readability */
+  /* Subtle dot grid pattern for technical feel */
+  background-image: radial-gradient(#E2E8F0 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
 /* Custom Scrollbar for sleekness */
@@ -48,7 +45,7 @@ body {
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: white; 
+  background: transparent; 
 }
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1; 
@@ -60,5 +57,6 @@ body {
 
 /* Base Headings Setup */
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  letter-spacing: -0.02em;
 }
