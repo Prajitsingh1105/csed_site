@@ -218,7 +218,7 @@ const AcademicObjectives = () => {
                 <div className="space-y-4 w-full min-w-0">
                   
                   {active.type === 'table-programs' && (
-                    <div className="w-full overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white">
+                    <div className="w-full overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white" data-lenis-prevent="true">
                       <table className="w-full text-left text-sm text-gray-600 min-w-[500px]">
                         <thead className="bg-gray-50 border-b border-gray-200 text-[#11241a] font-serif font-medium text-[15px]">
                           <tr>
@@ -245,7 +245,7 @@ const AcademicObjectives = () => {
                   )}
 
                   {active.type === 'table-syllabus' && (
-                    <div className="w-full overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white">
+                    <div className="w-full overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white" data-lenis-prevent="true">
                       <table className="w-full text-left text-sm text-gray-600 min-w-[500px]">
                         <thead className="bg-gray-50 border-b border-gray-200 text-[#11241a] font-serif font-medium text-[15px]">
                           <tr>

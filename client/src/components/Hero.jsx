@@ -38,7 +38,7 @@ const Hero = () => {
         </div>
 
         {/* Content */}
-        <div className="relative z-20 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center pt-24 sm:pt-20 pb-20 sm:pb-48">
+        <div className="relative z-20 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center pt-[140px] pb-[120px] sm:pt-20 sm:pb-48">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -54,7 +54,7 @@ const Hero = () => {
             </div>
 
             {/* Prestige Typography for Headline */}
-            <h1 className="text-5xl sm:text-6xl lg:text-[72px] font-serif font-medium text-[#FFFDF8] leading-[1.05] tracking-tight">
+            <h1 className="text-[40px] sm:text-6xl lg:text-[72px] font-serif font-medium text-[#FFFDF8] leading-[1.1] sm:leading-[1.05] tracking-tight">
               Department of
               <br />
               <span className="italic text-[#D4AF37] font-serif font-light">Computer Science</span>
