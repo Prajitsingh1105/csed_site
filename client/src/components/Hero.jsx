@@ -94,21 +94,21 @@ const Hero = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              className="glass-dark-card rounded-2xl overflow-hidden grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-white/10"
+              className="glass-dark-card rounded-2xl overflow-hidden grid grid-cols-3 divide-x divide-white/10"
             >
               {STATS.map((stat, i) => (
                 <div
                   key={i}
-                  className="px-6 sm:px-10 py-8 text-center sm:text-left group hover:bg-white/5 transition-colors duration-500"
+                  className="px-2 sm:px-10 py-4 sm:py-8 flex flex-col items-center sm:items-start text-center sm:text-left group hover:bg-white/5 transition-colors duration-500"
                 >
                   {/* Kinetic Numerals (Serif) */}
-                  <p className="text-4xl sm:text-5xl font-serif font-medium text-[#FFFDF8] tracking-tight group-hover:scale-105 transition-transform origin-left duration-500">
+                  <p className="text-2xl sm:text-5xl font-serif font-medium text-[#FFFDF8] tracking-tight group-hover:scale-105 transition-transform origin-center sm:origin-left duration-500">
                     {stat.value}
                   </p>
-                  <p className="mt-3 text-[13px] font-bold text-[#E8E2D6] tracking-wide uppercase">
+                  <p className="mt-1 sm:mt-3 text-[9px] sm:text-[13px] font-bold text-[#E8E2D6] tracking-wide uppercase leading-tight max-w-[120px]">
                     {stat.label}
                   </p>
-                  <p className="text-[12px] text-gray-300 mt-1.5 font-medium tracking-wide">
+                  <p className="hidden sm:block text-[12px] text-gray-300 mt-1.5 font-medium tracking-wide">
                     {stat.sub}
                   </p>
                 </div>

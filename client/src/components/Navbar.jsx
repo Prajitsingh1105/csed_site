@@ -306,7 +306,11 @@ const Navbar = () => {
                   onClick={() => setShowMobileMenu((p) => !p)}
                   aria-expanded={showMobileMenu}
                   aria-label="Toggle mobile menu"
-                  className="inline-flex items-center justify-center h-10 w-10 rounded-md border border-white/20 bg-white/5 text-white shadow-sm"
+                  className={`inline-flex items-center justify-center h-10 w-10 rounded-md shadow-sm transition-colors ${
+                    scrolled || !isHomePage 
+                      ? 'border border-white/20 bg-white/10 text-white hover:bg-white/20'
+                      : 'border border-white/20 bg-white/5 text-white hover:bg-white/10'
+                  }`}
                 >
                   {showMobileMenu ? <X size={18} /> : <Menu size={18} />}
                 </button>
@@ -321,9 +325,9 @@ const Navbar = () => {
                     transition={{ duration: 0.18 }}
                     className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden z-[60]"
                   >
-                    {user ? (
-                      <div>
-                        <div className="px-4 py-3 bg-gradient-to-r from-[#11241a] to-[#1a1728]">
+                    <div className="max-h-[80vh] overflow-y-auto">
+                      {user && (
+                        <div className="px-4 py-4 bg-gradient-to-r from-[#11241a] to-[#1a1728]">
                           <p className="text-sm font-semibold text-white truncate">
                             {user?.fullName || user?.firstName || 'User'}
                           </p>
@@ -331,37 +335,70 @@ const Navbar = () => {
                             {email || 'Signed in'}
                           </p>
                         </div>
+                      )}
 
-                        <div className="py-1">
-                          {userMobileItems.map((item, i) => (
+                      {/* Main Navigation Links */}
+                      <div className="py-2 border-b border-gray-100">
+                        {megaMenuItems.map((item) => (
+                          <div key={item.label}>
+                            {item.dropdown ? (
+                              <div className="px-4 py-2">
+                                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2">{item.label}</p>
+                                <div className="space-y-1 pl-3 border-l-2 border-[#D4AF37]/30 ml-1">
+                                  {item.dropdown.map(subItem => (
+                                    <Link
+                                      key={subItem.label}
+                                      to={subItem.to}
+                                      onClick={() => setShowMobileMenu(false)}
+                                      className="block px-3 py-2 text-[13px] font-medium text-gray-600 hover:text-[#11241a] hover:bg-gray-50 rounded-md transition-colors"
+                                    >
+                                      {subItem.label}
+                                    </Link>
+                                  ))}
+                                </div>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  handleScrollTo(item.id)
+                                  setShowMobileMenu(false)
+                                }}
+                                className="w-full text-left px-4 py-3 text-[13px] font-bold uppercase tracking-wider text-gray-700 hover:bg-[#11241a]/5 hover:text-[#11241a] transition-colors"
+                              >
+                                {item.label}
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Auth / Tool Links */}
+                      <div className="py-2 bg-gray-50/50">
+                        {user ? (
+                          userMobileItems.map((item, i) => (
                             <button
                               key={i}
                               onClick={item.action}
-                              className={`w-full flex items-center gap-2.5 text-left px-4 py-3 text-[13px] font-medium text-gray-700 hover:bg-[#11241a]/5 hover:text-[#11241a] transition-colors ${
-                                i > 0 ? 'border-t border-gray-100' : ''
-                              }`}
+                              className="w-full flex items-center gap-2.5 text-left px-4 py-3 text-[13px] font-medium text-gray-700 hover:bg-[#11241a]/5 hover:text-[#11241a] transition-colors"
                             >
                               {item.icon}
                               {item.label}
                             </button>
-                          ))}
-                        </div>
+                          ))
+                        ) : (
+                          guestMobileItems.map((item, i) => (
+                            <button
+                              key={i}
+                              onClick={item.action}
+                              className="w-full flex items-center gap-2.5 text-left px-4 py-3 text-[13px] font-medium text-gray-700 hover:bg-[#11241a]/5 hover:text-[#11241a] transition-colors"
+                            >
+                              {item.icon}
+                              {item.label}
+                            </button>
+                          ))
+                        )}
                       </div>
-                    ) : (
-                      <div className="py-1">
-                        {guestMobileItems.map((item, i) => (
-                          <button
-                            key={i}
-                            onClick={item.action}
-                            className={`w-full text-left px-4 py-3 text-[13px] font-medium text-gray-700 hover:bg-[#11241a]/5 hover:text-[#11241a] transition-colors ${
-                              i > 0 ? 'border-t border-gray-100' : ''
-                            }`}
-                          >
-                            {item.label}
-                          </button>
-                        ))}
-                      </div>
-                    )}
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
