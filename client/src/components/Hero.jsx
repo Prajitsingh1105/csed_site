@@ -14,7 +14,7 @@ const Hero = () => {
   return (
     <section className="relative mb-24 lg:mb-32 -mt-[67px] sm:-mt-[100px]">
       {/* Hero Image Block */}
-      <div className="relative h-[100dvh] min-h-[650px] max-h-[1080px]">
+      <div className="relative h-[100dvh] min-h-[750px] max-h-[1080px]">
         
         {/* Image and Gradients Container */}
         <div className="absolute inset-0 overflow-hidden bg-[#11241a]">
@@ -38,7 +38,7 @@ const Hero = () => {
         </div>
 
         {/* Content */}
-        <div className="relative z-20 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center pt-16 sm:pt-20 pb-32 sm:pb-48">
+        <div className="relative z-20 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center pt-24 sm:pt-20 pb-20 sm:pb-48">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

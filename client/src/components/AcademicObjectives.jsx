@@ -192,7 +192,7 @@ const AcademicObjectives = () => {
           </div>
 
           {/* Content panel */}
-          <div className="lg:col-span-8">
+          <div className="lg:col-span-8 w-full min-w-0">
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTab}
@@ -200,6 +200,7 @@ const AcademicObjectives = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
+                className="w-full min-w-0"
               >
                 <div className="flex items-center gap-4 mb-8 pb-6 border-b border-[#11241a]/10">
                   <div
@@ -214,11 +215,11 @@ const AcademicObjectives = () => {
                   </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-4 w-full min-w-0">
                   
                   {active.type === 'table-programs' && (
-                    <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white">
-                      <table className="w-full text-left text-sm text-gray-600">
+                    <div className="w-full overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white">
+                      <table className="w-full text-left text-sm text-gray-600 min-w-[500px]">
                         <thead className="bg-gray-50 border-b border-gray-200 text-[#11241a] font-serif font-medium text-[15px]">
                           <tr>
                             <th className="px-6 py-4">Programme</th>
@@ -244,8 +245,8 @@ const AcademicObjectives = () => {
                   )}
 
                   {active.type === 'table-syllabus' && (
-                    <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white">
-                      <table className="w-full text-left text-sm text-gray-600">
+                    <div className="w-full overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white">
+                      <table className="w-full text-left text-sm text-gray-600 min-w-[500px]">
                         <thead className="bg-gray-50 border-b border-gray-200 text-[#11241a] font-serif font-medium text-[15px]">
                           <tr>
                             <th className="px-6 py-4">Programme</th>
