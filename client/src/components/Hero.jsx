@@ -38,7 +38,7 @@ const Hero = () => {
         </div>
 
         {/* Content */}
-        <div className="relative z-20 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center pt-[140px] pb-[120px] sm:pt-20 sm:pb-48">
+        <div className="relative z-20 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-start sm:justify-center pt-[160px] sm:pt-20 pb-40 sm:pb-48">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -66,10 +66,10 @@ const Hero = () => {
               Fostering innovation, research, and technical excellence. Empowering the next generation of computer scientists and software engineers.
             </p>
 
-            <div className="mt-10 flex flex-wrap gap-4">
+            <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4">
               <Link
                 to="/profile"
-                className="group inline-flex items-center gap-3 px-8 py-4 bg-[#FFFDF8] text-[#11241a] text-sm font-bold tracking-wide uppercase rounded hover:bg-[#E8E2D6] transition-all shadow-xl"
+                className="group inline-flex items-center justify-center gap-3 px-6 sm:px-8 py-3.5 sm:py-4 bg-[#FFFDF8] text-[#11241a] text-sm font-bold tracking-wide uppercase rounded hover:bg-[#E8E2D6] transition-all shadow-xl w-full sm:w-auto"
               >
                 <UserRound size={16} className="text-[#11241a]" />
                 Student Portal
@@ -78,7 +78,7 @@ const Hero = () => {
 
               <Link
                 to="/no-dues"
-                className="group inline-flex items-center gap-3 px-8 py-4 bg-white/5 text-[#FFFDF8] text-sm font-semibold tracking-wide uppercase rounded border border-white/20 hover:bg-white/10 transition-all backdrop-blur-md"
+                className="group inline-flex items-center justify-center gap-3 px-6 sm:px-8 py-3.5 sm:py-4 bg-white/5 text-[#FFFDF8] text-sm font-semibold tracking-wide uppercase rounded border border-white/20 hover:bg-white/10 transition-all backdrop-blur-md w-full sm:w-auto"
               >
                 <FileCheck size={16} />
                 Clearance / No-Dues
