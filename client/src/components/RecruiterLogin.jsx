@@ -44,23 +44,23 @@ const RecruiterLogin = () => {
     }, [])
 
     return (
-        <div className='fixed inset-0 z-[999] backdrop-blur-md bg-slate-900/40 flex justify-center items-center px-4'>
+        <div className='fixed inset-0 z-[999] backdrop-blur-md bg-[#11241a]/60 flex justify-center items-center px-4'>
             <motion.div 
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
                 className='relative w-full max-w-md'
             >
-                <form onSubmit={onSubmitHandler} className='glass-panel relative p-8 sm:p-10 rounded-3xl shadow-2xl border border-white/40 overflow-hidden'>
+                <form onSubmit={onSubmitHandler} className='glass-panel relative p-8 sm:p-10 rounded-3xl shadow-2xl border border-white/40 overflow-hidden bg-[#FFFDF8]'>
                     
                     {/* Background decorations */}
-                    <div className='absolute top-0 right-0 w-32 h-32 bg-blue-100 rounded-full blur-3xl -mr-10 -mt-10 opacity-60'></div>
-                    <div className='absolute bottom-0 left-0 w-32 h-32 bg-indigo-100 rounded-full blur-3xl -ml-10 -mb-10 opacity-60'></div>
+                    <div className='absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/20 rounded-full blur-3xl -mr-10 -mt-10 opacity-60'></div>
+                    <div className='absolute bottom-0 left-0 w-32 h-32 bg-[#11241a]/10 rounded-full blur-3xl -ml-10 -mb-10 opacity-60'></div>
 
                     <button 
                         type="button"
                         onClick={() => setShowRecruiterLogin(false)}
-                        className='absolute top-6 right-6 p-2 rounded-full text-gray-400 hover:bg-gray-100/50 hover:text-gray-600 transition-colors z-10'
+                        className='absolute top-6 right-6 p-2 rounded-full text-gray-400 hover:bg-gray-100 hover:text-[#11241a] transition-colors z-10'
                     >
                         <X size={20} />
                     </button>
@@ -73,66 +73,66 @@ const RecruiterLogin = () => {
                         </div>
 
                         <div className="text-center mb-8">
-                            <h1 className='text-2xl font-extrabold text-gray-800 tracking-tight'>
-                                {state === 'Login' ? 'Coordinator Access' : 'Register Access'}
+                            <h1 className='text-2xl font-serif font-extrabold text-[#11241a] tracking-tight'>
+                                {state === 'Login' ? 'Staff Portal' : 'Staff Access'}
                             </h1>
                             <p className='text-sm text-gray-500 mt-2 font-medium'>
-                                Secure portal for IET Lucknow placement cell
+                                Secure portal for IET Lucknow personnel
                             </p>
                         </div>
 
                         <div className='space-y-4'>
                             {state !== 'Login' && (
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-gray-600 ml-1 uppercase tracking-wider">Full Name</label>
+                                    <label className="text-[11px] font-bold text-gray-500 ml-1 uppercase tracking-wider">Full Name</label>
                                     <div className='relative group'>
                                         <div className='absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none'>
-                                            <User size={18} className="text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                                            <User size={18} className="text-gray-400 group-focus-within:text-[#D4AF37] transition-colors" />
                                         </div>
-                                        <input className='glass-input w-full pl-11 pr-4 py-3' onChange={e => setName(e.target.value)} value={name} type="text" placeholder='e.g. John Doe' required />
+                                        <input className='glass-input w-full pl-11 pr-4 py-3 bg-white' onChange={e => setName(e.target.value)} value={name} type="text" placeholder='e.g. John Doe' required />
                                     </div>
                                 </div>
                             )}
 
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-gray-600 ml-1 uppercase tracking-wider">Email Address</label>
+                                <label className="text-[11px] font-bold text-gray-500 ml-1 uppercase tracking-wider">Email Address</label>
                                 <div className='relative group'>
                                     <div className='absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none'>
-                                        <Mail size={18} className="text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                                        <Mail size={18} className="text-gray-400 group-focus-within:text-[#D4AF37] transition-colors" />
                                     </div>
-                                    <input className='glass-input w-full pl-11 pr-4 py-3' onChange={e => setEmail(e.target.value)} value={email} type="email" placeholder='coordinator@ietlucknow.ac.in' required />
+                                    <input className='glass-input w-full pl-11 pr-4 py-3 bg-white' onChange={e => setEmail(e.target.value)} value={email} type="email" placeholder='coordinator@ietlucknow.ac.in' required />
                                 </div>
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-gray-600 ml-1 uppercase tracking-wider">Password</label>
+                                <label className="text-[11px] font-bold text-gray-500 ml-1 uppercase tracking-wider">Password</label>
                                 <div className='relative group'>
                                     <div className='absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none'>
-                                        <Lock size={18} className="text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                                        <Lock size={18} className="text-gray-400 group-focus-within:text-[#D4AF37] transition-colors" />
                                     </div>
-                                    <input className='glass-input w-full pl-11 pr-4 py-3' onChange={e => setPassword(e.target.value)} value={password} type="password" placeholder='••••••••' required />
+                                    <input className='glass-input w-full pl-11 pr-4 py-3 bg-white' onChange={e => setPassword(e.target.value)} value={password} type="password" placeholder='••••••••' required />
                                 </div>
                             </div>
                         </div>
 
                         {state === "Login" && (
                             <div className="flex justify-end mt-3 mb-6">
-                                <span className='text-xs font-bold text-blue-600 hover:text-blue-800 cursor-pointer transition-colors'>Recover Password?</span>
+                                <span className='text-xs font-bold text-[#D4AF37] hover:text-[#b8952d] cursor-pointer transition-colors'>Recover Password?</span>
                             </div>
                         )}
 
-                        <button type='submit' className='btn-primary w-full py-3.5 mt-6 flex flex-row items-center justify-center gap-2 shadow-lg shadow-blue-500/30 text-sm'>
+                        <button type='submit' className='btn-primary w-full py-3.5 mt-6 flex flex-row items-center justify-center gap-2 shadow-lg shadow-[#11241a]/20 text-[13px] font-bold uppercase tracking-wider'>
                             {state === 'Login' ? 'Authenticate' : 'Request Access'} <ArrowRight size={16} />
                         </button>
 
                         <div className='mt-8 text-center pt-6 border-t border-gray-100/50'>
                             {state === 'Login' ? (
                                 <p className='text-sm text-gray-500 font-medium'>
-                                    New to the team? <button type="button" className='text-blue-600 font-bold hover:text-blue-800 ml-1 transition-colors' onClick={() => setState("Sign Up")}>Request Access</button>
+                                    New to the team? <button type="button" className='text-[#D4AF37] font-bold hover:text-[#b8952d] ml-1 transition-colors' onClick={() => setState("Sign Up")}>Request Access</button>
                                 </p>
                             ) : (
                                 <p className='text-sm text-gray-500 font-medium'>
-                                    Already authorized? <button type="button" className='text-blue-600 font-bold hover:text-blue-800 ml-1 transition-colors' onClick={() => setState("Login")}>Sign In here</button>
+                                    Already authorized? <button type="button" className='text-[#D4AF37] font-bold hover:text-[#b8952d] ml-1 transition-colors' onClick={() => setState("Login")}>Sign In here</button>
                                 </p>
                             )}
                         </div>

@@ -11,24 +11,24 @@ import NoDuesForm from '../components/NoDuesForm'
 
 
 const THEME = {
-    navy: '#001845',
-    navySoft: '#0a234f',
-    brand: '#003087',
-    brandHover: '#00256b',
-    blue50: '#eff6ff',
-    blue100: '#dbeafe',
-    blue200: '#bfdbfe',
-    blue300: '#93c5fd',
-    blue400: '#60a5fa',
-    pageBg: '#f8fafc',
+    navy: '#11241a', // Dark Green
+    navySoft: '#1a3828',
+    brand: '#D4AF37', // Gold
+    brandHover: '#b8952d',
+    blue50: '#FFFDF8', // Cream
+    blue100: '#fcf8ed',
+    blue200: '#f2e8d3',
+    blue300: '#e5d1a8',
+    blue400: '#D4AF37',
+    pageBg: '#FFFDF8',
     cardBg: '#ffffff',
     border: '#e5e7eb',
     borderSoft: '#eef2f7',
     text: '#1f2937',
     textMuted: '#6b7280',
     textFaint: '#9ca3af',
-    successBg: '#eff6ff',
-    successText: '#1d4ed8',
+    successBg: '#f8fafc',
+    successText: '#11241a',
     dangerBg: '#fef2f2',
     dangerBorder: '#fecaca',
     dangerText: '#b91c1c',

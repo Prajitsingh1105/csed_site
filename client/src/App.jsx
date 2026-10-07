@@ -1,7 +1,6 @@
-import React from 'react'
+import React, { useEffect, useContext, useState } from 'react'
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
-import { useUser, useClerk } from '@clerk/react'
-import { useEffect, useContext, useState } from 'react'
+import { useUser, useClerk, useAuth } from '@clerk/react'
 import Home from './pages/Home'
 import ApplyJob from './pages/ApplyJob'
 import Applications from './pages/Applications'
@@ -20,10 +19,11 @@ import StudentDatabase from './pages/StudentDatabase'
 import ManageQueries from './pages/ManageQueries'
 import StudentDoubts from './pages/StudentDoubts'
 import NoDues from './pages/NoDues'
+import FacultyDirectory from './pages/FacultyDirectory'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import axios from 'axios'
-import { useAuth } from '@clerk/react'
+import Lenis from 'lenis'
 
 import 'quill/dist/quill.snow.css'
 
@@ -35,6 +35,29 @@ const App = () => {
     const navigate = useNavigate()
     const location = useLocation()
     const [synced, setSynced] = useState(false)
+
+    // Initialize Lenis for buttery smooth scrolling
+    useEffect(() => {
+        const lenis = new Lenis({
+            lerp: 0.08, // Adjust for buttery smoothness (lower is smoother)
+            wheelMultiplier: 1,
+            smoothWheel: true,
+            syncTouch: true, // Synchronize touch scrolling for native feel
+            direction: 'vertical',
+            gestureDirection: 'vertical',
+        })
+
+        function raf(time) {
+            lenis.raf(time)
+            requestAnimationFrame(raf)
+        }
+
+        requestAnimationFrame(raf)
+
+        return () => {
+            lenis.destroy()
+        }
+    }, [])
 
     // Enforce College Email Domain Restriction (EXCEPT for Alumni routing directly to No Dues!)
     useEffect(() => {
@@ -86,6 +109,7 @@ const App = () => {
                 <Route path="/profile" element={<StudentProfile />} />
                 <Route path="/doubts" element={<StudentDoubts />} />
                 <Route path="/no-dues" element={<NoDues />} />
+                <Route path="/faculty/:type" element={<FacultyDirectory />} />
 
                 <Route path='/dashboard' element={<Dashboard />}>
                     <Route index element={<DashboardHome />} />

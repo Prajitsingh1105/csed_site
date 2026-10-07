@@ -1,157 +1,119 @@
-import { useContext, useRef } from 'react'
+import { useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { assets } from '../assets/assets'
-import { AppContext } from '../context/AppContext'
-import { FileCheck, UserRound } from 'lucide-react'
+import { FileCheck, UserRound, ArrowRight } from 'lucide-react'
 
 const STATS = [
-  { value: '49+', label: 'Highest LPA', sub: 'Session 2024–25' },
-  { value: '120+', label: 'Companies', sub: 'On-campus recruiters' },
-  { value: '95%', label: 'Placement Rate', sub: 'Eligible students' },
-]
-
-const RECRUITERS = [
-  { src: assets.microsoft_logo, alt: 'Microsoft' },
-  { src: assets.amazon_logo, alt: 'Amazon' },
-  { src: assets.adobe_logo, alt: 'Adobe' },
-  { src: assets.tcs_logo, alt: 'TCS' },
-  { src: assets.hero_logo, alt: 'Hero' },
+  { value: '4', label: 'Academic Programs', sub: 'B.Tech, M.Tech, MCA & PhD' },
+  { value: '30+', label: 'Faculty Members', sub: 'Experienced Academicians' },
+  { value: '1000+', label: 'Active Students', sub: 'Across all programs' },
 ]
 
 const Hero = () => {
-  const { setSearchFilter, setIsSearched } = useContext(AppContext)
-  const titleRef = useRef(null)
-  const locationRef = useRef(null)
-
-  const onSearch = () => {
-    setSearchFilter({
-      title: titleRef.current?.value || '',
-      location: locationRef.current?.value || '',
-    })
-    setIsSearched(true)
-  }
-
   return (
-    <section className="relative overflow-hidden">
+    <section className="relative mb-24 lg:mb-32 -mt-[67px] sm:-mt-[100px]">
       {/* Hero Image Block */}
-      <div className="relative h-[480px] sm:h-[540px] lg:h-[600px]">
-        <motion.img
-          initial={{ scale: 1.06 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 8, ease: 'easeOut' }}
-          src={assets.IET_Lucknow}
-          alt="IET Lucknow Campus"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
+      <div className="relative h-[100dvh] min-h-[650px] max-h-[1080px]">
+        
+        {/* Image and Gradients Container */}
+        <div className="absolute inset-0 overflow-hidden bg-[#11241a]">
+          {/* 1. Campus Image */}
+          <motion.img
+            initial={{ scale: 1.05 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 10, ease: 'easeOut' }}
+            style={{ willChange: 'transform', transformOrigin: 'center' }}
+            src={assets.IET_Lucknow}
+            alt="IET Lucknow Campus"
+            className="absolute inset-0 w-full h-full object-cover opacity-50"
+          />
 
-        {/* Overlay — strong left, fades to transparent right */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#001845]/92 via-[#001845]/70 to-[#001845]/20" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#001845]/60 via-transparent to-transparent" />
+          {/* 2. Brand Gradient Overlays (Dark to Light to reveal image) */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#11241a] via-[#1a1728]/80 to-[#11241a]/10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0d1410] via-[#0d1410]/20 to-transparent" />
+          
+          {/* 3. Tactile Noise Overlay - Optimized for GPU */}
+          <div className="absolute inset-0 bg-noise opacity-[0.05] pointer-events-none" style={{ transform: 'translateZ(0)' }} />
+        </div>
 
         {/* Content */}
-        <div className="relative z-10 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
+        <div className="relative z-20 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center pt-16 sm:pt-20 pb-32 sm:pb-48">
           <motion.div
-            initial={{ opacity: 0, x: -24 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="max-w-2xl"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-3xl"
           >
             {/* Eyebrow */}
-            <div className="flex items-center gap-2 mb-5">
-              <div className="h-px w-8 bg-blue-400" />
-              <span className="text-blue-300 text-[11px] font-bold uppercase tracking-[0.22em]">
-                Placement Portal
+            <div className="flex items-center gap-4 mb-8">
+              <div className="h-[2px] w-12 bg-[#D4AF37]" /> {/* Elegant Gold Accent */}
+              <span className="text-[#E8E2D6] text-xs font-semibold uppercase tracking-[0.3em]">
+                Institute of Engineering & Technology, Lucknow
               </span>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-[56px] font-extrabold text-white leading-[1.08] tracking-tight">
+            {/* Prestige Typography for Headline */}
+            <h1 className="text-5xl sm:text-6xl lg:text-[72px] font-serif font-medium text-[#FFFDF8] leading-[1.05] tracking-tight">
               Department of
               <br />
-              <span className="text-blue-300">Computer Science</span>
+              <span className="italic text-[#D4AF37] font-serif font-light">Computer Science</span>
               <br />
-              &amp; Engineering
+              <span className="font-serif">&amp; Engineering</span>
             </h1>
 
-            <p className="mt-5 text-gray-300 text-base sm:text-lg leading-relaxed max-w-xl">
-              Connecting IET Lucknow students with premier on-campus opportunities,
-              recruiters, and placement resources.
+            <p className="mt-8 text-[#D1D5DB] text-lg sm:text-xl font-light leading-relaxed max-w-2xl tracking-wide">
+              Fostering innovation, research, and technical excellence. Empowering the next generation of computer scientists and software engineers.
             </p>
 
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-10 flex flex-wrap gap-4">
               <Link
-                to="/no-dues"
-                onClick={onSearch}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-[#001845] text-sm font-bold rounded-md hover:bg-blue-50 transition-all shadow-lg"
+                to="/profile"
+                className="group inline-flex items-center gap-3 px-8 py-4 bg-[#FFFDF8] text-[#11241a] text-sm font-bold tracking-wide uppercase rounded hover:bg-[#E8E2D6] transition-all shadow-xl"
               >
-                <FileCheck size={15} />
-                No Dues
+                <UserRound size={16} className="text-[#11241a]" />
+                Student Portal
+                <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
               </Link>
 
               <Link
-                to="/profile"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 text-white text-sm font-semibold rounded-md border border-white/20 hover:bg-white/20 transition-all backdrop-blur-sm"
+                to="/no-dues"
+                className="group inline-flex items-center gap-3 px-8 py-4 bg-white/5 text-[#FFFDF8] text-sm font-semibold tracking-wide uppercase rounded border border-white/20 hover:bg-white/10 transition-all backdrop-blur-md"
               >
-                <UserRound size={15} />
-                View Profile
+                <FileCheck size={16} />
+                Clearance / No-Dues
               </Link>
             </div>
           </motion.div>
         </div>
 
-        {/* Stats Bar — overlapping bottom */}
-        <div className="absolute bottom-0 left-0 right-0 translate-y-1/2 z-20 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto">
+        {/* High-Impact Metric Grid (Glassmorphic Dark Cards with Paper Grain) */}
+        <div className="absolute bottom-6 sm:bottom-10 left-0 right-0 z-30 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-5xl mx-auto">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.6 }}
-              className="grid grid-cols-3 bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden"
+              transition={{ delay: 0.4, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              className="glass-dark-card rounded-2xl overflow-hidden grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-white/10"
             >
               {STATS.map((stat, i) => (
                 <div
                   key={i}
-                  className={`px-4 sm:px-8 py-5 sm:py-6 text-center ${
-                    i < STATS.length - 1 ? 'border-r border-gray-100' : ''
-                  }`}
+                  className="px-6 sm:px-10 py-8 text-center sm:text-left group hover:bg-white/5 transition-colors duration-500"
                 >
-                  <p className="text-2xl sm:text-3xl font-black text-[#003087] tracking-tight">
+                  {/* Kinetic Numerals (Serif) */}
+                  <p className="text-4xl sm:text-5xl font-serif font-medium text-[#FFFDF8] tracking-tight group-hover:scale-105 transition-transform origin-left duration-500">
                     {stat.value}
                   </p>
-                  <p className="mt-1 text-[12px] sm:text-[13px] font-semibold text-gray-800">
+                  <p className="mt-3 text-[13px] font-bold text-[#E8E2D6] tracking-wide uppercase">
                     {stat.label}
                   </p>
-                  <p className="text-[10px] sm:text-[11px] text-gray-400 mt-0.5">
+                  <p className="text-[12px] text-gray-300 mt-1.5 font-medium tracking-wide">
                     {stat.sub}
                   </p>
                 </div>
               ))}
             </motion.div>
-          </div>
-        </div>
-      </div>
-
-      {/* Recruiters strip */}
-      <div className="bg-gray-50 border-b border-gray-200 pt-20 pb-10 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-gray-400 whitespace-nowrap shrink-0">
-              Top Recruiters
-            </p>
-
-            <div className="flex-1 h-px bg-gray-200 hidden sm:block" />
-
-            <div className="flex items-center gap-8 sm:gap-12 flex-wrap justify-center">
-              {RECRUITERS.map((r, i) => (
-                <div key={i} className="h-8 flex items-center justify-center">
-                  <img
-                    src={r.src}
-                    alt={r.alt}
-                    className="max-h-full max-w-[80px] object-contain grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
-                  />
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </div>
