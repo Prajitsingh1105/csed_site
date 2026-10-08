@@ -1,6 +1,5 @@
-import React, { useContext, useState, useEffect, useMemo, useRef } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 import { AppContext } from '../context/AppContext'
-import { motion, AnimatePresence } from 'framer-motion'
 import {
   Send,
   CheckCheck,
@@ -9,8 +8,6 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { toast } from 'react-toastify'
-import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
 import { useAuth } from '@clerk/react'
 import axios from 'axios'
 
@@ -20,9 +17,6 @@ const StudentDoubts = () => {
 
   const [myQueries, setMyQueries] = useState([])
   const [newQuery, setNewQuery] = useState('')
-  const chatEndRef = useRef(null)
-  const messagesContainerRef = useRef(null)
-  const isFirstLoadRef = useRef(true)
 
   const syncProfileAndFetchDoubts = async () => {
     try {
@@ -38,7 +32,7 @@ const StudentDoubts = () => {
       })
 
       setMyQueries(res.data.queries || [])
-    } catch (error) {// console.('Student Doubts Error:', error)
+    } catch (error) {// console.('Student Doubts Error:', error)
     }
   }
 
@@ -47,20 +41,6 @@ const StudentDoubts = () => {
       syncProfileAndFetchDoubts()
     }
   }, [isLoaded])
-
-  useEffect(() => {
-    if (isFirstLoadRef.current) {
-      isFirstLoadRef.current = false
-      return
-    }
-
-    if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTo({
-        top: messagesContainerRef.current.scrollHeight,
-        behavior: 'smooth',
-      })
-    }
-  }, [myQueries])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -85,209 +65,93 @@ const StudentDoubts = () => {
     }
   }
 
-  const chatMessages = useMemo(() => {
-    const sortedQueries = [...myQueries].sort((a, b) => {
-      const aTime = new Date(a.createdAt || a.updatedAt || 0).getTime()
-      const bTime = new Date(b.createdAt || b.updatedAt || 0).getTime()
-      return aTime - bTime
-    })
 
-    const msgs = []
-
-    sortedQueries.forEach((q) => {
-      msgs.push({
-        id: `${q._id}-student`,
-        type: 'student',
-        text: q.query,
-        status: q.isResolved ? 'resolved' : 'pending',
-      })
-
-      if (q.reply) {
-        msgs.push({
-          id: `${q._id}-reply`,
-          type: 'coordinator',
-          text: q.reply,
-          status: 'replied',
-        })
-      } else {
-        msgs.push({
-          id: `${q._id}-pending-note`,
-          type: 'system',
-          text: 'Your message has been received. Waiting for coordinator reply.',
-          status: 'waiting',
-        })
-      }
-    })
-
-    return msgs
-  }, [myQueries])
 
   return (
-    <div className="min-h-screen bg-[#f4f7fb]">
-      <Navbar />
+    <div className="w-full">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+        
+        {/* Page Header */}
+        <div>
+          <h2 className="text-2xl font-serif font-bold text-[#11241a] mb-2">Query Forum</h2>
+          <p className="text-gray-500 font-medium text-sm">Submit your queries regarding placements, drives, and eligibility.</p>
+        </div>
 
-      <div className="px-3 sm:px-4 py-4">
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35 }}
-          className="mx-auto max-w-md"
-        >
-          <div className="overflow-hidden rounded-[30px] border border-[#d7e3f4] bg-white shadow-[0_24px_80px_rgba(0,24,69,0.12)]">
-            {/* Header */}
-            <div className="border-b border-white/10 bg-gradient-to-r from-[#001845] via-[#002a66] to-[#003087] px-4 py-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm border border-white/10">
-                  <MessageCircleMore size={20} />
-                </div>
-
-                <div className="min-w-0">
-                  <h1 className="truncate text-sm font-semibold text-white">
-                    Department Support Chat
-                  </h1>
-                  <p className="text-xs text-blue-100/90">
-                    Department of Computer Science & Engineering
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Chat shell */}
-            <div className="relative h-[calc(100vh-180px)] bg-[#f7faff]">
-              <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_1px_1px,rgba(0,48,135,0.09)_1px,transparent_0)] bg-[size:22px_22px]" />
-
-              <div className="relative flex h-full flex-col">
-                {/* Hint */}
-                <div className="px-3 pt-3">
-                  <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white/90 px-3 py-1.5 text-[11px] font-medium text-[#33507a] shadow-sm">
-                    <Sparkles size={13} className="text-[#3b82f6]" />
-                    Ask short and clear questions
-                  </div>
-                </div>
-
-                {/* Messages */}
-                <div
-                  ref={messagesContainerRef}
-                  className="flex-1 overflow-y-auto px-3 pb-28 pt-3 space-y-3"
-                >
-                  {chatMessages.length === 0 ? (
-                    <div className="flex h-full items-center justify-center">
-                      <div className="w-full rounded-[24px] border border-[#dbe7f5] bg-white p-6 text-center shadow-sm">
-                        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-[#003087]">
-                          <MessageCircleMore size={22} />
-                        </div>
-
-                        <h2 className="mt-4 text-lg font-semibold text-[#001845]">
-                          Start chatting
-                        </h2>
-
-                        <p className="mt-2 text-sm leading-6 text-[#6b7a90]">
-                          Ask about eligibility, drive dates, offers, or any
-                          placement-related doubt.
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <AnimatePresence>
-                      {chatMessages.map((msg, index) => (
-                        <motion.div
-                          key={msg.id}
-                          initial={{ opacity: 0, y: 10, scale: 0.98 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          transition={{ duration: 0.2, delay: index * 0.02 }}
-                          className={`flex ${
-                            msg.type === 'student'
-                              ? 'justify-end'
-                              : msg.type === 'coordinator'
-                              ? 'justify-start'
-                              : 'justify-center'
-                          }`}
-                        >
-                          {msg.type === 'system' ? (
-                            <div className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-[11px] font-medium text-[#31507a] shadow-sm">
-                              {msg.text}
-                            </div>
-                          ) : (
-                            <div
-                              className={`max-w-[82%] rounded-[22px] px-4 py-3 shadow-sm ${
-                                msg.type === 'student'
-                                  ? 'rounded-br-md bg-[#003087] text-white'
-                                  : 'rounded-bl-md border border-[#dbe6f3] bg-white text-[#001845]'
-                              }`}
-                            >
-                              {msg.type === 'coordinator' && (
-                                <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#3b82f6]">
-                                  Faculty Coordinator
-                                </p>
-                              )}
-
-                              <p className="whitespace-pre-wrap text-[14px] leading-6">
-                                {msg.text}
-                              </p>
-
-                              <div
-                                className={`mt-2 flex items-center gap-1 text-[10px] ${
-                                  msg.type === 'student'
-                                    ? 'justify-end text-blue-100'
-                                    : 'justify-start text-[#7b8aa3]'
-                                }`}
-                              >
-                                {msg.type === 'student' && msg.status === 'resolved' && (
-                                  <>
-                                    <CheckCheck size={13} className="text-[#93c5fd]" />
-                                    <span>Seen</span>
-                                  </>
-                                )}
-
-                                {msg.type === 'student' && msg.status === 'pending' && (
-                                  <>
-                                    <Clock3 size={12} className="text-[#bfdbfe]" />
-                                    <span>Pending</span>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                        </motion.div>
-                      ))}
-                    </AnimatePresence>
-                  )}
-
-                  <div ref={chatEndRef} />
-                </div>
-
-                {/* Input */}
-                <div className="absolute inset-x-0 bottom-0 p-3">
-                  <form
-                    onSubmit={handleSubmit}
-                    className="flex items-end gap-2 rounded-[24px] border border-[#dbe6f3] bg-white p-2.5 shadow-[0_12px_30px_rgba(0,24,69,0.08)]"
-                  >
-                    <div className="flex-1">
-                      <textarea
-                        rows={1}
-                        className="min-h-[44px] max-h-28 w-full resize-none rounded-2xl bg-transparent px-3 py-2.5 text-sm text-[#001845] outline-none placeholder:text-[#7b8aa3]"
-                        placeholder="Type your doubt here..."
-                        value={newQuery}
-                        onChange={(e) => setNewQuery(e.target.value)}
-                      />
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={!newQuery.trim()}
-                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#003087] text-white shadow-sm transition hover:scale-[1.03] hover:bg-[#002766] disabled:cursor-not-allowed disabled:opacity-50"
+        {/* New Query Form */}
+        <div className="bg-white rounded-[24px] border border-[#11241a]/10 p-6 shadow-sm">
+            <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#11241a] mb-4 flex items-center gap-2">
+                <Sparkles size={16} className="text-[#D4AF37]" />
+                Submit New Query
+            </h3>
+            <form onSubmit={handleSubmit}>
+                <textarea 
+                    className="w-full min-h-[100px] p-4 rounded-xl border border-[#11241a]/10 bg-[#F9F8F5] focus:outline-none focus:border-[#D4AF37]/50 text-sm font-medium text-[#11241a] placeholder:text-gray-400 mb-4 resize-y"
+                    placeholder="Describe your query clearly..."
+                    value={newQuery}
+                    onChange={(e) => setNewQuery(e.target.value)}
+                />
+                <div className="flex justify-end">
+                    <button 
+                        type="submit"
+                        disabled={!newQuery.trim()}
+                        className="flex items-center gap-2 bg-[#11241a] text-[#D4AF37] px-6 py-2.5 rounded-xl font-bold text-[12px] uppercase tracking-wider hover:bg-[#1a3828] disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
                     >
-                      <Send size={17} />
+                        <Send size={15} />
+                        Submit
                     </button>
-                  </form>
                 </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      </div>
+            </form>
+        </div>
 
-      <Footer />
+        {/* Query History */}
+        <div>
+            <h3 className="text-[12px] font-bold uppercase tracking-wider text-gray-500 mb-4">Your Query History</h3>
+            
+            {myQueries.length === 0 ? (
+                <div className="text-center py-12 bg-white rounded-[24px] border border-dashed border-[#11241a]/10">
+                    <MessageCircleMore size={32} className="mx-auto text-gray-300 mb-3" />
+                    <p className="text-gray-500 font-medium">No queries submitted yet.</p>
+                </div>
+            ) : (
+                <div className="space-y-4">
+                    {myQueries.map((q) => (
+                        <div key={q._id} className="bg-white rounded-[24px] border border-[#11241a]/10 overflow-hidden shadow-sm">
+                            <div className="px-6 py-4 border-b border-[#11241a]/5 bg-[#F9F8F5] flex justify-between items-center">
+                                <div className="flex items-center gap-2">
+                                    <Clock3 size={14} className="text-gray-400" />
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                                        {/* Use Date fallback if moment isn't available, but we can assume simple string if createdAt isn't populated */}
+                                        {q.createdAt ? new Date(q.createdAt).toLocaleDateString() : 'Query Date'}
+                                    </span>
+                                </div>
+                                <span className={`px-3 py-1 rounded border text-[10px] font-bold uppercase tracking-wider ${
+                                    q.isResolved 
+                                    ? 'bg-green-50 text-green-700 border-green-200' 
+                                    : 'bg-[#D4AF37]/10 text-[#11241a] border-[#D4AF37]/30'
+                                }`}>
+                                    {q.isResolved ? 'Resolved' : 'Pending'}
+                                </span>
+                            </div>
+
+                            <div className="p-6">
+                                <h4 className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">Question</h4>
+                                <p className="text-[#11241a] font-medium text-sm whitespace-pre-wrap">{q.query}</p>
+                            </div>
+
+                            {q.reply && (
+                                <div className="bg-[#11241a]/5 p-6 border-t border-[#11241a]/10">
+                                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#D4AF37] mb-2 flex items-center gap-1.5">
+                                        <CheckCheck size={14} /> Coordinator Response
+                                    </h4>
+                                    <p className="text-[#11241a] font-medium text-sm whitespace-pre-wrap leading-relaxed">{q.reply}</p>
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+      </div>
     </div>
   )
 }

@@ -19,6 +19,7 @@ import StudentDatabase from './pages/StudentDatabase'
 import ManageQueries from './pages/ManageQueries'
 import StudentDoubts from './pages/StudentDoubts'
 import NoDues from './pages/NoDues'
+import StudentDashboard from './pages/StudentDashboard'
 import FacultyDirectory from './pages/FacultyDirectory'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -105,11 +106,14 @@ const App = () => {
             <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/apply-job/:id" element={<ApplyJob />} />
-                <Route path="/applications" element={<Applications />} />
-                <Route path="/profile" element={<StudentProfile />} />
-                <Route path="/doubts" element={<StudentDoubts />} />
-                <Route path="/no-dues" element={<NoDues />} />
                 <Route path="/faculty/:type" element={<FacultyDirectory />} />
+
+                {/* Student Dashboard Layout */}
+                <Route path="/student-dashboard" element={<StudentDashboard />}>
+                    <Route index element={<StudentProfile />} />
+                    <Route path="doubts" element={<StudentDoubts />} />
+                    <Route path="no-dues" element={<NoDues />} />
+                </Route>
 
                 <Route path='/dashboard' element={<Dashboard />}>
                     <Route index element={<DashboardHome />} />

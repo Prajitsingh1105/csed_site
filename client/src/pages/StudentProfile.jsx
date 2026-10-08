@@ -20,25 +20,25 @@ import { useAuth } from '@clerk/react';
 import { useNavigate } from 'react-router-dom';
 
 const THEME = {
-  navy: '#001845',
-  navySoft: '#0a234f',
-  brand: '#003087',
-  brandHover: '#00256b',
-  blueLight: '#93c5fd',
-  blueLine: '#60a5fa',
-  blueBg: '#eff6ff',
-  blueBorder: '#bfdbfe',
-  pageBg: '#f8fafc',
-  cardBg: '#ffffff',
-  border: '#e5e7eb',
-  borderSoft: '#eef2f7',
-  text: '#1f2937',
+  navy: '#11241a',
+  navySoft: '#1a3828',
+  brand: '#D4AF37',
+  brandHover: '#b5932b',
+  blueLight: '#e0c878',
+  blueLine: '#D4AF37',
+  blueBg: '#F9F8F5',
+  blueBorder: 'rgba(17,36,26,0.1)',
+  pageBg: '#F9F8F5',
+  cardBg: '#FFFDF8',
+  border: 'rgba(17,36,26,0.1)',
+  borderSoft: 'rgba(17,36,26,0.05)',
+  text: '#11241a',
   textMuted: '#6b7280',
   textFaint: '#9ca3af',
-  successTint: '#dbeafe',
-  successText: '#1d4ed8',
-  pendingTint: '#eff6ff',
-  pendingText: '#1e40af',
+  successTint: '#ecfdf5',
+  successText: '#047857',
+  pendingTint: '#F9F8F5',
+  pendingText: '#11241a',
   rejectedTint: '#fef2f2',
   rejectedText: '#b91c1c',
 };
@@ -153,7 +153,8 @@ const StudentProfile = () => {
             setPreviewUrl(u.profileImage);
           }
         }
-      } catch (err) {// console.('Failed to load profile:', err);
+      } catch (err) {
+// console.('Failed to load profile:', err);
       }
     };
 
@@ -245,15 +246,11 @@ const StudentProfile = () => {
   return (
     <div
       style={{
-        minHeight: '100vh',
+        width: '100%',
         display: 'flex',
         flexDirection: 'column',
-        background: THEME.pageBg,
       }}
     >
-      <Navbar />
-      <ToastContainer position="bottom-right" />
-
       <div
         style={{
           flexGrow: 1,
@@ -280,7 +277,7 @@ const StudentProfile = () => {
           >
             <div
               style={{
-                background: `linear-gradient(120deg, ${THEME.navy} 0%, ${THEME.brand} 100%)`,
+                background: THEME.navy,
                 padding: isMobile ? '24px 18px 22px' : '32px 40px 30px',
                 position: 'relative',
                 overflow: 'hidden',
@@ -352,6 +349,7 @@ const StudentProfile = () => {
                     style={{
                       color: 'white',
                       fontSize: isMobile ? 19 : 22,
+                      fontFamily: 'serif',
                       fontWeight: 700,
                       lineHeight: 1.2,
                       margin: 0,
@@ -649,8 +647,6 @@ const StudentProfile = () => {
           </p>
         </motion.div>
       </div>
-
-      <Footer />
     </div>
   );
 };

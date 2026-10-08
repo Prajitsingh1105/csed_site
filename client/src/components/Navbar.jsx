@@ -270,14 +270,24 @@ const Navbar = () => {
 
               {user ? (
                 <div className="flex items-center gap-1.5">
-                  <Link
-                    to="/no-dues"
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-bold uppercase tracking-wider text-gray-300 rounded-full hover:text-white hover:bg-white/10 transition-all"
-                  >
-                    Portals
-                  </Link>
+                  {!isAlumni && (
+                    <Link
+                      to="/student-dashboard"
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-bold uppercase tracking-wider text-gray-300 rounded-full hover:text-white hover:bg-white/10 transition-all"
+                    >
+                      Dashboard
+                    </Link>
+                  )}
+                  {isAlumni && (
+                    <Link
+                      to="/student-dashboard/no-dues"
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-bold uppercase tracking-wider text-gray-300 rounded-full hover:text-white hover:bg-white/10 transition-all"
+                    >
+                      Portals
+                    </Link>
+                  )}
 
-                  <div className="ml-2 pl-2 flex items-center gap-2.5">
+                  <div className="ml-2 pl-2 border-l border-white/20 flex items-center gap-2.5">
                     <UserButton afterSignOutUrl="/" />
                   </div>
                 </div>

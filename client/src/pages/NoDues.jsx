@@ -69,7 +69,8 @@ const NoDues = () => {
                 // Fetch the JWT bearer token cleanly from the hook hook context
                 const token = await getToken()
                 
-                if (!token) {// console.("Clerk authentication token is still generating...")
+                if (!token) {
+// console.("Clerk authentication token is still generating...")
                     return
                 }
 
@@ -80,7 +81,8 @@ const NoDues = () => {
                 if (response.data.success && response.data.request) {
                     setExistingRequest(response.data.request)
                 }
-            } catch (error) {// console.('Failed to fetch no dues status:', error)
+            } catch (error) {
+// console.('Failed to fetch no dues status:', error)
                 // If it's a 401/unauthenticated error, we gracefully handle it without throwing a crash loop
                 if (error.response?.status === 401) {
                     toast.error("Session expired. Please log out and sign in again.")
@@ -199,9 +201,7 @@ const NoDues = () => {
 
     if (!loadingData && existingRequest?.status === 'Approved') {
         return (
-            <div className="min-h-screen flex flex-col" style={{ background: THEME.pageBg }}>
-                <Navbar />
-
+            <div className="flex flex-col w-full" style={{ background: THEME.pageBg }}>
                 <AnimatePresence mode="wait">
                     {!showForm ? (
                         <motion.div
@@ -508,11 +508,11 @@ const NoDues = () => {
                     )}
                 </AnimatePresence>
 
-                <Footer />
+                
 
                 <style>{`
                     .approved-hero {
-                        background: linear-gradient(135deg, ${THEME.navy} 0%, ${THEME.brand} 100%);
+                        background: THEME.navy;
                         padding: 32px clamp(16px, 5vw, 40px) 28px;
                         display: flex;
                         align-items: flex-start;
@@ -593,7 +593,7 @@ const NoDues = () => {
     if (loadingData) {
         return (
             <div className="min-h-screen flex flex-col" style={{ background: THEME.pageBg }}>
-                <Navbar />
+                
                 <div className="flex-grow flex items-center justify-center">
                     <div
                         className="w-8 h-8 rounded-full border-4 animate-spin"
@@ -603,7 +603,7 @@ const NoDues = () => {
                         }}
                     />
                 </div>
-                <Footer />
+                
             </div>
         )
     }
@@ -611,7 +611,7 @@ const NoDues = () => {
     if (existingRequest?.status === 'Pending') {
         return (
             <div className="min-h-screen flex flex-col" style={{ background: THEME.pageBg }}>
-                <Navbar />
+                
                 <div className="flex-grow flex items-center justify-center p-4 sm:p-6">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -629,7 +629,7 @@ const NoDues = () => {
                         <div
                             className="pending-hero"
                             style={{
-                                background: `linear-gradient(135deg, ${THEME.navy} 0%, ${THEME.brand} 100%)`,
+                                background: THEME.navy,
                             }}
                         >
                             <div
@@ -710,7 +710,7 @@ const NoDues = () => {
                     </motion.div>
                 </div>
 
-                <Footer />
+                
 
                 <style>{`
                     .pending-hero {
@@ -733,7 +733,7 @@ const NoDues = () => {
 
     return (
         <div className="min-h-screen flex flex-col" style={{ background: THEME.pageBg }}>
-            <Navbar />
+            
 
             <div className="flex-grow flex items-center justify-center p-4 sm:p-6 py-8 sm:py-12">
                 <motion.div
@@ -751,7 +751,7 @@ const NoDues = () => {
                 >
                     <div
                         style={{
-                            background: `linear-gradient(135deg, ${THEME.navy} 0%, ${THEME.navySoft} 45%, ${THEME.brand} 100%)`,
+                            background: THEME.navy,
                             padding: '32px clamp(16px, 5vw, 40px) 28px',
                             borderBottom: `1px solid ${THEME.borderSoft}`
                         }}
@@ -1096,7 +1096,7 @@ const NoDues = () => {
                 }
             `}</style>
 
-            <Footer />
+            
         </div>
     )
 }
