@@ -80,7 +80,7 @@ const Navbar = () => {
     {
       label: 'Student Login',
       action: () => {
-        openSignIn()
+        openSignIn({ forceRedirectUrl: "/student-dashboard" })
         setShowMobileMenu(false)
       }
     },
@@ -307,7 +307,7 @@ const Navbar = () => {
                   </button>
 
                   <button
-                    onClick={() => openSignIn()}
+                    onClick={() => openSignIn({ forceRedirectUrl: "/student-dashboard" })}
                     className="ml-1 flex items-center gap-1.5 px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.1em] text-[#11241a] bg-[#D4AF37] rounded-full hover:bg-[#e6c148] transition-all shadow-[0_0_15px_rgba(212,175,55,0.4)]"
                   >
                     <LogIn size={13} />

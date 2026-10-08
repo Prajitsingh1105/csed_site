@@ -89,9 +89,10 @@ const App = () => {
 
                         const dbUser = res.data.user;
                         if (!dbUser || !dbUser.name || !dbUser.branch || !dbUser.phone || !dbUser.passingYear) {
-                            navigate('/profile');
+                            navigate('/student-dashboard');
                         }
-                    } catch (error) {// console.("Auth Sync Failure:", error);
+                    } catch (error) {
+// console.("Auth Sync Failure:", error);
                     }
                 }
                 performSync();
