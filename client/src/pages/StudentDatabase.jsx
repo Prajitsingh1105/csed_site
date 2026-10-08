@@ -322,20 +322,20 @@ const StudentDatabase = () => {
     }
 
     return (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className='max-w-7xl mx-auto p-4 md:p-6 lg:p-8 space-y-8 h-full flex flex-col'>
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className='w-full max-w-7xl mx-auto p-4 md:p-6 lg:p-8 space-y-8 h-full flex flex-col'>
             
             {/* Structural Tabs */}
-            <div className="border-b border-gray-200 shrink-0">
+            <div className="border-b border-[#11241a]/10 shrink-0">
                 <nav className="-mb-px flex space-x-8" aria-label="Tabs">
                     <button
                         onClick={() => setActiveTab('registered')}
-                        className={`whitespace-nowrap py-4 px-1 border-b-2 font-bold text-sm flex items-center gap-2 ${activeTab === 'registered' ? 'border-[#0B2447] text-[#0B2447]' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+                        className={`whitespace-nowrap py-4 px-1 border-b-2 font-bold text-[12px] uppercase tracking-wider flex items-center gap-2 transition-colors ${activeTab === 'registered' ? 'border-[#11241a] text-[#11241a]' : 'border-transparent text-gray-500 hover:text-[#11241a] hover:border-[#D4AF37]/50'}`}
                     >
                         <Users size={16} /> Registered Accounts
                     </button>
                     <button
                         onClick={() => setActiveTab('ledger')}
-                        className={`whitespace-nowrap py-4 px-1 border-b-2 font-bold text-sm flex items-center gap-2 ${activeTab === 'ledger' ? 'border-[#0B2447] text-[#0B2447]' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+                        className={`whitespace-nowrap py-4 px-1 border-b-2 font-bold text-[12px] uppercase tracking-wider flex items-center gap-2 transition-colors ${activeTab === 'ledger' ? 'border-[#11241a] text-[#11241a]' : 'border-transparent text-gray-500 hover:text-[#11241a] hover:border-[#D4AF37]/50'}`}
                     >
                         <FileSpreadsheet size={16} /> Master Ledger
                     </button>
@@ -345,17 +345,17 @@ const StudentDatabase = () => {
             {/* Header & Description */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 shrink-0">
                 <div>
-                    <h2 className='text-2xl font-extrabold text-[#0F172A] tracking-tight'>
+                    <h2 className='text-2xl font-serif font-medium text-[#11241a] tracking-tight'>
                         {activeTab === 'registered' && 'Student Directory'}
                         {activeTab === 'ledger' && 'Official Batch Ledger'}
                     </h2>
-                    <p className='text-gray-500 text-sm mt-1 font-medium'>
+                    <p className='text-gray-500 text-[12px] font-bold uppercase tracking-wider mt-2'>
                         {activeTab === 'registered' && 'Manage registered candidates and enforce strict disciplinary actions.'}
                         {activeTab === 'ledger' && 'Upload official CSVs and track the entire enrolled branch.'}
                     </p>
                     {activeTab === 'registered' && studentRecords.length > 0 && (
-                        <div className="mt-3 flex items-center gap-2 bg-indigo-50 border border-indigo-100 px-3 py-1.5 rounded-lg text-xs font-bold text-indigo-700 w-fit">
-                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                        <div className="mt-4 flex items-center gap-2 bg-[#D4AF37]/10 border border-[#D4AF37]/20 px-3 py-1.5 rounded text-[10px] font-bold text-[#11241a] uppercase tracking-widest w-fit">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
                             {students.length} of {studentRecords.length} Master Ledger Students Registered
                         </div>
                     )}
@@ -363,21 +363,21 @@ const StudentDatabase = () => {
                 
                 <div className="flex gap-2">
                     {activeTab === 'registered' && (
-                        <button onClick={handleExportRegistered} className="flex items-center gap-2 bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm">
-                            <Download size={16} /> Export CSV
+                        <button onClick={handleExportRegistered} className="flex items-center gap-2 bg-[#FFFDF8] border border-[#11241a]/10 hover:border-[#D4AF37] hover:text-[#11241a] text-gray-700 px-5 py-2.5 rounded text-[11px] font-bold uppercase tracking-wider transition-colors active:scale-95 duration-200">
+                            <Download size={14} /> Export CSV
                         </button>
                     )}
                     {activeTab === 'ledger' && (
                         <>
-                            <button onClick={handleExportLedger} className="flex items-center gap-2 bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm">
-                                <Download size={16} /> Export
+                            <button onClick={handleExportLedger} className="flex items-center gap-2 bg-[#FFFDF8] border border-[#11241a]/10 hover:border-[#D4AF37] hover:text-[#11241a] text-gray-700 px-5 py-2.5 rounded text-[11px] font-bold uppercase tracking-wider transition-colors active:scale-95 duration-200">
+                                <Download size={14} /> Export
                             </button>
-                            <button onClick={handleClearLedger} className="flex items-center gap-2 bg-white border border-red-200 hover:bg-red-50 text-red-600 px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm">
-                                <Trash2 size={16} /> Clear Ledger
+                            <button onClick={handleClearLedger} className="flex items-center gap-2 bg-white border border-red-200 hover:bg-red-50 hover:text-red-700 text-red-600 px-5 py-2.5 rounded text-[11px] font-bold uppercase tracking-wider transition-colors active:scale-95 duration-200">
+                                <Trash2 size={14} /> Clear Ledger
                             </button>
                             <input type="file" accept=".csv" ref={fileInputRef} onChange={handleFileUpload} className="hidden" />
-                            <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 bg-[#0B2447] hover:bg-[#113264] text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm">
-                                <Upload size={16} /> Import CSV
+                            <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 bg-[#11241a] hover:bg-[#1a1728] text-[#FFFDF8] px-5 py-2.5 rounded shadow-xl font-bold text-[11px] uppercase tracking-wider transition-all active:scale-95 duration-200">
+                                <Upload size={14} /> Import CSV
                             </button>
                         </>
                     )}
@@ -385,7 +385,7 @@ const StudentDatabase = () => {
             </div>
 
             {/* Filters Bar */}
-            <div className='bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 shrink-0'>
+            <div className='bg-white p-4 rounded-xl shadow-sm border border-[#11241a]/10 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 shrink-0 hover:border-[#D4AF37]/30 transition-colors'>
                 <div className='flex flex-wrap items-center gap-3 w-full'>
                     <div className="relative w-full sm:w-64">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -393,7 +393,7 @@ const StudentDatabase = () => {
                         </div>
                         <input
                             placeholder="Search Name or Roll No..."
-                            className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-[#0B2447] focus:border-transparent transition-all outline-none"
+                            className="w-full pl-9 pr-4 py-2.5 bg-[#F9F8F5] border border-[#11241a]/10 rounded text-[12px] font-bold uppercase tracking-wider focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/50 focus:border-[#D4AF37] transition-all outline-none text-[#11241a] placeholder:text-gray-400"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />

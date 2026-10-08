@@ -4,8 +4,9 @@ dotenv.config(); // CRITICAL FIX: This must be lines 1 and 2 so environment vari
 import express from 'express';
 import cors from 'cors';
 import connectDB from './config/db.js';
-import adminRoutes from './routes/adminRoutes.js'; // Now safely imports with valid env keys loaded
-import studentRoutes from './routes/studentRoutes.js'; // Now safely imports with valid env keys loaded
+import adminRoutes from './routes/adminRoutes.js';
+import studentRoutes from './routes/studentRoutes.js';
+import publicRoutes from './routes/publicRoutes.js';
 
 const app = express();
 
@@ -51,6 +52,7 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.get('/', (req, res) => res.send("IET Placement Portal Backend Server is Running"));
 
 // API Routers
+app.use('/api/public', publicRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/student', studentRoutes);
 

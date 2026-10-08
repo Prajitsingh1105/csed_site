@@ -9,7 +9,7 @@ const NoticeBanner = () => {
   if (!notices || notices.length === 0) return null
 
   return (
-    <div id="notices" className="w-full bg-[#11241a] border-b border-white/5 overflow-hidden">
+    <div id="notice-banner" className="w-full bg-[#11241a] border-b border-white/5 overflow-hidden">
       <div className="flex items-stretch">
         {/* Label */}
         <div className="flex items-center gap-2 px-4 py-2.5 bg-[#1a3828] shrink-0 border-r border-white/5">

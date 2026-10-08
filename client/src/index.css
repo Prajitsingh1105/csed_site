@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+@layer base {
+  button, [role="button"], [tabindex="0"]:not(input):not(textarea) {
+    cursor: pointer;
+  }
+}
+
 @layer components {
   /* Clean, Structural Panels */
   .glass-panel {

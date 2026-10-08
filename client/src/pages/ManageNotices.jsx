@@ -45,25 +45,25 @@ const ManageNotices = () => {
         <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className='max-w-7xl mx-auto p-4 md:p-6 lg:p-8 space-y-8'
+            className='w-full max-w-7xl mx-auto p-4 md:p-6 lg:p-8 space-y-8'
         >
-            <div className='border-b border-gray-200 pb-6'>
-                <h2 className='text-3xl font-extrabold text-[#0F172A] tracking-tight'>Announcements Portal</h2>
-                <p className='text-gray-500 mt-1 font-medium'>Broadcast active drives, news, and critical updates to all students.</p>
+            <div className='border-b border-[#11241a]/10 pb-6'>
+                <h2 className='text-3xl font-serif font-medium text-[#11241a] tracking-tight'>Announcements Portal</h2>
+                <p className='text-gray-500 mt-2 text-[12px] font-bold uppercase tracking-wider'>Broadcast active drives, news, and critical updates to all students.</p>
             </div>
 
             <div className='grid grid-cols-1 xl:grid-cols-3 gap-8'>
 
                 {/* Create Notice Form */}
                 <div className='xl:col-span-1'>
-                    <div className='bg-white p-6 rounded-xl shadow-sm border border-gray-200 sticky top-6'>
-                        <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
-                            <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-100">
+                    <div className='bg-white p-6 rounded-xl shadow-sm border border-[#11241a]/10 sticky top-6 hover:border-[#D4AF37]/30 transition-colors'>
+                        <div className="flex items-center gap-3 mb-6 pb-4 border-b border-[#11241a]/10">
+                            <div className="w-10 h-10 rounded-lg bg-[#D4AF37]/10 flex items-center justify-center text-[#11241a] border border-[#D4AF37]/20">
                                 <Megaphone size={20} />
                             </div>
                             <div>
-                                <h3 className="font-extrabold text-[#0F172A] text-lg">New Notice</h3>
-                                <p className="text-xs text-gray-500 font-medium mt-0.5">Push a real-time update</p>
+                                <h3 className="font-serif font-medium text-[#11241a] text-lg">New Notice</h3>
+                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Push a real-time update</p>
                             </div>
                         </div>
 

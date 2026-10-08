@@ -156,6 +156,7 @@ const Navbar = () => {
 
   const megaMenuItems = [
     { label: 'Academics & Admissions', id: 'academics' },
+    { label: 'Notices', id: 'notices' },
     { label: 'Placement', id: 'placements' },
     { 
       label: 'People', 
@@ -188,7 +189,16 @@ const Navbar = () => {
         >
           <div className="flex items-center justify-between h-full px-4 sm:px-6 lg:px-8">
             {/* Left: Logo */}
-            <Link to="/" className="flex items-center gap-3 group shrink-0 min-w-0 mr-4">
+            <Link 
+              to="/" 
+              onClick={(e) => {
+                if (location.pathname === '/') {
+                  e.preventDefault();
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+              }}
+              className="flex items-center gap-3 group shrink-0 min-w-0 mr-4"
+            >
               <img
                 src={assets.iet_logo}
                 alt="IET Lucknow"

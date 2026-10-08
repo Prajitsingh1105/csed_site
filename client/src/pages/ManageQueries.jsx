@@ -44,19 +44,19 @@ const ManageQueries = () => {
         <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className='max-w-7xl mx-auto p-4 md:p-6 lg:p-8 space-y-8'
+            className='w-full max-w-7xl mx-auto p-4 md:p-6 lg:p-8 space-y-8'
         >
-            <div className='border-b border-gray-200 pb-6'>
-                <h2 className='text-3xl font-extrabold text-[#0F172A] tracking-tight'>Query Resolution Forum</h2>
-                <p className='text-gray-500 mt-1 font-medium'>Manage and reply to student doubt tickets.</p>
+            <div className='border-b border-[#11241a]/10 pb-6'>
+                <h2 className='text-3xl font-serif font-medium text-[#11241a] tracking-tight'>Query Resolution Forum</h2>
+                <p className='text-gray-500 mt-2 text-[12px] font-bold uppercase tracking-wider'>Manage and reply to student doubt tickets.</p>
             </div>
 
             <div className='grid grid-cols-1 xl:grid-cols-2 gap-8'>
                 {/* Pending Queries */}
                 <div>
-                    <h3 className="font-extrabold text-[#0F172A] text-lg flex items-center gap-2 mb-4">
-                        <MessageSquare size={18} className="text-amber-500" /> Action Required 
-                        <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-bold uppercase tracking-wider">{pendingQueries.length}</span>
+                    <h3 className="font-serif font-medium text-[#11241a] text-lg flex items-center gap-2 mb-4">
+                        <MessageSquare size={18} className="text-[#D4AF37]" /> Action Required 
+                        <span className="text-[10px] bg-[#D4AF37]/10 text-[#11241a] px-2 py-0.5 rounded font-bold uppercase tracking-wider border border-[#D4AF37]/20">{pendingQueries.length}</span>
                     </h3>
                     
                     <div className="space-y-4">

@@ -36,6 +36,21 @@ export const AppContextProvider = (props) => {
         return { headers: { Authorization: `Bearer ${token}` } };
     };
 
+    const fetchPublicData = async () => {
+        try {
+            const res = await axios.get(`${backendUrl}/api/public/notices`);
+            if (res.data.success) {
+                setNotices(res.data.notices);
+            }
+        } catch (error) {
+            console.error("Failed to fetch public notices", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchPublicData();
+    }, []);
+
     const fetchBackendData = async () => {
         const localCompanyToken = localStorage.getItem('companyToken');
         

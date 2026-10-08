@@ -176,31 +176,31 @@ const PlacementRecords = () => {
     : ['All', ...new Set((offerLetters || []).map((r) => r.year).filter(Boolean))]
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className='max-w-7xl mx-auto p-4 md:p-6 lg:p-8 space-y-8'>
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className='w-full max-w-7xl mx-auto p-4 md:p-6 lg:p-8 space-y-8'>
       
       {/* Structural Tabs */}
-      <div className="border-b border-gray-200">
-        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+      <div className="border-b border-[#11241a]/10">
+        <nav className="-mb-px flex space-x-8 overflow-x-auto" aria-label="Tabs">
           <button
             onClick={() => setActiveTab('Archive')}
-            className={`whitespace-nowrap py-4 px-1 border-b-2 font-bold text-sm ${activeTab === 'Archive' ? 'border-[#0B2447] text-[#0B2447]' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+            className={`whitespace-nowrap py-4 px-1 border-b-2 font-bold text-[12px] uppercase tracking-wider flex items-center gap-2 transition-colors ${activeTab === 'Archive' ? 'border-[#11241a] text-[#11241a]' : 'border-transparent text-gray-500 hover:text-[#11241a] hover:border-[#D4AF37]/50'}`}
           >
             Placement Archive
           </button>
           <button
             onClick={() => setActiveTab('Queue')}
-            className={`whitespace-nowrap py-4 px-1 border-b-2 font-bold text-sm flex items-center gap-2 ${activeTab === 'Queue' ? 'border-[#0B2447] text-[#0B2447]' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+            className={`whitespace-nowrap py-4 px-1 border-b-2 font-bold text-[12px] uppercase tracking-wider flex items-center gap-2 transition-colors ${activeTab === 'Queue' ? 'border-[#11241a] text-[#11241a]' : 'border-transparent text-gray-500 hover:text-[#11241a] hover:border-[#D4AF37]/50'}`}
           >
             No Dues Queue
             {pendingNoDues.length > 0 && (
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${activeTab === 'Queue' ? 'bg-[#0B2447] text-white' : 'bg-red-500 text-white'}`}>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${activeTab === 'Queue' ? 'bg-[#11241a] text-[#FFFDF8]' : 'bg-red-500 text-white'}`}>
                 {pendingNoDues.length}
               </span>
             )}
           </button>
           <button
             onClick={() => setActiveTab('Matcher')}
-            className={`whitespace-nowrap py-4 px-1 border-b-2 font-bold text-sm flex items-center gap-2 ${activeTab === 'Matcher' ? 'border-[#0B2447] text-[#0B2447]' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+            className={`whitespace-nowrap py-4 px-1 border-b-2 font-bold text-[12px] uppercase tracking-wider flex items-center gap-2 transition-colors ${activeTab === 'Matcher' ? 'border-[#11241a] text-[#11241a]' : 'border-transparent text-gray-500 hover:text-[#11241a] hover:border-[#D4AF37]/50'}`}
           >
             <Briefcase size={16} /> Placement Matcher
           </button>
@@ -210,70 +210,70 @@ const PlacementRecords = () => {
       {/* Stats Row */}
       {activeTab === 'Matcher' ? (
         <div className='grid grid-cols-1 sm:grid-cols-4 gap-4'>
-          <div className='bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4'>
-            <div className='w-12 h-12 rounded-lg bg-gray-50 text-gray-600 border border-gray-200 flex items-center justify-center font-black text-xl'>{totalStudents}</div>
+          <div className='bg-white p-5 rounded-xl border border-[#11241a]/10 shadow-sm flex items-center gap-4 transition-colors hover:border-[#D4AF37]/30'>
+            <div className='w-12 h-12 rounded bg-[#11241a]/5 text-[#11241a] border border-[#11241a]/10 flex items-center justify-center font-serif text-xl'>{totalStudents}</div>
             <div>
-              <p className='text-xs font-bold text-gray-400 uppercase tracking-wider'>Master List</p>
-              <p className='text-lg font-black text-[#0F172A]'>Total Scope</p>
+              <p className='text-[10px] font-bold text-gray-400 uppercase tracking-widest'>Master List</p>
+              <p className='text-lg font-serif font-medium text-[#11241a]'>Total Scope</p>
             </div>
           </div>
-          <div className='bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4'>
-            <div className='w-12 h-12 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center font-black text-xl'>{uploadedCount}</div>
+          <div className='bg-white p-5 rounded-xl border border-[#11241a]/10 shadow-sm flex items-center gap-4 transition-colors hover:border-[#D4AF37]/30'>
+            <div className='w-12 h-12 rounded bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center font-serif text-xl'>{uploadedCount}</div>
             <div>
-              <p className='text-xs font-bold text-emerald-600 uppercase tracking-wider'>Verified</p>
-              <p className='text-lg font-black text-[#0F172A]'>Uploaded</p>
+              <p className='text-[10px] font-bold text-emerald-600 uppercase tracking-widest'>Verified</p>
+              <p className='text-lg font-serif font-medium text-[#11241a]'>Uploaded</p>
             </div>
           </div>
-          <div className='bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4'>
-            <div className='w-12 h-12 rounded-lg bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center font-black text-xl'>{pendingCount}</div>
+          <div className='bg-white p-5 rounded-xl border border-[#11241a]/10 shadow-sm flex items-center gap-4 transition-colors hover:border-[#D4AF37]/30'>
+            <div className='w-12 h-12 rounded bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center font-serif text-xl'>{pendingCount}</div>
             <div>
-              <p className='text-xs font-bold text-amber-600 uppercase tracking-wider'>Defaulters</p>
-              <p className='text-lg font-black text-[#0F172A]'>Pending</p>
+              <p className='text-[10px] font-bold text-amber-600 uppercase tracking-widest'>Defaulters</p>
+              <p className='text-lg font-serif font-medium text-[#11241a]'>Pending</p>
             </div>
           </div>
-          <div className='bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4'>
-            <div className='w-12 h-12 rounded-lg bg-gray-50 text-gray-500 border border-gray-200 flex items-center justify-center font-black text-xl'>{unplacedCount}</div>
+          <div className='bg-white p-5 rounded-xl border border-[#11241a]/10 shadow-sm flex items-center gap-4 transition-colors hover:border-[#D4AF37]/30'>
+            <div className='w-12 h-12 rounded bg-gray-50 text-gray-500 border border-[#11241a]/10 flex items-center justify-center font-serif text-xl'>{unplacedCount}</div>
             <div>
-              <p className='text-xs font-bold text-gray-500 uppercase tracking-wider'>Status</p>
-              <p className='text-lg font-black text-[#0F172A]'>Not Placed</p>
+              <p className='text-[10px] font-bold text-gray-500 uppercase tracking-widest'>Status</p>
+              <p className='text-lg font-serif font-medium text-[#11241a]'>Not Placed</p>
             </div>
           </div>
         </div>
       ) : (
         <div className='grid grid-cols-1 sm:grid-cols-4 gap-4'>
-          <div className='bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4'>
-            <div className='w-12 h-12 rounded-lg bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center font-black text-xl'>{offerLetters.length}</div>
+          <div className='bg-white p-5 rounded-xl border border-[#11241a]/10 shadow-sm flex items-center gap-4 transition-colors hover:border-[#D4AF37]/30'>
+            <div className='w-12 h-12 rounded bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/20 flex items-center justify-center font-serif text-xl'>{offerLetters.length}</div>
             <div>
-              <p className='text-xs font-bold text-gray-400 uppercase tracking-wider'>Outcomes</p>
-              <p className='text-lg font-black text-[#0F172A]'>Total Records</p>
+              <p className='text-[10px] font-bold text-gray-400 uppercase tracking-widest'>Outcomes</p>
+              <p className='text-lg font-serif font-medium text-[#11241a]'>Total Records</p>
             </div>
           </div>
-          <div className='bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4'>
-            <div className='w-12 h-12 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center font-black text-xl'>{offerLetters.filter((r) => r.type === 'Job' || !r.type).length}</div>
+          <div className='bg-white p-5 rounded-xl border border-[#11241a]/10 shadow-sm flex items-center gap-4 transition-colors hover:border-[#D4AF37]/30'>
+            <div className='w-12 h-12 rounded bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center font-serif text-xl'>{offerLetters.filter((r) => r.type === 'Job' || !r.type).length}</div>
             <div>
-              <p className='text-xs font-bold text-emerald-600 uppercase tracking-wider'>Placed</p>
-              <p className='text-lg font-black text-[#0F172A]'>Job Offers</p>
+              <p className='text-[10px] font-bold text-emerald-600 uppercase tracking-widest'>Placed</p>
+              <p className='text-lg font-serif font-medium text-[#11241a]'>Job Offers</p>
             </div>
           </div>
-          <div className='bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4'>
-            <div className='w-12 h-12 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center font-black text-xl'>{offerLetters.filter((r) => r.type === 'Higher Studies').length}</div>
+          <div className='bg-white p-5 rounded-xl border border-[#11241a]/10 shadow-sm flex items-center gap-4 transition-colors hover:border-[#D4AF37]/30'>
+            <div className='w-12 h-12 rounded bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center font-serif text-xl'>{offerLetters.filter((r) => r.type === 'Higher Studies').length}</div>
             <div>
-              <p className='text-xs font-bold text-indigo-600 uppercase tracking-wider'>Pursuing</p>
-              <p className='text-lg font-black text-[#0F172A]'>Higher Studies</p>
+              <p className='text-[10px] font-bold text-indigo-600 uppercase tracking-widest'>Pursuing</p>
+              <p className='text-lg font-serif font-medium text-[#11241a]'>Higher Studies</p>
             </div>
           </div>
-          <div className='bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4'>
-            <div className='w-12 h-12 rounded-lg bg-gray-50 text-gray-500 border border-gray-200 flex items-center justify-center font-black text-xl'>{offerLetters.filter((r) => r.type === 'Not Placed').length}</div>
+          <div className='bg-white p-5 rounded-xl border border-[#11241a]/10 shadow-sm flex items-center gap-4 transition-colors hover:border-[#D4AF37]/30'>
+            <div className='w-12 h-12 rounded bg-gray-50 text-gray-500 border border-[#11241a]/10 flex items-center justify-center font-serif text-xl'>{offerLetters.filter((r) => r.type === 'Not Placed').length}</div>
             <div>
-              <p className='text-xs font-bold text-gray-500 uppercase tracking-wider'>Status</p>
-              <p className='text-lg font-black text-[#0F172A]'>Not Placed</p>
+              <p className='text-[10px] font-bold text-gray-500 uppercase tracking-widest'>Status</p>
+              <p className='text-lg font-serif font-medium text-[#11241a]'>Not Placed</p>
             </div>
           </div>
         </div>
       )}
 
       {/* Filters & Actions Bar */}
-      <div className='bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4'>
+      <div className='bg-white p-4 rounded-xl shadow-sm border border-[#11241a]/10 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 hover:border-[#D4AF37]/30 transition-colors'>
         <div className='flex flex-wrap items-center gap-3 w-full xl:w-auto flex-1'>
           {(activeTab === 'Archive' || activeTab === 'Matcher') && (
             <div className='relative w-full sm:w-64'>
@@ -282,7 +282,7 @@ const PlacementRecords = () => {
               </div>
               <input
                 placeholder='Search Student/Roll...'
-                className='w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-[#0B2447] focus:border-transparent transition-all outline-none'
+                className='w-full pl-9 pr-4 py-2.5 bg-[#F9F8F5] border border-[#11241a]/10 rounded text-[12px] font-bold uppercase tracking-wider focus:bg-white focus:ring-2 focus:ring-[#D4AF37]/50 focus:border-[#D4AF37] transition-all outline-none text-[#11241a] placeholder:text-gray-400'
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />

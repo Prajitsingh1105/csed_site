@@ -1,6 +1,7 @@
 import React from 'react'
 import Navbar from '../components/Navbar'
 import NoticeBanner from '../components/NoticeBanner'
+import NoticeBoard from '../components/NoticeBoard'
 import Hero from '../components/Hero'
 import JobListing from '../components/JobListing'
 import AppDownload from '../components/AppDownload'
@@ -14,6 +15,7 @@ const Home = () => {
       <Hero/>
       <NoticeBanner />
       <AcademicObjectives />
+      <NoticeBoard />
       <AppDownload/>
       <Footer/>
     </div>
