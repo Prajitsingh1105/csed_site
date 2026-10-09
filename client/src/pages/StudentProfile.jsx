@@ -2,18 +2,7 @@ import React, { useState, useEffect, useContext, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import {
-  User,
-  BookOpen,
-  GraduationCap,
-  Calendar,
-  Phone,
-  Hash,
-  CheckCircle,
-  Camera,
-  X,
-  ZoomIn,
-} from 'lucide-react';
+import { User, BookOpen, GraduationCap, Calendar, Phone, Hash, CheckCircle, Camera, X, ZoomIn, Layers, Briefcase, Code, Plus, Trash2, Terminal, Link, Award, Users } from "lucide-react";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
@@ -109,6 +98,7 @@ const StudentProfile = () => {
   const [saved, setSaved] = useState(false);
   const [focused, setFocused] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+  const [activeTab, setActiveTab] = useState('personal');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -118,7 +108,14 @@ const StudentProfile = () => {
     passingYear: '2026',
     phone: '',
     profileImage: '',
+    electives: [],
+    facultyMentor: '',
+    departmentRoles: [],
+    projects: [],
   });
+  const [electiveInput, setElectiveInput] = useState('');
+  const [roleInput, setRoleInput] = useState('');
+  
 
   const [selectedImage, setSelectedImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
@@ -151,6 +148,10 @@ const StudentProfile = () => {
             passingYear: u.passingYear || '2026',
             phone: u.phone || '',
             profileImage: u.image || '',
+            electives: u.electives || [],
+            facultyMentor: u.facultyMentor || '',
+            departmentRoles: u.departmentRoles || [],
+            projects: u.projects || [],
           });
 
           if (u.image) {
@@ -193,6 +194,63 @@ const StudentProfile = () => {
     });
   };
 
+  
+  const handleAddElective = (e) => {
+    if (e.key === 'Enter' && electiveInput.trim()) {
+      e.preventDefault();
+      if (!formData.electives.includes(electiveInput.trim())) {
+        setFormData({ ...formData, electives: [...formData.electives, electiveInput.trim()] });
+      }
+      setElectiveInput('');
+    }
+  };
+  const removeElective = (item) => {
+    setFormData({ ...formData, electives: formData.electives.filter(i => i !== item) });
+  };
+
+  const handleAddRole = (e) => {
+    if (e.key === 'Enter' && roleInput.trim()) {
+      e.preventDefault();
+      if (!formData.departmentRoles.includes(roleInput.trim())) {
+        setFormData({ ...formData, departmentRoles: [...formData.departmentRoles, roleInput.trim()] });
+      }
+      setRoleInput('');
+    }
+  };
+  const removeRole = (item) => {
+    setFormData({ ...formData, departmentRoles: formData.departmentRoles.filter(i => i !== item) });
+  };
+
+  const addProject = () => {
+    setFormData({ ...formData, projects: [...formData.projects, { title: '', techStack: '', url: '' }] });
+  };
+  const removeProject = (index) => {
+    const newProjects = [...formData.projects];
+    newProjects.splice(index, 1);
+    setFormData({ ...formData, projects: newProjects });
+  };
+  const updateProject = (index, field, value) => {
+    const newProjects = [...formData.projects];
+    newProjects[index][field] = value;
+    setFormData({ ...formData, projects: newProjects });
+  };
+
+  const calculateCompletion = () => {
+    const fields = [
+      formData.name,
+      formData.phone,
+      formData.branch,
+      formData.passingYear,
+      previewUrl,
+      formData.facultyMentor,
+      formData.electives?.length > 0,
+      formData.departmentRoles?.length > 0,
+      formData.projects?.length > 0,
+    ];
+    const filled = fields.filter(Boolean).length;
+    return Math.round((filled / fields.length) * 100);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -206,6 +264,10 @@ const StudentProfile = () => {
       payload.append('degree', formData.degree);
       payload.append('branch', formData.branch);
       payload.append('passingYear', formData.passingYear);
+      payload.append('electives', JSON.stringify(formData.electives));
+      payload.append('facultyMentor', formData.facultyMentor);
+      payload.append('departmentRoles', JSON.stringify(formData.departmentRoles));
+      payload.append('projects', JSON.stringify(formData.projects));
 
       if (selectedImage) {
         payload.append('profileImage', selectedImage);
@@ -379,6 +441,34 @@ const StudentProfile = () => {
               onSubmit={handleSubmit}
               style={{ padding: isMobile ? '22px 18px 24px' : '36px 40px 40px' }}
             >
+
+              <div style={{ display: 'flex', borderBottom: `1px solid ${THEME.borderSoft}`, marginBottom: 32 }}>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('personal')}
+                  style={{
+                    flex: 1, padding: '16px 8px', fontWeight: 800, fontSize: 13, background: 'transparent',
+                    border: 'none', borderBottom: activeTab === 'personal' ? `3px solid ${THEME.brand}` : '3px solid transparent',
+                    color: activeTab === 'personal' ? THEME.brand : THEME.textMuted, cursor: 'pointer', transition: 'all 0.2s', textTransform: 'uppercase', letterSpacing: '0.05em'
+                  }}
+                >
+                  Personal Details
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('professional')}
+                  style={{
+                    flex: 1, padding: '16px 8px', fontWeight: 800, fontSize: 13, background: 'transparent',
+                    border: 'none', borderBottom: activeTab === 'professional' ? `3px solid ${THEME.brand}` : '3px solid transparent',
+                    color: activeTab === 'professional' ? THEME.brand : THEME.textMuted, cursor: 'pointer', transition: 'all 0.2s', textTransform: 'uppercase', letterSpacing: '0.05em'
+                  }}
+                >
+                  Professional Details
+                </button>
+              </div>
+
+              <div style={{ display: activeTab === 'personal' ? 'block' : 'none' }}>
+
               <SectionHeading>Profile Photo</SectionHeading>
 
               <div
@@ -646,6 +736,156 @@ const StudentProfile = () => {
                 </div>
               </div>
 
+
+              </div>
+              <div style={{ display: activeTab === 'professional' ? 'block' : 'none' }}>
+              <div style={{ height: 1, background: THEME.borderSoft, margin: '4px 0 28px' }} />
+              
+              <SectionHeading>Academic Track</SectionHeading>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '16px' : '18px 24px', marginBottom: 36 }}>
+                <div>
+                  <Label icon={Users}>Faculty Mentor</Label>
+                  <input
+                    type="text"
+                    name="facultyMentor"
+                    value={formData.facultyMentor}
+                    onChange={handleChange}
+                    placeholder="E.g., Dr. A. Sharma"
+                    onFocus={() => setFocused('facultyMentor')}
+                    onBlur={() => setFocused(null)}
+                    style={{ ...inputStyle(), ...focusStyle('facultyMentor') }}
+                  />
+                </div>
+                
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <Label icon={BookOpen}>Current Semester Electives</Label>
+                  <div style={{ 
+                    display: 'flex', 
+                    flexWrap: 'wrap', 
+                    gap: 8, 
+                    padding: '12px', 
+                    border: `1px solid ${focused === 'electives' ? THEME.brand : THEME.border}`, 
+                    borderRadius: 9, 
+                    background: THEME.bgLight,
+                    transition: 'all 0.2s',
+                    boxShadow: focused === 'electives' ? `0 0 0 3px ${THEME.blueLight}` : 'none',
+                  }}>
+                    {formData.electives.map(item => (
+                      <span key={item} style={{ display: 'flex', alignItems: 'center', gap: 4, background: THEME.navy, color: THEME.brand, padding: '4px 10px', borderRadius: 16, fontSize: 12, fontWeight: 600 }}>
+                        {item} <X size={12} style={{ cursor: 'pointer', opacity: 0.7 }} onClick={() => removeElective(item)} />
+                      </span>
+                    ))}
+                    <input
+                      type="text"
+                      value={electiveInput}
+                      onChange={(e) => setElectiveInput(e.target.value)}
+                      onKeyDown={handleAddElective}
+                      placeholder="Type elective & press Enter..."
+                      onFocus={() => setFocused('electives')}
+                      onBlur={() => setFocused(null)}
+                      style={{ border: 'none', outline: 'none', background: 'transparent', flex: 1, minWidth: 150, fontSize: 14, color: THEME.text }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ height: 1, background: THEME.borderSoft, margin: '4px 0 28px' }} />
+
+              <SectionHeading>Department Roles</SectionHeading>
+              <div style={{ marginBottom: 36 }}>
+                <Label icon={Award}>Roles & Memberships</Label>
+                <div style={{ 
+                  display: 'flex', 
+                  flexWrap: 'wrap', 
+                  gap: 8, 
+                  padding: '12px', 
+                  border: `1px solid ${focused === 'roles' ? THEME.brand : THEME.border}`, 
+                  borderRadius: 9, 
+                  background: THEME.bgLight,
+                  transition: 'all 0.2s',
+                  boxShadow: focused === 'roles' ? `0 0 0 3px ${THEME.blueLight}` : 'none',
+                }}>
+                  {formData.departmentRoles.map(item => (
+                    <span key={item} style={{ display: 'flex', alignItems: 'center', gap: 4, background: THEME.brand + '20', color: THEME.navy, border: `1px solid ${THEME.brand}40`, padding: '4px 10px', borderRadius: 16, fontSize: 12, fontWeight: 700 }}>
+                      {item} <X size={12} style={{ cursor: 'pointer', opacity: 0.7 }} onClick={() => removeRole(item)} />
+                    </span>
+                  ))}
+                  <input
+                    type="text"
+                    value={roleInput}
+                    onChange={(e) => setRoleInput(e.target.value)}
+                    onKeyDown={handleAddRole}
+                    placeholder="e.g. Class Representative (Press Enter)"
+                    onFocus={() => setFocused('roles')}
+                    onBlur={() => setFocused(null)}
+                    style={{ border: 'none', outline: 'none', background: 'transparent', flex: 1, minWidth: 150, fontSize: 14, color: THEME.text }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ height: 1, background: THEME.borderSoft, margin: '4px 0 28px' }} />
+
+              <SectionHeading>Projects & Portfolio</SectionHeading>
+              <div style={{ marginBottom: 36, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {formData.projects.map((proj, i) => (
+                  <div key={i} style={{ border: `1px solid ${THEME.border}`, borderRadius: 9, padding: 16, background: 'white' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: THEME.navy }}>Project {i + 1}</span>
+                      <Trash2 size={16} color="red" style={{ cursor: 'pointer', opacity: 0.7 }} onClick={() => removeProject(i)} />
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
+                      <div>
+                        <Label icon={Code}>Project Title</Label>
+                        <input
+                          type="text"
+                          value={proj.title}
+                          onChange={(e) => updateProject(i, 'title', e.target.value)}
+                          placeholder="E.g., Smart Portal"
+                          style={inputStyle()}
+                        />
+                      </div>
+                      <div>
+                        <Label icon={Terminal}>Tech Stack / Domain</Label>
+                        <input
+                          type="text"
+                          value={proj.techStack}
+                          onChange={(e) => updateProject(i, 'techStack', e.target.value)}
+                          placeholder="MERN, AI/ML, etc."
+                          style={inputStyle()}
+                        />
+                      </div>
+                      <div style={{ gridColumn: '1 / -1' }}>
+                        <Label icon={Link}>Project Link</Label>
+                        <input
+                          type="url"
+                          value={proj.url}
+                          onChange={(e) => updateProject(i, 'url', e.target.value)}
+                          placeholder="https://github.com/..."
+                          style={inputStyle()}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                <button
+                  type="button"
+                  onClick={addProject}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    padding: '10px 16px', background: THEME.bgLight, border: `1px dashed ${THEME.brand}`,
+                    color: THEME.navy, fontWeight: 600, fontSize: 13, borderRadius: 9, cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = THEME.brand + '10'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = THEME.bgLight}
+                >
+                  <Plus size={16} /> Add Project
+                </button>
+              </div>
+
+              </div>
+
               <div
                 style={{
                   borderTop: `1px solid ${THEME.borderSoft}`,
@@ -775,3 +1015,4 @@ const Spinner = () => (
 );
 
 export default StudentProfile;
+

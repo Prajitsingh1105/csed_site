@@ -75,7 +75,7 @@ export const getProfile = async (req, res) => {
 export const updateProfile = async (req, res) => {
   try {
     const { userId } = req.auth;
-    const { name, phone, degree, branch, passingYear } = req.body;
+    const { name, phone, degree, branch, passingYear, electives, facultyMentor, departmentRoles, projects } = req.body;
 
     const user = await User.findOne({ userId });
     if (!user) {
@@ -92,6 +92,10 @@ export const updateProfile = async (req, res) => {
       branch,
       passingYear,
     };
+    if (electives !== undefined) updateData.electives = typeof electives === "string" ? JSON.parse(electives) : electives;
+    if (facultyMentor !== undefined) updateData.facultyMentor = facultyMentor;
+    if (departmentRoles !== undefined) updateData.departmentRoles = typeof departmentRoles === "string" ? JSON.parse(departmentRoles) : departmentRoles;
+    if (projects !== undefined) updateData.projects = typeof projects === "string" ? JSON.parse(projects) : projects;
 
     if (req.file) {
       try {
@@ -405,3 +409,4 @@ export const getNoDuesStatus = async (req, res) => {
         return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
+

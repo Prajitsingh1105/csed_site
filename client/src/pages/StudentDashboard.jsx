@@ -1,14 +1,38 @@
-import React from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { assets } from '../assets/assets'
 import { LogOut, User, MessageSquare, FileCheck, LayoutDashboard } from 'lucide-react'
-import { useUser, useClerk } from '@clerk/react'
+import { useUser, useClerk, useAuth } from '@clerk/react'
+import { AppContext } from '../context/AppContext'
+import axios from 'axios'
 
 const StudentDashboard = () => {
     const navigate = useNavigate()
     const { user, isLoaded } = useUser()
     const { signOut } = useClerk()
+    const { getToken } = useAuth()
+    const { backendUrl } = useContext(AppContext)
+    const [dbUser, setDbUser] = useState(null)
     const location = useLocation()
+
+    useEffect(() => {
+        const fetchDbUser = async () => {
+            try {
+                const token = await getToken()
+                if (token) {
+                    const res = await axios.get(`${backendUrl}/api/student/profile`, { 
+                        headers: { Authorization: `Bearer ${token}` } 
+                    })
+                    if (res.data.success) {
+                        setDbUser(res.data.user)
+                    }
+                }
+            } catch(e) {}
+        }
+        if (isLoaded && user) {
+            fetchDbUser()
+        }
+    }, [isLoaded, user, backendUrl, getToken])
 
     const logout = () => {
         signOut()
@@ -25,6 +49,9 @@ const StudentDashboard = () => {
         { path: '/student-dashboard/doubts', label: 'Query Forum', icon: MessageSquare },
         { path: '/student-dashboard/no-dues', label: 'No Dues', icon: FileCheck },
     ]
+
+    const displayName = dbUser?.name || user?.fullName || "Student"
+    const displayImage = dbUser?.image || user?.imageUrl
 
     return (
         <div className='min-h-screen flex flex-col bg-[#F9F8F5] font-sans relative'>
@@ -47,15 +74,15 @@ const StudentDashboard = () => {
 
                     <div className='flex items-center gap-5'>
                         <div className='text-right hidden sm:block'>
-                            <p className='text-sm font-bold text-[#11241a] leading-tight'>{user?.fullName || "Student"}</p>
+                            <p className='text-sm font-bold text-[#11241a] leading-tight'>{displayName}</p>
                             <button onClick={logout} className='text-[11px] text-red-600/80 hover:text-red-600 font-bold mt-0.5 transition-colors flex items-center justify-end gap-1 w-full uppercase tracking-wider'>
                                 <LogOut size={12} /> Logout
                             </button>
                         </div>
                         <div className='relative group'>
                             <div className="w-9 h-9 rounded-full bg-[#11241a] flex items-center justify-center shadow-md border border-[#D4AF37]/30 cursor-pointer text-[#D4AF37] overflow-hidden group-hover:bg-[#1a1728] transition-colors">
-                                {user?.imageUrl ? (
-                                    <img src={user.imageUrl} className="w-full h-full object-cover" alt="Profile" />
+                                {displayImage ? (
+                                    <img src={displayImage} className="w-full h-full object-cover" alt="Profile" />
                                 ) : (
                                     <User size={16} />
                                 )}
@@ -96,7 +123,7 @@ const StudentDashboard = () => {
             </header>
 
             <main className='flex-1 w-full flex flex-col relative z-10'>
-                <Outlet />
+                <Outlet context={{ dbUser, refreshDbUser: () => setDbUser(null) }} />
             </main>
         </div>
     )

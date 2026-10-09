@@ -21,6 +21,17 @@ const fileSchema = new mongoose.Schema(
     phone: { type: String, default: "" },
     degree: { type: String, default: "B.Tech" },
     passingYear: { type: String, default: "" },
+    electives: { type: [String], default: [] },
+    facultyMentor: { type: String, default: "" },
+    departmentRoles: { type: [String], default: [] },
+    projects: { 
+      type: [{
+        title: { type: String },
+        techStack: { type: String },
+        url: { type: String }
+      }], 
+      default: [] 
+    },
     isBlacklisted: { type: Boolean, default: false },
     blacklistReason: { type: String, default: "" }
   },
