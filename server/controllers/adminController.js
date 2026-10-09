@@ -90,19 +90,21 @@ export const getStudents = async (req, res) => {
   try {
     const students = await User.find();
     
-    // DIAGNOSTIC LOG: Run this to see if the "users" collection contains items// console.("--- DEBUG REQ ---");// console.("Raw documents found in User collection:", students.length);
+    const rollNumbers = students.map(s => s.rollNumber).filter(Boolean);
+    const ledgers = await StudentRecord.find({ rollNumber: { $in: rollNumbers } });
+    const ledgerMap = new Map(ledgers.map(l => [l.rollNumber, l]));
 
-    const populatedStudents = await Promise.all(students.map(async (student) => {
+    const populatedStudents = students.map((student) => {
       let studentObj = student.toObject();
-      if ((!studentObj.name || studentObj.name.startsWith('Student ')) && studentObj.rollNumber) {
-        const ledger = await StudentRecord.findOne({ rollNumber: studentObj.rollNumber });
+      if ((!studentObj.name || studentObj.name.startsWith("Student ")) && studentObj.rollNumber) {
+        const ledger = ledgerMap.get(studentObj.rollNumber);
         if (ledger) {
           studentObj.name = ledger.name;
           studentObj.branch = ledger.branch;
         }
       }
       return studentObj;
-    }));
+    });
 
     res.json({ success: true, students: populatedStudents });
   } catch (error) {

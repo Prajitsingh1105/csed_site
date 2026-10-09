@@ -1,7 +1,7 @@
 import React from 'react'
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { assets } from '../assets/assets'
-import { LogOut, User, MessageSquare, FileCheck } from 'lucide-react'
+import { LogOut, User, MessageSquare, FileCheck, LayoutDashboard } from 'lucide-react'
 import { useUser, useClerk } from '@clerk/react'
 
 const StudentDashboard = () => {
@@ -20,9 +20,10 @@ const StudentDashboard = () => {
     }
 
     const navLinks = [
-        { path: '/student-dashboard', label: 'My Profile', icon: User, exact: true },
+        { path: '/student-dashboard', label: 'Overview', icon: LayoutDashboard, exact: true },
+        { path: '/student-dashboard/profile', label: 'My Profile', icon: User },
         { path: '/student-dashboard/doubts', label: 'Query Forum', icon: MessageSquare },
-        { path: '/student-dashboard/no-dues', label: 'No Dues Form', icon: FileCheck },
+        { path: '/student-dashboard/no-dues', label: 'No Dues', icon: FileCheck },
     ]
 
     return (

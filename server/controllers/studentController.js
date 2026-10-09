@@ -38,10 +38,12 @@ const resolveAndMigrateUser = async (productionUserId) => {
         // Batch update all related database references across the platform
         await ForumQuery.updateMany({ studentId: developmentUserId }, { $set: { studentId: productionUserId } });
         await Application.updateMany({ userId: developmentUserId }, { $set: { userId: productionUserId } });
-        await NoDuesRequest.updateMany({ userId: developmentUserId }, { $set: { userId: productionUserId } });// console.(`Successfully mapped and migrated historical data for: ${clerkUser.emailAddresses[0]?.emailAddress}`);
+        await NoDuesRequest.updateMany({ userId: developmentUserId }, { $set: { userId: productionUserId } });
+// console.(`Successfully mapped and migrated historical data for: ${clerkUser.emailAddresses[0]?.emailAddress}`);
       }
     }
-  } catch (error) {// console.("Migration fallback resolution error:", error.message);
+  } catch (error) {
+// console.("Migration fallback resolution error:", error.message);
   }
 };
 
@@ -55,7 +57,7 @@ export const getProfile = async (req, res) => {
     }
 
     // Run real-time resolution scan
-    await resolveAndMigrateUser(userId);
+
 
     const user = await User.findOne({ userId });
     
@@ -144,6 +146,7 @@ export const syncUser = async (req, res) => {
     }
 
     // 1. Get the clean roll number from their verified email handle
+    await resolveAndMigrateUser(userId);
     const rollNumberRaw = email.split('@')[0].trim();
 
     // 2. CRITICAL PRODUCTION COUPLING: Look for an existing historical account 
@@ -165,7 +168,8 @@ export const syncUser = async (req, res) => {
       // Cascade the ID update across all application collections instantly
       await ForumQuery.updateMany({ studentId: oldDevId }, { $set: { studentId: userId } });
       await Application.updateMany({ userId: oldDevId }, { $set: { userId: userId } });
-      await NoDuesRequest.updateMany({ userId: oldDevId }, { $set: { userId: userId } });// console.(`Live Link Patch Success: Restored historical records for Roll Number ${rollNumberRaw}`);
+      await NoDuesRequest.updateMany({ userId: oldDevId }, { $set: { userId: userId } });
+// console.(`Live Link Patch Success: Restored historical records for Roll Number ${rollNumberRaw}`);
       
       return res.json({ success: true, user: existingHistoricUser });
     }
@@ -213,7 +217,8 @@ export const syncUser = async (req, res) => {
     );
 
     res.json({ success: true, user });
-  } catch (error) {// console.("Live Sync Error Caught:", error.message);
+  } catch (error) {
+// console.("Live Sync Error Caught:", error.message);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -302,7 +307,7 @@ export const submitNoDues = async (req, res) => {
     const { name, rollNumber, branch, year, company, package: pkg, type } = req.body;
 
     // FIX 1: Enforce migration lookup immediately if they land directly on this page
-    await resolveAndMigrateUser(userId);
+
 
     let letterUrl = req.body.letterUrl || '';
 
@@ -395,7 +400,8 @@ export const getNoDuesStatus = async (req, res) => {
             request: request || null 
         });
 
-    } catch (error) {// console.("Error in getNoDuesStatus:", error);
+    } catch (error) {
+// console.("Error in getNoDuesStatus:", error);
         return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };

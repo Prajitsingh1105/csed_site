@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useContext, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import {
@@ -11,6 +11,8 @@ import {
   Hash,
   CheckCircle,
   Camera,
+  X,
+  ZoomIn,
 } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -120,6 +122,8 @@ const StudentProfile = () => {
 
   const [selectedImage, setSelectedImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
+  const [showEnlarged, setShowEnlarged] = useState(false);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth < 640);
@@ -146,11 +150,11 @@ const StudentProfile = () => {
             branch: u.branch || 'Computer Science and Engineering-Regular',
             passingYear: u.passingYear || '2026',
             phone: u.phone || '',
-            profileImage: u.profileImage || '',
+            profileImage: u.image || '',
           });
 
-          if (u.profileImage) {
-            setPreviewUrl(u.profileImage);
+          if (u.image) {
+            setPreviewUrl(u.image);
           }
         }
       } catch (err) {
@@ -380,24 +384,32 @@ const StudentProfile = () => {
               <div
                 style={{
                   display: 'flex',
-                  flexDirection: isMobile ? 'column' : 'row',
-                  alignItems: isMobile ? 'flex-start' : 'center',
-                  gap: 18,
-                  marginBottom: 28,
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 12,
+                  marginBottom: 32,
+                  marginTop: 12,
                 }}
               >
                 <div
                   style={{
-                    width: 92,
-                    height: 92,
+                    position: 'relative',
+                    width: 140,
+                    height: 140,
                     borderRadius: '50%',
-                    overflow: 'hidden',
-                    border: `2px solid ${THEME.blueBorder}`,
+                    border: `4px solid ${THEME.blueBorder}`,
                     background: THEME.blueBg,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     flexShrink: 0,
+                    cursor: 'pointer',
+                    overflow: 'hidden',
+                  }}
+                  className="group"
+                  onClick={() => {
+                    if (previewUrl) setShowEnlarged(true);
+                    else fileInputRef.current?.click();
                   }}
                 >
                   {previewUrl ? (
@@ -411,26 +423,108 @@ const StudentProfile = () => {
                       }}
                     />
                   ) : (
-                    <User size={34} color={THEME.brand} />
+                    <User size={48} color={THEME.brand} />
                   )}
+
+                  {/* Hover Overlay */}
+                  <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Camera size={28} color="white" className="mb-1" />
+                    <span className="text-white text-[10px] uppercase font-bold tracking-wider">
+                      {previewUrl ? 'Change/View' : 'Upload'}
+                    </span>
+                  </div>
                 </div>
 
-                <div style={{ flex: 1, width: '100%' }}>
-                  <Label icon={Camera}>Upload Profile Image</Label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    style={{
-                      ...inputStyle(),
-                      padding: '10px 12px',
-                    }}
-                  />
-                  <p style={{ fontSize: 11, color: THEME.textFaint, marginTop: 6 }}>
-                    JPG, PNG, or WEBP. Choose a clear passport-style photo.
-                  </p>
-                </div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  ref={fileInputRef}
+                  style={{ display: 'none' }}
+                />
+
+                <p style={{ fontSize: 12, color: THEME.textFaint, textAlign: 'center', maxWidth: 280, margin: 0 }}>
+                  JPG, PNG, or WEBP. Choose a clear passport-style photo.
+                </p>
               </div>
+
+              {/* Full Image Modal */}
+              <AnimatePresence>
+                {showEnlarged && previewUrl && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    style={{
+                      position: 'fixed',
+                      inset: 0,
+                      backgroundColor: 'rgba(0,0,0,0.85)',
+                      zIndex: 9999,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: 20,
+                    }}
+                    onClick={() => setShowEnlarged(false)}
+                  >
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowEnlarged(false);
+                      }}
+                      style={{
+                        position: 'absolute',
+                        top: 24,
+                        right: 24,
+                        background: 'rgba(255,255,255,0.1)',
+                        border: 'none',
+                        color: 'white',
+                        width: 44,
+                        height: 44,
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                      }}
+                      className="hover:bg-white/20 transition-colors"
+                    >
+                      <X size={24} />
+                    </button>
+
+                    <motion.img
+                      initial={{ scale: 0.8 }}
+                      animate={{ scale: 1 }}
+                      exit={{ scale: 0.8 }}
+                      src={previewUrl}
+                      alt="Enlarged profile"
+                      onClick={(e) => e.stopPropagation()}
+                      style={{
+                        maxWidth: '90%',
+                        maxHeight: '75vh',
+                        objectFit: 'contain',
+                        borderRadius: 16,
+                        boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+                      }}
+                    />
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        fileInputRef.current?.click();
+                        setShowEnlarged(false);
+                      }}
+                      className="mt-8 flex items-center gap-2 px-6 py-3 bg-white text-[#11241a] rounded-full font-bold text-sm hover:bg-gray-200 transition-colors"
+                    >
+                      <Camera size={18} />
+                      Change Picture
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               <SectionHeading>Personal Information</SectionHeading>
 
