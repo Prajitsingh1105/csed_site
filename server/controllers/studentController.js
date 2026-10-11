@@ -7,6 +7,7 @@ import Application from '../models/Application.js';
 import NoDuesRequest from '../models/NoDuesRequest.js';
 import StudentRecord from '../models/StudentRecord.js';
 import cloudinary, { uploadToCloudinary } from '../config/cloudinary.js';
+import QRCode from 'qrcode';
 
 // Initialize Clerk Backend SDK to fetch the metadata we seeded
 const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
@@ -398,10 +399,26 @@ export const getNoDuesStatus = async (req, res) => {
         // Query your collection using the verified Clerk ID string
         const request = await NoDuesRequest.findOne({ userId: clerkUserId }); 
         
-        // Return the exact structure your frontend NoDues.jsx expects: response.data.request
+        if (!request) {
+            return res.status(200).json({ 
+                success: true, 
+                request: null 
+            });
+        }
+
+        let requestObj = request.toObject();
+
+        if (request.status === 'Approved') {
+            const verificationUrl = `https://csed.placement.ietlucknow.ac.in/verify/no-dues/${request._id}`;
+            const qrCodeDataUrl = await QRCode.toDataURL(verificationUrl);
+            requestObj.qrCodeDataUrl = qrCodeDataUrl;
+            requestObj.signatureSvg = process.env.FACULTY_SIGNATURE_SVG || '';
+            requestObj.certificateId = String(request._id);
+        }
+
         return res.status(200).json({ 
             success: true, 
-            request: request || null 
+            request: requestObj 
         });
 
     } catch (error) {

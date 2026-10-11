@@ -36,18 +36,28 @@ const NoDuesForm = ({ prefillData = null }) => {
             <style>{css}</style>
 
             <div className="paper">
-                <div className="dept">
-                    Department of Computer Science &amp; Engineering
-                </div>
+                <div className="header-wrapper">
+                    <div className="header-center">
+                        <div className="dept">
+                            Department of Computer Science &amp; Engineering
+                        </div>
 
-                <div className="college">
-                    Institute of Engineering &amp; Technology, Lucknow
-                </div>
+                        <div className="college">
+                            Institute of Engineering &amp; Technology, Lucknow
+                        </div>
 
-                <div className="title">{sessionTitle}</div>
+                        <div className="title">{sessionTitle}</div>
 
-                <div className="subtitle">
-                    (For B.Tech / MCA Final Year Students: Passing-Out Batch)
+                        <div className="subtitle">
+                            (For B.Tech / MCA Final Year Students: Passing-Out Batch)
+                        </div>
+                    </div>
+                    {prefillData?.qrCodeDataUrl && (
+                        <div className="qr-container">
+                            <img src={prefillData.qrCodeDataUrl} alt="Verify Certificate" className="qr-img" />
+                            <div className="qr-label">Scan to Verify</div>
+                        </div>
+                    )}
                 </div>
 
                 <div className="student-details">
@@ -120,8 +130,14 @@ const NoDuesForm = ({ prefillData = null }) => {
                             <td>Faculty Coordinator for Placement / Higher Study Record</td>
                             <td className="sign">
                                 <div className="signature-box">
+                                    {signatureSvgContent ? (
+                                        <div 
+                                            className="signature-svg-wrapper" 
+                                            dangerouslySetInnerHTML={{ __html: signatureSvgContent }} 
+                                        />
+                                    ) : null}
                                     <div className="sign-name">Deepanshu Singh Yadav</div>
-                                    <div className="sign-date" style={{ color: "#888", fontSize: 10 }}>[Signature generated in secure PDF]</div>
+                                    <div className="sign-date">{approvedDate}</div>
                                 </div>
                             </td>
                         </tr>
@@ -158,6 +174,9 @@ const NoDuesForm = ({ prefillData = null }) => {
                         </ul>
                     </div>
                 </div>
+                {prefillData?.certificateId && (
+                    <div className="cert-id">Certificate ID: {prefillData.certificateId}</div>
+                )}
             </div>
         </div>
     );
@@ -185,6 +204,46 @@ const css = `
     box-shadow: 0 0 10px rgba(0,0,0,0.15);
     border: 1px solid #ddd;
   }
+
+
+.paper-wrapper .header-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    position: relative;
+}
+.paper-wrapper .header-center {
+    flex: 1;
+    text-align: center;
+}
+.paper-wrapper .qr-container {
+    width: 95px;
+    text-align: center;
+    margin-left: 15px;
+    flex-shrink: 0;
+}
+.paper-wrapper .qr-img {
+    width: 85px;
+    height: 85px;
+    display: block;
+    margin: 0 auto;
+}
+.paper-wrapper .qr-label {
+    font-size: 9px;
+    font-weight: bold;
+    color: #555;
+    margin-top: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.paper-wrapper .cert-id {
+    font-size: 11px;
+    color: #666;
+    text-align: right;
+    margin-top: 15px;
+    font-family: monospace;
+}
 
 .paper-wrapper .dept { text-align: center; font-size: 20px; margin-bottom: 4px; }
 .paper-wrapper .college { text-align: center; font-size: 26px; font-weight: bold; margin-bottom: 18px; }
@@ -252,15 +311,24 @@ const css = `
 .paper-wrapper .box ul { padding-left: 25px; font-size: 16px; line-height: 1.7; }
 
   @media print {
-  /* Hide everything outside the form */
-.paper-wrapper > * { display: none !important; }
-
-  /* Show only the paper */
-.paper-wrapper .paper {
+  /* Hide all dashboard UI, navbar, and backgrounds */
+  body * { visibility: hidden !important; }
+  .paper-wrapper, .paper-wrapper * { visibility: visible !important; }
+  .paper-wrapper {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: white !important;
+  }
+  .paper-wrapper .paper {
     display: block !important;
     box-shadow: none !important;
     border: none !important;
     width: 100% !important;
+    max-width: 100% !important;
     padding: 20px 30px !important;
     margin: 0 !important;
   }
@@ -268,6 +336,46 @@ const css = `
   /* Force single page */
 .paper-wrapper * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   
+
+.paper-wrapper .header-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    position: relative;
+}
+.paper-wrapper .header-center {
+    flex: 1;
+    text-align: center;
+}
+.paper-wrapper .qr-container {
+    width: 95px;
+    text-align: center;
+    margin-left: 15px;
+    flex-shrink: 0;
+}
+.paper-wrapper .qr-img {
+    width: 85px;
+    height: 85px;
+    display: block;
+    margin: 0 auto;
+}
+.paper-wrapper .qr-label {
+    font-size: 9px;
+    font-weight: bold;
+    color: #555;
+    margin-top: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.paper-wrapper .cert-id {
+    font-size: 11px;
+    color: #666;
+    text-align: right;
+    margin-top: 15px;
+    font-family: monospace;
+}
+
 .paper-wrapper .dept { font-size: 14px !important; margin-bottom: 2px !important; }
 .paper-wrapper .college { font-size: 18px !important; margin-bottom: 10px !important; }
 .paper-wrapper .title { font-size: 18px !important; margin-bottom: 6px !important; }

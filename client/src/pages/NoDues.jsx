@@ -143,38 +143,15 @@ const NoDues = () => {
             projectStatus: existingRequest.formData?.projectStatus || 'Yes',
             placementRecordStatus: existingRequest.formData?.placementRecordStatus || 'Yes',
             feedbackStatus: existingRequest.formData?.feedbackStatus || 'Yes',
-            signatureSvg: existingRequest.formData?.signatureSvg || null,
+            signatureSvg: existingRequest.signatureSvg || existingRequest.formData?.signatureSvg || null,
+            qrCodeDataUrl: existingRequest.qrCodeDataUrl || null,
+            certificateId: existingRequest.certificateId || existingRequest._id || null,
         }
         : null
 
-        const [downloading, setDownloading] = useState(false);
-
-    const handleDownload = async () => {
-        setDownloading(true);
-        try {
-            const token = await getToken();
-            const res = await axios.get(`${backendUrl}/api/student/no-dues/download`, {
-                headers: { Authorization: `Bearer ${token}` },
-                responseType: 'blob'
-            });
-            
-            const url = window.URL.createObjectURL(new Blob([res.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `No_Dues_${approvedFormData?.rollNumber || 'Certificate'}.pdf`);
-            document.body.appendChild(link);
-            link.click();
-            link.parentNode.removeChild(link);
-            window.URL.revokeObjectURL(url);
-            
-            toast.success('Certificate downloaded successfully!');
-        } catch (error) {
-            toast.error('Failed to download certificate.');
-            console.error(error);
-        } finally {
-            setDownloading(false);
-        }
-    }
+    const handleDownload = () => {
+        window.print();
+    };
 
     if (!loadingData && existingRequest?.status === 'Approved') {
         return (
@@ -453,7 +430,7 @@ const NoDues = () => {
                                     </button>
 
                                     <button
-                                        onClick={handleDownload} disabled={downloading}
+                                        onClick={handleDownload}
                                         style={{
                                             display: 'flex',
                                             alignItems: 'center',
