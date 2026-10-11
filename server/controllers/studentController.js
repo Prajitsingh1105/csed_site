@@ -8,6 +8,7 @@ import NoDuesRequest from '../models/NoDuesRequest.js';
 import StudentRecord from '../models/StudentRecord.js';
 import cloudinary, { uploadToCloudinary } from '../config/cloudinary.js';
 import QRCode from 'qrcode';
+import { getCoordinatorSignatureSvg } from '../config/signature.js';
 
 // Initialize Clerk Backend SDK to fetch the metadata we seeded
 const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
@@ -413,13 +414,7 @@ export const getNoDuesStatus = async (req, res) => {
             const qrCodeDataUrl = await QRCode.toDataURL(verificationUrl);
             requestObj.qrCodeDataUrl = qrCodeDataUrl;
 
-            let signatureSvg = (process.env.FACULTY_SIGNATURE_SVG || '').trim();
-            if ((signatureSvg.startsWith("'") && signatureSvg.endsWith("'")) || 
-                (signatureSvg.startsWith('"') && signatureSvg.endsWith('"'))) {
-                signatureSvg = signatureSvg.slice(1, -1).trim();
-            }
-
-            requestObj.signatureSvg = signatureSvg;
+            requestObj.signatureSvg = getCoordinatorSignatureSvg();
             requestObj.certificateId = String(request._id);
         }
 
