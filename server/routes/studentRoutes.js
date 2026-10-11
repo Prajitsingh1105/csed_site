@@ -10,6 +10,7 @@ import {
   getNoDuesStatus,
   syncUser
 } from '../controllers/studentController.js';
+import { downloadNoDuesPdf } from '../controllers/pdfController.js';
 import { requireStudentAuth } from '../middlewares/clerkAuth.js';
 import upload from '../middlewares/upload.js';
 
@@ -26,5 +27,6 @@ router.post('/apply', applyForJob);
 router.get('/applications', getMyApplications);
 router.post('/no-dues', upload.single('letterPdf'), submitNoDues);
 router.get('/no-dues/status', getNoDuesStatus);
+router.get('/no-dues/download', downloadNoDuesPdf);
 
 export default router;

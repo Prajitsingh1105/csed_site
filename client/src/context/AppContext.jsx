@@ -1,4 +1,5 @@
 import { createContext, useEffect, useState } from "react";
+import { toast } from 'react-toastify';
 import { initialOfferLetters } from '../assets/assets'
 import axios from 'axios'
 import { useAuth } from '@clerk/react'
@@ -55,14 +56,16 @@ export const AppContextProvider = (props) => {
         const localCompanyToken = localStorage.getItem('companyToken');
         
         if (!localCompanyToken) {
-            if (!isLoaded || !isSignedIn) {// console.("🔍 [CONTEXT LOG] Clerk not authenticated yet.");
+            if (!isLoaded || !isSignedIn) {
+// console.("🔍 [CONTEXT LOG] Clerk not authenticated yet.");
                 return;
             }
         }
 
         try {
             const token = localCompanyToken || await getToken();
-            const authConfig = { headers: { Authorization: `Bearer ${token}` } };// console.("🚀 [CONTEXT LOG] Fetching data...");
+            const authConfig = { headers: { Authorization: `Bearer ${token}` } };
+// console.("🚀 [CONTEXT LOG] Fetching data...");
 
             const [noticesRes, companiesRes, studentsRes, recordsRes, queriesRes, jobsRes, appsRes, placementsRes, noDuesRes] = await Promise.all([
                 axios.get(`${backendUrl}/api/admin/notices`, authConfig),
@@ -74,7 +77,8 @@ export const AppContextProvider = (props) => {
                 axios.get(`${backendUrl}/api/admin/applications`, authConfig),
                 axios.get(`${backendUrl}/api/admin/placements`, authConfig),
                 axios.get(`${backendUrl}/api/admin/no-dues`, authConfig)
-            ]);// console.("📊 === RAW BACKEND PAYLOAD INSPECTION ===");
+            ]);
+// console.("📊 === RAW BACKEND PAYLOAD INSPECTION ===");
             
             // Helper to handle data mapping safely
             const mapData = (data, key, setter) => {
@@ -82,7 +86,8 @@ export const AppContextProvider = (props) => {
                     setter(data[key]);
                 } else if (Array.isArray(data)) {
                     setter(data);
-                } else {// console.(`⚠️ [CONTEXT WARNING] Key "${key}" not found. Payload structure:`, data);
+                } else {
+// console.(`⚠️ [CONTEXT WARNING] Key "${key}" not found. Payload structure:`, data);
                     setter([]);
                 }
             };
@@ -95,9 +100,11 @@ export const AppContextProvider = (props) => {
             mapData(jobsRes.data, 'jobs', setJobs);
             mapData(appsRes.data, 'applications', setApplications);
             mapData(placementsRes.data, 'placements', setOfferLetters);
-            mapData(noDuesRes.data, 'requests', setNoDuesRequests);// console.("✅ [CONTEXT LOG] All states updated.");
+            mapData(noDuesRes.data, 'requests', setNoDuesRequests);
+// console.("✅ [CONTEXT LOG] All states updated.");
 
-        } catch (error) {// console.("💥 [CONTEXT LOG] API Error:", error.response?.data || error.message);
+        } catch (error) {
+// console.("💥 [CONTEXT LOG] API Error:", error.response?.data || error.message);
             toast.error("Failed to fetch dashboard data: " + (error.response?.data?.message || error.message));
         }
     };
@@ -105,11 +112,14 @@ export const AppContextProvider = (props) => {
     // Auto-fetch trigger when Clerk session is ready
     // Inside AppContext.jsx
 
-useEffect(() => {// console.(`🔄 [AUTH STATUS CHANGE] isLoaded: ${isLoaded}, isSignedIn: ${isSignedIn}, companyToken: ${!!companyToken}`);
+useEffect(() => {
+// console.(`🔄 [AUTH STATUS CHANGE] isLoaded: ${isLoaded}, isSignedIn: ${isSignedIn}, companyToken: ${!!companyToken}`);
     
-    if ((isLoaded && isSignedIn) || companyToken) {// console.("🔓 [CONTEXT FLOW] Auth validated. Triggering fetch...");
+    if ((isLoaded && isSignedIn) || companyToken) {
+// console.("🔓 [CONTEXT FLOW] Auth validated. Triggering fetch...");
         fetchBackendData();
-    } else if (isLoaded && !isSignedIn && !companyToken) {// console.("🚫 [CONTEXT FLOW] User is NOT signed in.");
+    } else if (isLoaded && !isSignedIn && !companyToken) {
+// console.("🚫 [CONTEXT FLOW] User is NOT signed in.");
     }
 }, [isLoaded, isSignedIn, companyToken]);
 

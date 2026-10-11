@@ -19,6 +19,7 @@ import StudentDatabase from './pages/StudentDatabase'
 import ManageQueries from './pages/ManageQueries'
 import StudentDoubts from './pages/StudentDoubts'
 import NoDues from './pages/NoDues'
+import VerifyCertificate from './pages/VerifyCertificate'
 import StudentDashboard from './pages/StudentDashboard'
 import StudentOverview from './pages/StudentOverview'
 import FacultyDirectory from './pages/FacultyDirectory'
@@ -108,6 +109,7 @@ const App = () => {
             <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/apply-job/:id" element={<ApplyJob />} />
+                <Route path="/verify/no-dues/:id" element={<VerifyCertificate />} />
                 <Route path="/faculty/:type" element={<FacultyDirectory />} />
 
                 {/* Student Dashboard Layout */}

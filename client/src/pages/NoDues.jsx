@@ -147,61 +147,38 @@ const NoDues = () => {
         }
         : null
 
-    const handlePrint = () => {
-        const paperEl = document.querySelector('.paper')
-        if (!paperEl) return
+        const [downloading, setDownloading] = useState(false);
 
-        const printWindow = window.open('', '_blank', 'width=960,height=700')
-        printWindow.document.write(`<!DOCTYPE html>
-<html>
-<head>
-    <title>No Dues Certificate — ${approvedFormData?.name || ''}</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: "Times New Roman", Times, serif; background: white; }
-        @page { margin: 10mm; size: A4; }
-        .paper { width: 100%; background: white; padding: 20px 30px; color: #111; }
-        .dept { text-align: center; font-size: 14px; margin-bottom: 2px; }
-        .college { text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 12px; }
-        .title { text-align: center; font-size: 20px; font-weight: bold; text-decoration: underline; margin-bottom: 8px; }
-        .subtitle { text-align: center; font-size: 14px; margin-bottom: 16px; }
-        .student-details { display: flex; justify-content: space-between; margin-bottom: 16px; padding: 0 20px; gap: 20px; }
-        .student-details ul { list-style: none; font-size: 13px; line-height: 2; width: 48%; }
-        .student-field { display: flex; align-items: center; gap: 8px; }
-        .student-field label { font-weight: bold; white-space: nowrap; min-width: 100px; }
-        .student-input, .student-value { flex: 1; border: none; border-bottom: 1px solid #111; font-family: "Times New Roman", Times, serif; font-size: 13px; padding: 1px 3px; display: inline-block; min-width: 60px; background: transparent; }
-        .info { font-size: 13px; margin-bottom: 6px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 6px; margin-bottom: 20px; }
-        th, td { border: 1px solid #999; padding: 6px 8px; vertical-align: middle; font-size: 12px; }
-        th { text-align: left; font-weight: bold; }
-        .sn { width: 7%; text-align: center; }
-        .activity { width: 30%; }
-        .status { width: 14%; text-align: center; }
-        .verify { width: 25%; }
-        .sign { width: 24%; text-align: center; }
-        .signature-box { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; }
-        .signature-svg, .signature-svg-wrapper svg { width: 70px; height: auto; display: block; margin: 0 auto 2px; }
-        .sign-name { font-size: 11px; font-weight: bold; margin-top: 2px; }
-        .sign-date { font-size: 10px; margin-top: 2px; }
-        .bottom { display: flex; justify-content: space-between; gap: 20px; margin-top: 6px; }
-        .box { width: 48%; }
-        .box-title { font-size: 13px; font-weight: bold; margin-bottom: 6px; }
-        .box ul { padding-left: 20px; font-size: 12px; line-height: 1.6; }
-    </style>
-</head>
-<body>${paperEl.outerHTML}</body>
-</html>`)
-        printWindow.document.close()
-        printWindow.focus()
-        setTimeout(() => {
-            printWindow.print()
-            printWindow.close()
-        }, 600)
+    const handleDownload = async () => {
+        setDownloading(true);
+        try {
+            const token = await getToken();
+            const res = await axios.get(`${backendUrl}/api/student/no-dues/download`, {
+                headers: { Authorization: `Bearer ${token}` },
+                responseType: 'blob'
+            });
+            
+            const url = window.URL.createObjectURL(new Blob([res.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `No_Dues_${approvedFormData?.rollNumber || 'Certificate'}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+            window.URL.revokeObjectURL(url);
+            
+            toast.success('Certificate downloaded successfully!');
+        } catch (error) {
+            toast.error('Failed to download certificate.');
+            console.error(error);
+        } finally {
+            setDownloading(false);
+        }
     }
 
     if (!loadingData && existingRequest?.status === 'Approved') {
         return (
-            <div className="flex flex-col w-full" style={{ background: THEME.pageBg }}>
+            <div className="flex flex-col w-full min-w-0 max-w-full overflow-x-hidden" style={{ background: THEME.pageBg }}>
                 <AnimatePresence mode="wait">
                     {!showForm ? (
                         <motion.div
@@ -402,7 +379,7 @@ const NoDues = () => {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             transition={{ duration: 0.3 }}
-                            className="flex-grow"
+                            className="flex-grow flex flex-col min-w-0 w-full max-w-full overflow-x-hidden"
                         >
                             <div
                                 className="sticky-cert-bar"
@@ -476,7 +453,7 @@ const NoDues = () => {
                                     </button>
 
                                     <button
-                                        onClick={handlePrint}
+                                        onClick={handleDownload} disabled={downloading}
                                         style={{
                                             display: 'flex',
                                             alignItems: 'center',
@@ -496,13 +473,15 @@ const NoDues = () => {
                                         onMouseEnter={e => (e.currentTarget.style.background = THEME.brandHover)}
                                         onMouseLeave={e => (e.currentTarget.style.background = THEME.brand)}
                                     >
-                                        <Printer size={14} /> Print / Download PDF
+                                        <Printer size={14} /> {downloading ? 'Downloading...' : 'Download Secure PDF'}
                                     </button>
                                 </div>
                             </div>
 
-                            <div style={{ padding: 'clamp(20px, 5vw, 32px) 16px', background: THEME.pageBg }}>
-                                <NoDuesForm prefillData={approvedFormData} />
+                            <div style={{ padding: 'clamp(20px, 5vw, 32px) 16px', background: THEME.pageBg, overflowX: 'auto', width: '100%', maxWidth: '100vw' }}>
+                                <div style={{ minWidth: 900, display: 'flex', justifyContent: 'center' }}>
+                                    <NoDuesForm prefillData={approvedFormData} />
+                                </div>
                             </div>
                         </motion.div>
                     )}

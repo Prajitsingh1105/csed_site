@@ -54,10 +54,10 @@ const StudentDashboard = () => {
     const displayImage = dbUser?.image || user?.imageUrl
 
     return (
-        <div className='min-h-screen flex flex-col bg-[#F9F8F5] font-sans relative'>
+        <div className='min-h-screen w-full flex flex-col bg-[#F9F8F5] font-sans relative overflow-x-hidden'>
             <div className="fixed inset-0 pointer-events-none opacity-[0.03] bg-noise mix-blend-multiply z-0"></div>
 
-            <header className='bg-[#FFFDF8] border-b border-[#11241a]/10 sticky top-0 z-50 shadow-sm flex flex-col'>
+            <header className='bg-[#FFFDF8] border-b border-[#11241a]/10 sticky top-0 z-50 shadow-sm flex flex-col shrink-0'>
                 
                 <div className='max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center shrink-0'>
                     <div onClick={() => navigate('/')} className='flex items-center gap-3 cursor-pointer group'>
@@ -122,7 +122,7 @@ const StudentDashboard = () => {
                 </div>
             </header>
 
-            <main className='flex-1 w-full flex flex-col relative z-10'>
+            <main className='flex-1 w-full min-w-0 flex flex-col relative z-10'>
                 <Outlet context={{ dbUser, refreshDbUser: () => setDbUser(null) }} />
             </main>
         </div>

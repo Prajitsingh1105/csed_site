@@ -115,3 +115,6 @@ html.lenis, html.lenis body {
 .lenis.lenis-smooth iframe {
   pointer-events: none;
 }
+
+html, body { overflow-x: hidden; width: 100%; max-width: 100vw; }
+
