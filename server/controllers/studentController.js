@@ -412,7 +412,14 @@ export const getNoDuesStatus = async (req, res) => {
             const verificationUrl = `https://csed.placement.ietlucknow.ac.in/verify/no-dues/${request._id}`;
             const qrCodeDataUrl = await QRCode.toDataURL(verificationUrl);
             requestObj.qrCodeDataUrl = qrCodeDataUrl;
-            requestObj.signatureSvg = process.env.FACULTY_SIGNATURE_SVG || '';
+
+            let signatureSvg = (process.env.FACULTY_SIGNATURE_SVG || '').trim();
+            if ((signatureSvg.startsWith("'") && signatureSvg.endsWith("'")) || 
+                (signatureSvg.startsWith('"') && signatureSvg.endsWith('"'))) {
+                signatureSvg = signatureSvg.slice(1, -1).trim();
+            }
+
+            requestObj.signatureSvg = signatureSvg;
             requestObj.certificateId = String(request._id);
         }
 

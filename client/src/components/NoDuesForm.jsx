@@ -299,8 +299,9 @@ const css = `
 
 .paper-wrapper .signature-box { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; }
 
-.paper-wrapper .signature-svg { width: 95px; height: auto; display: block; margin: 0 auto 2px; max-width: 100%; }
-.paper-wrapper .signature-svg-wrapper svg { width: 95px; height: auto; display: block; margin: 0 auto 2px; max-width: 100%; }
+.paper-wrapper .signature-svg-wrapper { display: flex; justify-content: center; align-items: center; min-height: 35px; margin-bottom: 2px; }
+.paper-wrapper .signature-svg-wrapper svg { width: 85px !important; height: 38px !important; display: block !important; margin: 0 auto !important; }
+.paper-wrapper .signature-svg-wrapper svg path { fill: #000055 !important; }
 
 .paper-wrapper .sign-name { font-size: 13px; font-weight: bold; margin-top: 2px; }
 .paper-wrapper .sign-date { font-size: 12px; margin-top: 2px; }
@@ -395,9 +396,9 @@ const css = `
 .paper-wrapper table { margin-top: 6px !important; margin-bottom: 20px !important; }
 .paper-wrapper th, .paper-wrapper td { padding: 6px 8px !important; font-size: 12px !important; }
 
-.paper-wrapper .signature-svg, .paper-wrapper .signature-svg-wrapper svg {
-    width: 70px !important;
-  }
+.paper-wrapper .signature-svg-wrapper { display: flex !important; justify-content: center !important; align-items: center !important; min-height: 32px !important; margin-bottom: 2px !important; }
+.paper-wrapper .signature-svg, .paper-wrapper .signature-svg-wrapper svg { width: 75px !important; height: 35px !important; display: block !important; visibility: visible !important; }
+.paper-wrapper .signature-svg-wrapper svg path { fill: #000055 !important; visibility: visible !important; }
 .paper-wrapper .sign-name { font-size: 11px !important; }
 .paper-wrapper .sign-date { font-size: 10px !important; }
 
