@@ -450,7 +450,7 @@ const NoDues = () => {
                                         onMouseEnter={e => (e.currentTarget.style.background = THEME.brandHover)}
                                         onMouseLeave={e => (e.currentTarget.style.background = THEME.brand)}
                                     >
-                                        <Printer size={14} /> {downloading ? 'Downloading...' : 'Download Secure PDF'}
+                                        <Printer size={14} /> Download Secure PDF
                                     </button>
                                 </div>
                             </div>
